@@ -222,12 +222,10 @@ github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeV
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
-github.com/stafiprotocol/chainbridge-utils v1.0.1 h1:t/q0GBYi2YJoclfBYTN8qy39ML0XX8XIv+pZTKAJbzI=
-github.com/stafiprotocol/chainbridge-utils v1.0.1/go.mod h1:jMQDHIF58Y7hsasi+t3QH7lEzp5suGDos4fWH8iISi8=
-github.com/stafiprotocol/chainbridge-utils v1.0.2 h1:JYrvq5AEmaGv2YXqNDdIdfNcKd1NWXJYmd6tHRANqxE=
-github.com/stafiprotocol/chainbridge-utils v1.0.2/go.mod h1:jMQDHIF58Y7hsasi+t3QH7lEzp5suGDos4fWH8iISi8=
-github.com/stafiprotocol/go-substrate-rpc-client v1.0.1 h1:/KLouEyCabFIxk2uz+DvBRh0yLyMgNspnH0iIUJvLjM=
-github.com/stafiprotocol/go-substrate-rpc-client v1.0.1/go.mod h1:jXxpO7GBjoaRcDwAniJ2bFfBDju0BvXHA7OZIJ+i3cU=
+github.com/stafiprotocol/chainbridge-utils v1.0.0 h1:+ZeoII+nZsNZatxed8gN5oFDDvKBlASd5vcOJNpEhXY=
+github.com/stafiprotocol/chainbridge-utils v1.0.0/go.mod h1:Dw8K3kOpCIT3uq9f+wBtySjej4XqcyJX0a5Ujw1xjBs=
+github.com/stafiprotocol/go-substrate-rpc-client v1.0.0 h1:BZ0bd2TVCJqz9Xj7bNCasWzRq5/wTw4vN8p5gwiKaSU=
+github.com/stafiprotocol/go-substrate-rpc-client v1.0.0/go.mod h1:Owf3QDKdNvpcF5+nGVyY1+60X7sZ2RAui0pqvuwvrUk=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4 h1:Gb2Tyox57NRNuZ2d3rmvB3pcmbu7O1RS3m8WRx7ilrg=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4/go.mod h1:RZLeN1LMWmRsyYjvAu+I6Dm9QmlDaIIt+Y+4Kd7Tp+Q=
 github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 h1:gIlAHnH1vJb5vwEjIp5kBj/eu99p/bl0Ay2goiPe5xE=

@@ -4,15 +4,13 @@
 package substrate
 
 import (
-	"github.com/stafiprotocol/chainbridge/config"
-	"os"
-	"testing"
-	"time"
-
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/config"
 	utils "github.com/stafiprotocol/chainbridge/shared/substrate"
+	"os"
+	"testing"
 )
 
 const TestEndpoint = "ws://127.0.0.1:9944"
@@ -39,11 +37,6 @@ type testContext struct {
 }
 
 var context testContext
-
-func TestWait(t *testing.T) {
-	<-time.After(30 * time.Minute)
-}
-
 func TestMain(m *testing.M) {
 	client, err := utils.CreateClient(AliceKey, TestEndpoint)
 	if err != nil {
@@ -51,7 +44,8 @@ func TestMain(m *testing.M) {
 	}
 
 	var nativeTokenId [32]byte
-	err = utils.QueryConst(client, config.BridgeSwap, config.NativeTokenId, &nativeTokenId)
+
+	err = client.GetConst(config.BridgeSwap, config.NativeTokenId, &nativeTokenId)
 	if err != nil {
 		panic(err)
 	}

@@ -90,25 +90,6 @@ func (c *Connection) queryStorage(prefix, method string, arg1, arg2 []byte, resu
 	return c.api.RPC.State.GetStorageLatest(key, result)
 }
 
-// TODO: Add this to GSRPC
-func getConst(meta *types.Metadata, prefix, name string, res interface{}) error {
-	for _, mod := range meta.AsMetadataV12.Modules {
-		if string(mod.Name) == prefix {
-			for _, cons := range mod.Constants {
-				if string(cons.Name) == name {
-					return types.DecodeFromBytes(cons.Value, res)
-				}
-			}
-		}
-	}
-	return fmt.Errorf("could not find constant %s.%s", prefix, name)
-}
-
-func (c *Connection) getConst(prefix, name string, res interface{}) error {
-	meta := c.getMetadata()
-	return getConst(&meta, prefix, name, res)
-}
-
 func (c *Connection) checkChainId(expected msg.ChainId) error {
 	var actual msg.ChainId
 	err := c.getConst(config.BridgeCommon, config.ChainIdentity, &actual)
@@ -121,6 +102,11 @@ func (c *Connection) checkChainId(expected msg.ChainId) error {
 	}
 
 	return nil
+}
+
+func (c *Connection) getConst(prefix, name string, res interface{}) error {
+	meta := c.getMetadata()
+	return c.api.RPC.State.GetConstWithMetadata(&meta, prefix, name, res)
 }
 
 func (c *Connection) getLatestNonce() (types.U32, error) {

@@ -4,8 +4,6 @@
 package utils
 
 import (
-	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/stafiprotocol/chainbridge/config"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
@@ -45,8 +43,6 @@ func CreateClient(key *signature.KeyringPair, endpoint string) (*Client, error) 
 	return c, nil
 }
 
-// Utility methods
-
 func (c *Client) LatestBlock() (uint64, error) {
 	head, err := c.Api.RPC.Chain.GetHeaderLatest()
 	if err != nil {
@@ -55,18 +51,6 @@ func (c *Client) LatestBlock() (uint64, error) {
 	return uint64(head.Number), nil
 }
 
-func (c *Client) GetDepositNonce(chain msg.ChainId) (uint64, error) {
-	var count types.U64
-	chainId, err := types.EncodeToBytes(types.U8(chain))
-	if err != nil {
-		return 0, err
-	}
-	exists, err := QueryStorage(c, config.BridgeCommon, config.ChainNonces, chainId, nil, &count)
-	if err != nil {
-		return 0, err
-	}
-	if !exists {
-		return 0, nil
-	}
-	return uint64(count), nil
+func (c *Client) GetConst(prefix, name string, res interface{}) error {
+	return c.Api.RPC.State.GetConstWithMetadata(c.Meta, prefix, name, res)
 }
