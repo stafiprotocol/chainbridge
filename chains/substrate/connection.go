@@ -5,13 +5,12 @@ package substrate
 
 import (
 	"fmt"
+	"github.com/stafiprotocol/chainbridge/config"
 	"sync"
 
-	utils "github.com/stafiprotocol/chainbridge/shared/substrate"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/ChainSafe/log15"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
-	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/author"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
@@ -68,7 +67,7 @@ func (c *Connection) Connect() error {
 		return err
 	}
 	c.meta = *meta
-	c.log.Debug("Fetched substrate metadata")
+
 
 	// Fetch genesis hash
 	genesisHash, err := c.api.RPC.Chain.GetBlockHash(0)
@@ -76,95 +75,8 @@ func (c *Connection) Connect() error {
 		return err
 	}
 	c.genesisHash = genesisHash
-	c.log.Debug("Fetched substrate genesis hash", "hash", genesisHash.Hex())
+	c.log.Info("Fetched substrate genesis hash", "hash", genesisHash.Hex())
 	return nil
-}
-
-// SubmitTx constructs and submits an extrinsic to call the method with the given arguments.
-// All args are passed directly into GSRPC. GSRPC types are recommended to avoid serialization inconsistencies.
-func (c *Connection) SubmitTx(method utils.Method, args ...interface{}) error {
-	c.log.Debug("Submitting substrate call...", "method", method, "sender", c.key.Address)
-
-	meta := c.getMetadata()
-
-	// Create call and extrinsic
-	call, err := types.NewCall(
-		&meta,
-		string(method),
-		args...,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to construct call: %s", err.Error())
-	}
-	ext := types.NewExtrinsic(call)
-
-	// Get latest runtime version
-	rv, err := c.api.RPC.State.GetRuntimeVersionLatest()
-	if err != nil {
-		return err
-	}
-
-	c.nonceLock.Lock()
-	latestNonce, err := c.getLatestNonce()
-	if err != nil {
-		c.nonceLock.Unlock()
-		return err
-	}
-	if latestNonce > c.nonce {
-		c.nonce = latestNonce
-	}
-
-	// Sign the extrinsic
-	o := types.SignatureOptions{
-		BlockHash:   c.genesisHash,
-		Era:         types.ExtrinsicEra{IsMortalEra: false},
-		GenesisHash: c.genesisHash,
-		Nonce:       types.NewUCompactFromUInt(uint64(c.nonce)),
-		SpecVersion: rv.SpecVersion,
-		Tip:         types.NewUCompactFromUInt(0),
-	}
-
-	err = ext.Sign(*c.key, o)
-	if err != nil {
-		c.nonceLock.Unlock()
-		return err
-	}
-
-	// Submit and watch the extrinsic
-	sub, err := c.api.RPC.Author.SubmitAndWatchExtrinsic(ext)
-	c.nonce++
-	c.nonceLock.Unlock()
-	if err != nil {
-		return fmt.Errorf("submission of extrinsic failed: %s", err.Error())
-	}
-	c.log.Trace("Extrinsic submission succeeded")
-	defer sub.Unsubscribe()
-
-	return c.watchSubmission(sub)
-}
-
-func (c *Connection) watchSubmission(sub *author.ExtrinsicStatusSubscription) error {
-	for {
-		select {
-		case <-c.stop:
-			return TerminatedError
-		case status := <-sub.Chan():
-			switch {
-			case status.IsInBlock:
-				c.log.Trace("Extrinsic included in block", "block", status.AsInBlock.Hex())
-				return nil
-			case status.IsRetracted:
-				return fmt.Errorf("extrinsic retracted: %s", status.AsRetracted.Hex())
-			case status.IsDropped:
-				return fmt.Errorf("extrinsic dropped from network")
-			case status.IsInvalid:
-				return fmt.Errorf("extrinsic invalid")
-			}
-		case err := <-sub.Err():
-			c.log.Trace("Extrinsic subscription error", "err", err)
-			return err
-		}
-	}
 }
 
 // queryStorage performs a storage lookup. Arguments may be nil, result must be a pointer.
@@ -180,7 +92,7 @@ func (c *Connection) queryStorage(prefix, method string, arg1, arg2 []byte, resu
 
 // TODO: Add this to GSRPC
 func getConst(meta *types.Metadata, prefix, name string, res interface{}) error {
-	for _, mod := range meta.AsMetadataV11.Modules {
+	for _, mod := range meta.AsMetadataV12.Modules {
 		if string(mod.Name) == prefix {
 			for _, cons := range mod.Constants {
 				if string(cons.Name) == name {
@@ -199,7 +111,7 @@ func (c *Connection) getConst(prefix, name string, res interface{}) error {
 
 func (c *Connection) checkChainId(expected msg.ChainId) error {
 	var actual msg.ChainId
-	err := c.getConst(utils.BridgePalletName, "ChainIdentity", &actual)
+	err := c.getConst(config.BridgeCommon, config.ChainIdentity, &actual)
 	if err != nil {
 		return err
 	}
@@ -224,5 +136,4 @@ func (c *Connection) getLatestNonce() (types.U32, error) {
 	return acct.Nonce, nil
 }
 func (c *Connection) Close() {
-	// TODO: Anything required to shutdown GRPC?
 }

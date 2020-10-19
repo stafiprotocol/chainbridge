@@ -6,9 +6,9 @@ package utils
 import (
 	"math/big"
 
-	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 )
 
 func RegisterResource(client *Client, bridge, handler common.Address, rId msg.ResourceId, addr common.Address) error {
@@ -23,32 +23,6 @@ func RegisterResource(client *Client, bridge, handler common.Address, rId msg.Re
 	}
 
 	tx, err := instance.AdminSetResource(client.Opts, handler, rId, addr)
-	if err != nil {
-		return err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return err
-	}
-
-	client.UnlockNonce()
-
-	return nil
-}
-
-func RegisterGenericResource(client *Client, bridge, handler common.Address, rId msg.ResourceId, addr common.Address, depositSig, executeSig [4]byte) error {
-	instance, err := Bridge.NewBridge(bridge, client.Client)
-	if err != nil {
-		return err
-	}
-
-	err = client.LockNonceAndUpdate()
-	if err != nil {
-		return err
-	}
-
-	tx, err := instance.AdminSetGenericResource(client.Opts, handler, rId, addr, depositSig, executeSig)
 	if err != nil {
 		return err
 	}
@@ -87,20 +61,6 @@ func SetBurnable(client *Client, bridge, handler, contract common.Address) error
 	client.UnlockNonce()
 
 	return nil
-}
-
-func GetDepositNonce(client *Client, bridge common.Address, chain msg.ChainId) (uint64, error) {
-	instance, err := Bridge.NewBridge(bridge, client.Client)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := instance.DepositCounts(client.CallOpts, uint8(chain))
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }
 
 func IDAndNonce(srcId msg.ChainId, nonce msg.Nonce) *big.Int {

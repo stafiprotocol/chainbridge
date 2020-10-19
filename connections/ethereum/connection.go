@@ -1,4 +1,4 @@
-// Copyright 2020 Stafi Protocol
+// Copyright 2020 ChainSafe Systems
 // SPDX-License-Identifier: LGPL-3.0-only
 
 package ethereum
@@ -11,13 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
 )
 
 var BlockRetryInterval = time.Second * 5

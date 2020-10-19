@@ -3,7 +3,7 @@
 
 /*
 The substrate package contains the logic for interacting with substrate chains.
-The current supported transfer types are Fungible, Nonfungible, and generic.
+The current supported transfer types are Fungible.
 
 There are 3 major components: the connection, the listener, and the writer.
 
@@ -18,22 +18,20 @@ The substrate listener polls blocks and parses the associated events for the thr
 
 Writer
 
-As the writer receives messages from the router, it constructs proposals. If a proposal is still active, the writer will attempt to vote on it. Resource IDs are resolved to method name on-chain, which are then used in the proposals when constructing the resulting Call struct.
+As the writer receives messages from the router, nothing happened.
 
 */
 package substrate
 
 import (
+	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	"github.com/stafiprotocol/chainbridge-utils/core"
 	"github.com/stafiprotocol/chainbridge-utils/crypto/sr25519"
 	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/ChainSafe/log15"
 )
-
-var _ core.Chain = &Chain{}
 
 type Chain struct {
 	cfg      *core.ChainConfig // The config of the chain
@@ -41,21 +39,6 @@ type Chain struct {
 	listener *listener         // The listener of this chain
 	writer   *writer           // The writer of the chain
 	stop     chan<- int
-}
-
-// checkBlockstore queries the blockstore for the latest known block. If the latest block is
-// greater than startBlock, then the latest block is returned, otherwise startBlock is.
-func checkBlockstore(bs *blockstore.Blockstore, startBlock uint64) (uint64, error) {
-	latestBlock, err := bs.TryLoadLatestBlock()
-	if err != nil {
-		return 0, err
-	}
-
-	if latestBlock.Uint64() > startBlock {
-		return latestBlock.Uint64(), nil
-	} else {
-		return startBlock, nil
-	}
 }
 
 func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error, m *metrics.ChainMetrics) (*Chain, error) {
@@ -146,4 +129,19 @@ func (c *Chain) Name() string {
 
 func (c *Chain) Stop() {
 	close(c.stop)
+}
+
+// checkBlockstore queries the blockstore for the latest known block. If the latest block is
+// greater than startBlock, then the latest block is returned, otherwise startBlock is.
+func checkBlockstore(bs *blockstore.Blockstore, startBlock uint64) (uint64, error) {
+	latestBlock, err := bs.TryLoadLatestBlock()
+	if err != nil {
+		return 0, err
+	}
+
+	if latestBlock.Uint64() > startBlock {
+		return latestBlock.Uint64(), nil
+	} else {
+		return startBlock, nil
+	}
 }

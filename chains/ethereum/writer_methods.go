@@ -9,9 +9,9 @@ import (
 	"math/big"
 	"time"
 
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	log "github.com/ChainSafe/log15"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
+	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 )
 
 // Number of blocks to wait for an finalization event
@@ -82,62 +82,6 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 
 	data := ConstructErc20ProposalData(m.Payload[0].([]byte), m.Payload[1].([]byte))
 	dataHash := utils.Hash(append(w.cfg.erc20HandlerContract.Bytes(), data...))
-
-	if !w.shouldVote(m, dataHash) {
-		return false
-	}
-
-	// Capture latest block so when know where to watch from
-	latestBlock, err := w.conn.LatestBlock()
-	if err != nil {
-		w.log.Error("Unable to fetch latest block", "err", err)
-		return false
-	}
-
-	// watch for execution event
-	go w.watchThenExecute(m, data, dataHash, latestBlock)
-
-	w.voteProposal(m, dataHash)
-
-	return true
-}
-
-// createErc721Proposal creates an Erc721 proposal.
-// Returns true if the proposal is succesfully created or is complete
-func (w *writer) createErc721Proposal(m msg.Message) bool {
-	w.log.Info("Creating erc721 proposal", "src", m.Source, "nonce", m.DepositNonce)
-
-	data := ConstructErc721ProposalData(m.Payload[0].([]byte), m.Payload[1].([]byte), m.Payload[2].([]byte))
-	dataHash := utils.Hash(append(w.cfg.erc721HandlerContract.Bytes(), data...))
-
-	if !w.shouldVote(m, dataHash) {
-		return false
-	}
-
-	// Capture latest block so we know where to watch from
-	latestBlock, err := w.conn.LatestBlock()
-	if err != nil {
-		w.log.Error("Unable to fetch latest block", "err", err)
-		return false
-	}
-
-	// watch for execution event
-	go w.watchThenExecute(m, data, dataHash, latestBlock)
-
-	w.voteProposal(m, dataHash)
-
-	return true
-}
-
-// createGenericDepositProposal creates a generic proposal
-// returns true if the proposal is complete or is succesfully created
-func (w *writer) createGenericDepositProposal(m msg.Message) bool {
-	w.log.Info("Creating generic proposal", "src", m.Source, "nonce", m.DepositNonce)
-
-	metadata := m.Payload[0].([]byte)
-	data := ConstructGenericProposalData(metadata)
-	toHash := append(w.cfg.genericHandlerContract.Bytes(), data...)
-	dataHash := utils.Hash(toHash)
 
 	if !w.shouldVote(m, dataHash) {
 		return false

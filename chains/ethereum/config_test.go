@@ -14,7 +14,6 @@ import (
 
 //TestParseChainConfig tests parseChainConfig with all handlerContracts provided
 func TestParseChainConfig(t *testing.T) {
-
 	input := core.ChainConfig{
 		Name:         "chain",
 		Id:           1,
@@ -25,8 +24,6 @@ func TestParseChainConfig(t *testing.T) {
 		Opts: map[string]string{
 			"bridge":         "0x1234",
 			"erc20Handler":   "0x1234",
-			"erc721Handler":  "0x1234",
-			"genericHandler": "0x1234",
 			"gasLimit":       "10",
 			"maxGasPrice":    "20",
 			"http":           "true",
@@ -48,8 +45,6 @@ func TestParseChainConfig(t *testing.T) {
 		keystorePath:           "./keys",
 		bridgeContract:         common.HexToAddress("0x1234"),
 		erc20HandlerContract:   common.HexToAddress("0x1234"),
-		erc721HandlerContract:  common.HexToAddress("0x1234"),
-		genericHandlerContract: common.HexToAddress("0x1234"),
 		gasLimit:               big.NewInt(10),
 		maxGasPrice:            big.NewInt(20),
 		http:                   true,

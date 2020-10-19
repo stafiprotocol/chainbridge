@@ -4,25 +4,19 @@
 package ethereum
 
 import (
-	"context"
 	"errors"
-	"fmt"
 	"math/big"
 	"time"
 
-	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
-	"github.com/stafiprotocol/chainbridge/bindings/ERC721Handler"
-	"github.com/stafiprotocol/chainbridge/bindings/GenericHandler"
-	"github.com/stafiprotocol/chainbridge/chains"
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
-	"github.com/stafiprotocol/chainbridge-utils/blockstore"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/ChainSafe/log15"
 	eth "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/stafiprotocol/chainbridge-utils/blockstore"
+	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
+	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
+	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
+	"github.com/stafiprotocol/chainbridge/chains"
+	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 )
 
 var BlockDelay = big.NewInt(10)
@@ -36,8 +30,6 @@ type listener struct {
 	router                 chains.Router
 	bridgeContract         *Bridge.Bridge // instance of bound bridge contract
 	erc20HandlerContract   *ERC20Handler.ERC20Handler
-	erc721HandlerContract  *ERC721Handler.ERC721Handler
-	genericHandlerContract *GenericHandler.GenericHandler
 	log                    log15.Logger
 	blockstore             blockstore.Blockstorer
 	stop                   <-chan int
@@ -61,11 +53,9 @@ func NewListener(conn Connection, cfg *Config, log log15.Logger, bs blockstore.B
 }
 
 // setContracts sets the listener with the appropriate contracts
-func (l *listener) setContracts(bridge *Bridge.Bridge, erc20Handler *ERC20Handler.ERC20Handler, erc721Handler *ERC721Handler.ERC721Handler, genericHandler *GenericHandler.GenericHandler) {
+func (l *listener) setContracts(bridge *Bridge.Bridge, erc20Handler *ERC20Handler.ERC20Handler) {
 	l.bridgeContract = bridge
 	l.erc20HandlerContract = erc20Handler
-	l.erc721HandlerContract = erc721Handler
-	l.genericHandlerContract = genericHandler
 }
 
 // sets the router
@@ -121,14 +111,6 @@ func (l *listener) pollBlocks() error {
 				continue
 			}
 
-			// Parse out events
-			err = l.getDepositEventsForBlock(currentBlock)
-			if err != nil {
-				l.log.Error("Failed to get events for block", "block", currentBlock, "err", err)
-				retry--
-				continue
-			}
-
 			// Write to block store. Not a critical operation, no need to retry
 			err = l.blockstore.StoreBlock(currentBlock)
 			if err != nil {
@@ -145,53 +127,6 @@ func (l *listener) pollBlocks() error {
 			}
 		}
 	}
-}
-
-// getDepositEventsForBlock looks for the deposit event in the latest block
-func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
-	l.log.Debug("Querying block for deposit events", "block", latestBlock)
-	query := buildQuery(l.cfg.bridgeContract, utils.Deposit, latestBlock, latestBlock)
-
-	// querying for logs
-	logs, err := l.conn.Client().FilterLogs(context.Background(), query)
-	if err != nil {
-		return fmt.Errorf("unable to Filter Logs: %s", err)
-	}
-
-	// read through the log events and handle their deposit event if handler is recognized
-	for _, log := range logs {
-		var m msg.Message
-		destId := msg.ChainId(log.Topics[1].Big().Uint64())
-		rId := msg.ResourceIdFromSlice(log.Topics[2].Bytes())
-		nonce := msg.Nonce(log.Topics[3].Big().Uint64())
-
-		addr, err := l.bridgeContract.ResourceIDToHandlerAddress(&bind.CallOpts{From: l.conn.Keypair().CommonAddress()}, rId)
-		if err != nil {
-			return fmt.Errorf("failed to get handler from resource ID %x", rId)
-		}
-
-		if addr == l.cfg.erc20HandlerContract {
-			m, err = l.handleErc20DepositedEvent(destId, nonce)
-		} else if addr == l.cfg.erc721HandlerContract {
-			m, err = l.handleErc721DepositedEvent(destId, nonce)
-		} else if addr == l.cfg.genericHandlerContract {
-			m, err = l.handleGenericDepositedEvent(destId, nonce)
-		} else {
-			l.log.Error("event has unrecognized handler", "handler", addr.Hex())
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		err = l.router.Send(m)
-		if err != nil {
-			l.log.Error("subscription error: failed to route message", "err", err)
-		}
-	}
-
-	return nil
 }
 
 // buildQuery constructs a query for the bridgeContract by hashing sig to get the event topic

@@ -4,7 +4,7 @@
 The ethereum package contains the logic for interacting with ethereum chains.
 
 There are 3 major components: the connection, the listener, and the writer.
-The currently supported transfer types are Fungible (ERC20), Non-Fungible (ERC721), and generic.
+The currently supported transfer types are Fungible (ERC20).
 
 Connection
 
@@ -24,26 +24,20 @@ import (
 	"fmt"
 	"math/big"
 
-	bridge "github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	erc20Handler "github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
-	erc721Handler "github.com/stafiprotocol/chainbridge/bindings/ERC721Handler"
-	"github.com/stafiprotocol/chainbridge/bindings/GenericHandler"
-	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
+	"github.com/ChainSafe/log15"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	"github.com/stafiprotocol/chainbridge-utils/core"
 	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
 	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/ChainSafe/log15"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
+	bridge "github.com/stafiprotocol/chainbridge/bindings/Bridge"
+	erc20Handler "github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
+	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
 )
-
-var _ core.Chain = &Chain{}
-
-var _ Connection = &connection.Connection{}
 
 type Connection interface {
 	Connect() error
@@ -65,28 +59,6 @@ type Chain struct {
 	listener *listener         // The listener of this chain
 	writer   *writer           // The writer of the chain
 	stop     chan<- int
-}
-
-// checkBlockstore queries the blockstore for the latest known block. If the latest block is
-// greater than cfg.startBlock, then cfg.startBlock is replaced with the latest known block.
-func setupBlockstore(cfg *Config, kp *secp256k1.Keypair) (*blockstore.Blockstore, error) {
-	bs, err := blockstore.NewBlockstore(cfg.blockstorePath, cfg.id, kp.Address())
-	if err != nil {
-		return nil, err
-	}
-
-	if !cfg.freshStart {
-		latestBlock, err := bs.TryLoadLatestBlock()
-		if err != nil {
-			return nil, err
-		}
-
-		if latestBlock.Cmp(cfg.startBlock) == 1 {
-			cfg.startBlock = latestBlock
-		}
-	}
-
-	return bs, nil
 }
 
 func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error, m *metrics.ChainMetrics) (*Chain, error) {
@@ -120,10 +92,6 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 	if err != nil {
 		return nil, err
 	}
-	err = conn.EnsureHasBytecode(cfg.genericHandlerContract)
-	if err != nil {
-		return nil, err
-	}
 
 	bridgeContract, err := bridge.NewBridge(cfg.bridgeContract, conn.Client())
 	if err != nil {
@@ -144,16 +112,6 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 		return nil, err
 	}
 
-	erc721HandlerContract, err := erc721Handler.NewERC721Handler(cfg.erc721HandlerContract, conn.Client())
-	if err != nil {
-		return nil, err
-	}
-
-	genericHandlerContract, err := GenericHandler.NewGenericHandler(cfg.genericHandlerContract, conn.Client())
-	if err != nil {
-		return nil, err
-	}
-
 	if chainCfg.LatestBlock {
 		curr, err := conn.LatestBlock()
 		if err != nil {
@@ -163,7 +121,7 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 	}
 
 	listener := NewListener(conn, cfg, logger, bs, stop, sysErr, m)
-	listener.setContracts(bridgeContract, erc20HandlerContract, erc721HandlerContract, genericHandlerContract)
+	listener.setContracts(bridgeContract, erc20HandlerContract)
 
 	writer := NewWriter(conn, cfg, logger, stop, sysErr, m)
 	writer.setContract(bridgeContract)
@@ -215,4 +173,26 @@ func (c *Chain) Stop() {
 	if c.conn != nil {
 		c.conn.Close()
 	}
+}
+
+// checkBlockstore queries the blockstore for the latest known block. If the latest block is
+// greater than cfg.startBlock, then cfg.startBlock is replaced with the latest known block.
+func setupBlockstore(cfg *Config, kp *secp256k1.Keypair) (*blockstore.Blockstore, error) {
+	bs, err := blockstore.NewBlockstore(cfg.blockstorePath, cfg.id, kp.Address())
+	if err != nil {
+		return nil, err
+	}
+
+	if !cfg.freshStart {
+		latestBlock, err := bs.TryLoadLatestBlock()
+		if err != nil {
+			return nil, err
+		}
+
+		if latestBlock.Cmp(cfg.startBlock) == 1 {
+			cfg.startBlock = latestBlock
+		}
+	}
+
+	return bs, nil
 }

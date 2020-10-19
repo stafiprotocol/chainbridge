@@ -1,4 +1,4 @@
-// Copyright 2020 Stafi Protocol
+// Copyright 2020 ChainSafe Systems
 // SPDX-License-Identifier: LGPL-3.0-only
 
 package main
@@ -10,13 +10,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/stafiprotocol/chainbridge/config"
+	log "github.com/ChainSafe/log15"
+	gokeystore "github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/stafiprotocol/chainbridge-utils/crypto"
 	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
 	"github.com/stafiprotocol/chainbridge-utils/crypto/sr25519"
 	"github.com/stafiprotocol/chainbridge-utils/keystore"
-	log "github.com/ChainSafe/log15"
-	gokeystore "github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/urfave/cli/v2"
 )
 

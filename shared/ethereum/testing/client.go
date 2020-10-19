@@ -27,10 +27,3 @@ func GetLatestBlock(t *testing.T, client *utils.Client) *big.Int {
 	}
 	return block.Number()
 }
-
-func LockNonceAndUpdate(t *testing.T, client *utils.Client) {
-	err := client.LockNonceAndUpdate()
-	if err != nil {
-		t.Fatal(err)
-	}
-}

@@ -9,13 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stafiprotocol/chainbridge-utils/keystore"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
+	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
+	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 )
 
 const TestEndpoint = "ws://localhost:8545"
@@ -42,8 +41,6 @@ func createConfig(name string, startBlock *big.Int, contracts *utils.DeployedCon
 		freshStart:             true,
 		bridgeContract:         common.Address{},
 		erc20HandlerContract:   common.Address{},
-		erc721HandlerContract:  common.Address{},
-		genericHandlerContract: common.Address{},
 		gasLimit:               big.NewInt(DefaultGasLimit),
 		maxGasPrice:            big.NewInt(DefaultGasPrice),
 		http:                   false,
@@ -53,8 +50,6 @@ func createConfig(name string, startBlock *big.Int, contracts *utils.DeployedCon
 	if contracts != nil {
 		cfg.bridgeContract = contracts.BridgeAddress
 		cfg.erc20HandlerContract = contracts.ERC20HandlerAddress
-		cfg.erc721HandlerContract = contracts.ERC721HandlerAddress
-		cfg.genericHandlerContract = contracts.GenericHandlerAddress
 	}
 
 	return cfg
@@ -90,79 +85,7 @@ func deployTestContracts(t *testing.T, client *utils.Client, id msg.ChainId) *ut
 	fmt.Println("=======================================================")
 	fmt.Printf("Bridge: %s\n", contracts.BridgeAddress.Hex())
 	fmt.Printf("Erc20Handler: %s\n", contracts.ERC20HandlerAddress.Hex())
-	fmt.Printf("ERC721Handler: %s\n", contracts.ERC721HandlerAddress.Hex())
-	fmt.Printf("GenericHandler: %s\n", contracts.GenericHandlerAddress.Hex())
 	fmt.Println("========================================================")
 
 	return contracts
-}
-
-func createErc20Deposit(
-	t *testing.T,
-	contract *Bridge.Bridge,
-	client *utils.Client,
-	rId msg.ResourceId,
-	destRecipient common.Address,
-	destId msg.ChainId,
-	amount *big.Int,
-) {
-
-	data := utils.ConstructErc20DepositData(destRecipient.Bytes(), amount)
-
-	// Incrememnt Nonce by one
-	client.Opts.Nonce = client.Opts.Nonce.Add(client.Opts.Nonce, big.NewInt(1))
-	if _, err := contract.Deposit(
-		client.Opts,
-		uint8(destId),
-		rId,
-		data,
-	); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func createErc721Deposit(
-	t *testing.T,
-	bridge *Bridge.Bridge,
-	client *utils.Client,
-	rId msg.ResourceId,
-	destRecipient common.Address,
-	destId msg.ChainId,
-	tokenId *big.Int,
-) {
-
-	data := utils.ConstructErc721DepositData(tokenId, destRecipient.Bytes())
-
-	// Incrememnt Nonce by one
-	client.Opts.Nonce = client.Opts.Nonce.Add(client.Opts.Nonce, big.NewInt(1))
-	if _, err := bridge.Deposit(
-		client.Opts,
-		uint8(destId),
-		rId,
-		data,
-	); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func createGenericDeposit(
-	t *testing.T,
-	bridge *Bridge.Bridge,
-	client *utils.Client,
-	rId msg.ResourceId,
-	destId msg.ChainId,
-	hash []byte) {
-
-	data := utils.ConstructGenericDepositData(hash)
-
-	// Incrememnt Nonce by one
-	client.Opts.Nonce = client.Opts.Nonce.Add(client.Opts.Nonce, big.NewInt(1))
-	if _, err := bridge.Deposit(
-		client.Opts,
-		uint8(destId),
-		rId,
-		data,
-	); err != nil {
-		t.Fatal(err)
-	}
 }

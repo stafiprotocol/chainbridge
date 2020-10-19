@@ -6,13 +6,11 @@ package utils
 import (
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	ERC20 "github.com/stafiprotocol/chainbridge/bindings/ERC20PresetMinterPauser"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/ethereum/go-ethereum/common"
 )
 
-// DeployMintAndApprove deploys a new erc20 contract, mints to the deployer, and approves the erc20 handler to transfer those token.
 func DeployMintApproveErc20(client *Client, erc20Handler common.Address, amount *big.Int) (common.Address, error) {
 	err := client.LockNonceAndUpdate()
 	if err != nil {
@@ -200,34 +198,6 @@ func Erc20AddMinter(client *Client, erc20Contract, handler common.Address) error
 	client.UnlockNonce()
 
 	return nil
-}
-
-func Erc20GetAllowance(client *Client, erc20Contract, owner, spender common.Address) (*big.Int, error) {
-	instance, err := ERC20.NewERC20PresetMinterPauser(erc20Contract, client.Client)
-	if err != nil {
-		return nil, err
-	}
-
-	amount, err := instance.Allowance(client.CallOpts, owner, spender)
-	if err != nil {
-		return nil, err
-	}
-
-	return amount, nil
-}
-
-func Erc20GetResourceId(client *Client, handler common.Address, rId msg.ResourceId) (common.Address, error) {
-	instance, err := ERC20Handler.NewERC20Handler(handler, client.Client)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	addr, err := instance.ResourceIDToTokenContractAddress(client.CallOpts, rId)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	return addr, nil
 }
 
 func Erc20Mint(client *Client, erc20Address, recipient common.Address, amount *big.Int) error {

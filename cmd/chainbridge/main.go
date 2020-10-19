@@ -1,10 +1,6 @@
 // Copyright 2020 Stafi Protocol
 // SPDX-License-Identifier: LGPL-3.0-only
-/*
-Provides the command-line interface for the chainbridge application.
 
-For configuration and CLI commands see the README: https://github.com/stafiprotocol/chainbridge.
-*/
 package main
 
 import (
@@ -14,14 +10,14 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/stafiprotocol/chainbridge/chains/ethereum"
-	"github.com/stafiprotocol/chainbridge/chains/substrate"
-	"github.com/stafiprotocol/chainbridge/config"
+	log "github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/core"
 	"github.com/stafiprotocol/chainbridge-utils/metrics/health"
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	log "github.com/ChainSafe/log15"
+	"github.com/stafiprotocol/chainbridge/chains/ethereum"
+	"github.com/stafiprotocol/chainbridge/chains/substrate"
+	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 )
@@ -99,10 +95,10 @@ var accountCommand = cli.Command{
 // init initializes CLI
 func init() {
 	app.Action = run
-	app.Copyright = "Copyright 2019 Stafi Protocol Authors"
+	app.Copyright = "Copyright 2019 ChainSafe Systems Authors"
 	app.Name = "chainbridge"
 	app.Usage = "ChainBridge"
-	app.Authors = []*cli.Author{{Name: "Stafi Protocol 2019"}}
+	app.Authors = []*cli.Author{{Name: "ChainSafe Systems 2019"}}
 	app.Version = "0.0.1"
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{

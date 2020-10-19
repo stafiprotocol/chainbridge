@@ -4,21 +4,18 @@
 package substrate
 
 import (
+	"github.com/stafiprotocol/chainbridge/config"
 	"os"
 	"testing"
+	"time"
 
-	utils "github.com/stafiprotocol/chainbridge/shared/substrate"
+	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/ChainSafe/log15"
-	"github.com/stafiprotocol/go-substrate-rpc-client/types"
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	utils "github.com/stafiprotocol/chainbridge/shared/substrate"
 )
 
 const TestEndpoint = "ws://127.0.0.1:9944"
-
-const TestRelayerThreshold = 2
-const TestChainId = 1
 
 var AliceKey = keystore.TestKeyRing.SubstrateKeys[keystore.AliceKey].AsKeyringPair()
 var BobKey = keystore.TestKeyRing.SubstrateKeys[keystore.BobKey].AsKeyringPair()
@@ -28,21 +25,6 @@ var AliceTestLogger = newTestLogger("Alice")
 var BobTestLogger = newTestLogger("Bob")
 
 var ThisChain msg.ChainId = 1
-var ForeignChain msg.ChainId = 2
-
-var relayers = []types.AccountID{
-	types.NewAccountID(AliceKey.PublicKey),
-	types.NewAccountID(BobKey.PublicKey),
-}
-
-var resources = map[msg.ResourceId]utils.Method{
-	// These are taken from the Polkadot JS UI (Chain State -> Constants)
-	msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00")): utils.ExampleTransferMethod,
-	msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000e389d61c11e5fe32ec1735b3cd38c69501")): utils.ExampleMintErc721Method,
-	msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000f44be64d2de895454c3467021928e55e01")): utils.ExampleRemarkMethod,
-}
-
-const relayerThreshold = 2
 
 type testContext struct {
 	client         *utils.Client
@@ -58,29 +40,18 @@ type testContext struct {
 
 var context testContext
 
+func TestWait(t *testing.T) {
+	<-time.After(30 * time.Minute)
+}
+
 func TestMain(m *testing.M) {
 	client, err := utils.CreateClient(AliceKey, TestEndpoint)
 	if err != nil {
 		panic(err)
 	}
 
-	var nativeTokenId, hashId, nftTokenId []byte
-
-	err = utils.QueryConst(client, "Example", "NativeTokenId", &nativeTokenId)
-	if err != nil {
-		panic(err)
-	}
-
-	err = utils.QueryConst(client, "Example", "HashId", &hashId)
-	if err != nil {
-		panic(err)
-	}
-	err = utils.QueryConst(client, "Example", "Erc721Id", &nftTokenId)
-	if err != nil {
-		panic(err)
-	}
-
-	err = utils.InitializeChain(client, relayers, []msg.ChainId{ForeignChain}, resources, relayerThreshold)
+	var nativeTokenId [32]byte
+	err = utils.QueryConst(client, config.BridgeSwap, config.NativeTokenId, &nativeTokenId)
 	if err != nil {
 		panic(err)
 	}
@@ -141,17 +112,4 @@ func createAliceAndBobConnections() (*Connection, *Connection, chan error, error
 	}
 
 	return alice, bob, sysErr, nil
-}
-
-// getFreeBalance queries the balance for an account, storing the result in `res`
-func getFreeBalance(c *Connection, res *types.U128) {
-	var acct types.AccountInfo
-
-	ok, err := c.queryStorage("System", "Account", c.key.PublicKey, nil, &acct)
-	if err != nil {
-		panic(err)
-	} else if !ok {
-		panic("no account data")
-	}
-	*res = acct.Data.Free
 }

@@ -6,6 +6,7 @@ package config
 import (
 	"flag"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -147,4 +148,17 @@ func TestValdiateConfig(t *testing.T) {
 	if err == nil {
 		t.Fatal("must require name field")
 	}
+}
+
+func TestGetConfig(t *testing.T) {
+	ctx, err := createCliContext("", []string{}, []interface{}{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := GetConfig(ctx)
+	assert.NoError(t, err)
+
+	fmt.Printf("%+v\n", cfg)
+
 }
