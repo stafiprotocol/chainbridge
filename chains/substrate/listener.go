@@ -6,6 +6,7 @@ package substrate
 import (
 	"errors"
 	"fmt"
+	"github.com/stafiprotocol/chainbridge/config"
 	"math/big"
 	"time"
 
@@ -190,9 +191,11 @@ func (l *listener) processEvents(hash types.Hash) error {
 	}
 
 	e := utils.Events{}
-	err = records.DecodeEventRecords(&meta, &e)
-	if err != nil {
-		return err
+	for _, efn := range config.EventsToWatch {
+		err = records.SearchSpecificEventRecords(&meta, &e, efn.ModuleName, efn.EventName)
+		if err != nil {
+			return err
+		}
 	}
 
 	l.handleEvents(e)

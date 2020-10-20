@@ -8,10 +8,32 @@ const (
 
 	ChainIdentity = "ChainIdentity"
 	NativeTokenId = "NativeTokenId"
-	ChainNonces = "ChainNonces"
 )
+
+
 
 var (
 	// DecimalFactor = ERC20Decimal / StafiDecimal
 	DecimalFactor = big.NewInt(1000000)
+
+	EventsToWatch = []EventFullName {
+		{
+			ModuleName: BridgeCommon,
+			EventName:  "FungibleTransfer",
+		},
+		{
+			ModuleName: BridgeCommon,
+			EventName:  "ChainWhitelisted",
+		},
+		{
+			ModuleName: "System",
+			EventName:  "CodeUpdated",
+		},
+	}
+
 )
+
+type EventFullName struct {
+	ModuleName string
+	EventName string
+}

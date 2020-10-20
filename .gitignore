@@ -37,3 +37,4 @@ centrifuge-chain/
 # Solidity
 /solidity
 /cfgBuilder/*.toml
+config*.json
