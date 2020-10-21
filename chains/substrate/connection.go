@@ -121,5 +121,6 @@ func (c *Connection) getLatestNonce() (types.U32, error) {
 
 	return acct.Nonce, nil
 }
+
 func (c *Connection) Close() {
 }

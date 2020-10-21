@@ -95,10 +95,10 @@ var accountCommand = cli.Command{
 // init initializes CLI
 func init() {
 	app.Action = run
-	app.Copyright = "Copyright 2019 Stafi Protocol Authors"
+	app.Copyright = "Copyright 2020 Stafi Protocol Authors"
 	app.Name = "chainbridge"
 	app.Usage = "ChainBridge"
-	app.Authors = []*cli.Author{{Name: "Stafi Protocol 2019"}}
+	app.Authors = []*cli.Author{{Name: "Stafi Protocol 2020"}}
 	app.Version = "0.0.1"
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
