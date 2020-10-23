@@ -32,9 +32,9 @@ func (es EventSig) GetTopic() common.Hash {
 	return crypto.Keccak256Hash([]byte(es))
 }
 
-func IsActive(status uint8) bool {
-	return ProposalStatus(status) == Active
-}
+//func IsActive(status uint8) bool {
+//	return ProposalStatus(status) == Active
+//}
 
 func IsFinalized(status uint8) bool {
 	return ProposalStatus(status) == Passed
@@ -54,7 +54,3 @@ func IDAndNonce(srcId msg.ChainId, nonce msg.Nonce) *big.Int {
 func Hash(data []byte) [32]byte {
 	return crypto.Keccak256Hash(data)
 }
-
-
-
-

@@ -15,6 +15,7 @@ import (
 
 const DefaultGasLimit = 6721975
 const DefaultGasPrice = 20000000000
+
 var ZeroAddress = common.HexToAddress("0x0000000000000000000000000000000000000000")
 
 // Config encapsulates all necessary parameters in ethereum compatible forms

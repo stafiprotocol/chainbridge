@@ -12,6 +12,7 @@ type SubEvents struct {
 type Events struct {
 	BridgeCommon_FungibleTransfer []EventFungibleTransfer //nolint:stylecheck,golint
 	BridgeCommon_ChainWhitelisted []EventChainWhitelisted //nolint:stylecheck,golint
+	BridgeCommon_ChainFeesSet     []EventChainFeesSet     //nolint:stylecheck,golint
 }
 
 type EventFungibleTransfer struct {
@@ -28,5 +29,12 @@ type EventFungibleTransfer struct {
 type EventChainWhitelisted struct {
 	Phase   types.Phase
 	ChainId types.U8
+	Topics  []types.Hash
+}
+
+type EventChainFeesSet struct {
+	Phase   types.Phase
+	ChainId types.U8
+	Balance types.U128
 	Topics  []types.Hash
 }

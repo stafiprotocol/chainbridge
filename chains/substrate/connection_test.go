@@ -5,7 +5,18 @@ package substrate
 
 import (
 	"testing"
+
+	"github.com/ChainSafe/log15"
+	"github.com/stafiprotocol/chainbridge-utils/keystore"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
 )
+
+const TestEndpoint = "ws://127.0.0.1:9944"
+
+var AliceKey = keystore.TestKeyRing.SubstrateKeys[keystore.AliceKey].AsKeyringPair()
+var TestLogLevel = log15.LvlTrace
+var AliceTestLogger = newTestLogger("Alice")
+var ThisChain msg.ChainId = 1
 
 func TestConnect_CheckChainId(t *testing.T) {
 	// Create connection with Alice key
@@ -29,4 +40,10 @@ func TestConnect_CheckChainId(t *testing.T) {
 	default:
 		return
 	}
+}
+
+func newTestLogger(name string) log15.Logger {
+	tLog := log15.Root().New("chain", name)
+	tLog.SetHandler(log15.LvlFilterHandler(TestLogLevel, tLog.GetHandler()))
+	return tLog
 }
