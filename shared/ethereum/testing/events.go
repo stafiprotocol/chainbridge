@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"math/big"
 
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	"github.com/ChainSafe/log15"
 	eth "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 )
 
 func WatchEvent(client *utils.Client, bridge common.Address, subStr utils.EventSig) {

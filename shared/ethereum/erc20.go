@@ -64,45 +64,6 @@ func DeployMintApproveErc20(client *Client, erc20Handler common.Address, amount 
 	return erc20Addr, nil
 }
 
-func DeployAndMintErc20(client *Client, amount *big.Int) (common.Address, error) {
-	err := client.LockNonceAndUpdate()
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	// Deploy
-	erc20Addr, tx, erc20Instance, err := ERC20.DeployERC20PresetMinterPauser(client.Opts, client.Client, "", "")
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return ZeroAddress, err
-	}
-	client.UnlockNonce()
-
-	// Mint
-	err = client.LockNonceAndUpdate()
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	mintTx, err := erc20Instance.Mint(client.Opts, client.Opts.From, amount)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	err = WaitForTx(client, mintTx)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	client.UnlockNonce()
-
-	return erc20Addr, nil
-}
-
 func Erc20Approve(client *Client, erc20Contract, recipient common.Address, amount *big.Int) error {
 	err := client.LockNonceAndUpdate()
 	if err != nil {
@@ -165,63 +126,6 @@ func FundErc20Handler(client *Client, handlerAddress, erc20Address common.Addres
 	if err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func Erc20AddMinter(client *Client, erc20Contract, handler common.Address) error {
-	err := client.LockNonceAndUpdate()
-	if err != nil {
-		return err
-	}
-
-	instance, err := ERC20.NewERC20PresetMinterPauser(erc20Contract, client.Client)
-	if err != nil {
-		return err
-	}
-
-	role, err := instance.MINTERROLE(client.CallOpts)
-	if err != nil {
-		return err
-	}
-
-	tx, err := instance.GrantRole(client.Opts, role, handler)
-	if err != nil {
-		return err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return err
-	}
-
-	client.UnlockNonce()
-
-	return nil
-}
-
-func Erc20Mint(client *Client, erc20Address, recipient common.Address, amount *big.Int) error {
-	err := client.LockNonceAndUpdate()
-	if err != nil {
-		return err
-	}
-
-	instance, err := ERC20.NewERC20PresetMinterPauser(erc20Address, client.Client)
-	if err != nil {
-		return err
-	}
-
-	tx, err := instance.Mint(client.Opts, recipient, amount)
-	if err != nil {
-		return err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return err
-	}
-
-	client.UnlockNonce()
 
 	return nil
 }

@@ -32,19 +32,19 @@ var aliceTestConfig = createConfig("alice", nil, nil)
 
 func createConfig(name string, startBlock *big.Int, contracts *utils.DeployedContracts) *Config {
 	cfg := &Config{
-		name:                   name,
-		id:                     0,
-		endpoint:               TestEndpoint,
-		from:                   name,
-		keystorePath:           "",
-		blockstorePath:         "",
-		freshStart:             true,
-		bridgeContract:         common.Address{},
-		erc20HandlerContract:   common.Address{},
-		gasLimit:               big.NewInt(DefaultGasLimit),
-		maxGasPrice:            big.NewInt(DefaultGasPrice),
-		http:                   false,
-		startBlock:             startBlock,
+		name:                 name,
+		id:                   0,
+		endpoint:             TestEndpoint,
+		from:                 name,
+		keystorePath:         "",
+		blockstorePath:       "",
+		freshStart:           true,
+		bridgeContract:       common.Address{},
+		erc20HandlerContract: common.Address{},
+		gasLimit:             big.NewInt(DefaultGasLimit),
+		maxGasPrice:          big.NewInt(DefaultGasPrice),
+		http:                 false,
+		startBlock:           startBlock,
 	}
 
 	if contracts != nil {

@@ -68,7 +68,6 @@ func (c *Connection) Connect() error {
 	}
 	c.meta = *meta
 
-
 	// Fetch genesis hash
 	genesisHash, err := c.api.RPC.Chain.GetBlockHash(0)
 	if err != nil {
@@ -77,17 +76,6 @@ func (c *Connection) Connect() error {
 	c.genesisHash = genesisHash
 	c.log.Info("Fetched substrate genesis hash", "hash", genesisHash.Hex())
 	return nil
-}
-
-// queryStorage performs a storage lookup. Arguments may be nil, result must be a pointer.
-func (c *Connection) queryStorage(prefix, method string, arg1, arg2 []byte, result interface{}) (bool, error) {
-	// Fetch account nonce
-	data := c.getMetadata()
-	key, err := types.CreateStorageKey(&data, prefix, method, arg1, arg2)
-	if err != nil {
-		return false, err
-	}
-	return c.api.RPC.State.GetStorageLatest(key, result)
 }
 
 func (c *Connection) checkChainId(expected msg.ChainId) error {
@@ -107,19 +95,6 @@ func (c *Connection) checkChainId(expected msg.ChainId) error {
 func (c *Connection) getConst(prefix, name string, res interface{}) error {
 	meta := c.getMetadata()
 	return c.api.RPC.State.GetConstWithMetadata(&meta, prefix, name, res)
-}
-
-func (c *Connection) getLatestNonce() (types.U32, error) {
-	var acct types.AccountInfo
-	exists, err := c.queryStorage("System", "Account", c.key.PublicKey, nil, &acct)
-	if err != nil {
-		return 0, err
-	}
-	if !exists {
-		return 0, nil
-	}
-
-	return acct.Nonce, nil
 }
 
 func (c *Connection) Close() {

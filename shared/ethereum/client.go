@@ -11,10 +11,13 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 )
 
 const DefaultGasLimit = 6721975
@@ -31,7 +34,7 @@ type Client struct {
 
 func NewClient(endpoint string, kp *secp256k1.Keypair) (*Client, error) {
 	ctx := context.Background()
-	rpcClient,err := rpc.DialWebsocket(ctx, endpoint, "/ws")
+	rpcClient, err := rpc.DialWebsocket(ctx, endpoint, "/ws")
 	if err != nil {
 		return nil, err
 	}
@@ -85,5 +88,31 @@ func WaitForTx(client *Client, tx *ethtypes.Transaction) error {
 		}
 		return nil
 	}
+	return nil
+}
+
+func RegisterResource(client *Client, bridge, handler common.Address, rId msg.ResourceId, addr common.Address) error {
+	instance, err := Bridge.NewBridge(bridge, client.Client)
+	if err != nil {
+		return err
+	}
+
+	err = client.LockNonceAndUpdate()
+	if err != nil {
+		return err
+	}
+
+	tx, err := instance.AdminSetResource(client.Opts, handler, rId, addr)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForTx(client, tx)
+	if err != nil {
+		return err
+	}
+
+	client.UnlockNonce()
+
 	return nil
 }

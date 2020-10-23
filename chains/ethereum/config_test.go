@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stafiprotocol/chainbridge-utils/core"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stafiprotocol/chainbridge-utils/core"
 )
 
 //TestParseChainConfig tests parseChainConfig with all handlerContracts provided
@@ -22,12 +22,12 @@ func TestParseChainConfig(t *testing.T) {
 		KeystorePath: "./keys",
 		Insecure:     false,
 		Opts: map[string]string{
-			"bridge":         "0x1234",
-			"erc20Handler":   "0x1234",
-			"gasLimit":       "10",
-			"maxGasPrice":    "20",
-			"http":           "true",
-			"startBlock":     "10",
+			"bridge":       "0x1234",
+			"erc20Handler": "0x1234",
+			"gasLimit":     "10",
+			"maxGasPrice":  "20",
+			"http":         "true",
+			"startBlock":   "10",
 		},
 	}
 
@@ -38,17 +38,17 @@ func TestParseChainConfig(t *testing.T) {
 	}
 
 	expected := Config{
-		name:                   "chain",
-		id:                     1,
-		endpoint:               "endpoint",
-		from:                   "0x0",
-		keystorePath:           "./keys",
-		bridgeContract:         common.HexToAddress("0x1234"),
-		erc20HandlerContract:   common.HexToAddress("0x1234"),
-		gasLimit:               big.NewInt(10),
-		maxGasPrice:            big.NewInt(20),
-		http:                   true,
-		startBlock:             big.NewInt(10),
+		name:                 "chain",
+		id:                   1,
+		endpoint:             "endpoint",
+		from:                 "0x0",
+		keystorePath:         "./keys",
+		bridgeContract:       common.HexToAddress("0x1234"),
+		erc20HandlerContract: common.HexToAddress("0x1234"),
+		gasLimit:             big.NewInt(10),
+		maxGasPrice:          big.NewInt(20),
+		http:                 true,
+		startBlock:           big.NewInt(10),
 	}
 
 	if !reflect.DeepEqual(&expected, out) {

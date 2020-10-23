@@ -26,8 +26,8 @@ var (
 )
 
 type DeployedContracts struct {
-	BridgeAddress         common.Address
-	ERC20HandlerAddress   common.Address
+	BridgeAddress       common.Address
+	ERC20HandlerAddress common.Address
 }
 
 // DeployContracts deploys Bridge, Relayer, ERC20Handler, ERC721Handler and CentrifugeAssetHandler and returns the addresses

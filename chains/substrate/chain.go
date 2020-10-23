@@ -24,6 +24,8 @@ As the writer receives messages from the router, nothing happened.
 package substrate
 
 import (
+	"strconv"
+
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	"github.com/stafiprotocol/chainbridge-utils/core"
@@ -85,14 +87,8 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 
 	// Setup listener & writer
 	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr, m)
-	w := NewWriter(conn, logger, sysErr, m)
-	return &Chain{
-		cfg:      cfg,
-		conn:     conn,
-		listener: l,
-		writer:   w,
-		stop:     stop,
-	}, nil
+	w := NewWriter()
+	return &Chain{cfg: cfg, conn: conn, listener: l, writer: w, stop: stop}, nil
 }
 
 func (c *Chain) Start() error {
@@ -100,12 +96,6 @@ func (c *Chain) Start() error {
 	if err != nil {
 		return err
 	}
-
-	err = c.writer.start()
-	if err != nil {
-		return err
-	}
-
 	c.conn.log.Debug("Successfully started chain", "chainId", c.cfg.Id)
 	return nil
 }
@@ -144,4 +134,15 @@ func checkBlockstore(bs *blockstore.Blockstore, startBlock uint64) (uint64, erro
 	} else {
 		return startBlock, nil
 	}
+}
+
+func parseStartBlock(cfg *core.ChainConfig) uint64 {
+	if blk, ok := cfg.Opts["startBlock"]; ok {
+		res, err := strconv.ParseUint(blk, 10, 32)
+		if err != nil {
+			panic(err)
+		}
+		return res
+	}
+	return 0
 }

@@ -7,15 +7,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stafiprotocol/chainbridge/config"
+	"github.com/stafiprotocol/chainbridge/substrate-events"
 	"math/big"
 	"time"
 
-	"github.com/stafiprotocol/chainbridge/chains"
-	utils "github.com/stafiprotocol/chainbridge/shared/substrate"
+	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/ChainSafe/log15"
+	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
@@ -58,7 +58,7 @@ func (l *listener) setRouter(r chains.Router) {
 	l.router = r
 }
 
-// start creates the initial subscription for all events
+// Start creates the initial subscription for all events
 func (l *listener) start() error {
 	// Check whether latest is less than starting block
 	header, err := l.conn.api.RPC.Chain.GetHeaderLatest()
@@ -190,7 +190,7 @@ func (l *listener) processEvents(hash types.Hash) error {
 		return err
 	}
 
-	e := utils.Events{}
+	e := events.SubEvents{}
 	for _, efn := range config.EventsToWatch {
 		err = records.SearchSpecificEventRecords(&meta, &e, efn.ModuleName, efn.EventName)
 		if err != nil {
@@ -205,7 +205,7 @@ func (l *listener) processEvents(hash types.Hash) error {
 }
 
 // handleEvents calls the associated handler for all registered event types
-func (l *listener) handleEvents(evts utils.Events) {
+func (l *listener) handleEvents(evts events.SubEvents) {
 	if l.subscriptions[FungibleTransfer] != nil {
 		for _, evt := range evts.BridgeCommon_FungibleTransfer {
 			l.log.Trace("Handling FungibleTransfer event")

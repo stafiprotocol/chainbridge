@@ -19,9 +19,7 @@ const FungibleTransfer eventName = "FungibleTransfer"
 var Subscriptions = []struct {
 	name    eventName
 	handler eventHandler
-}{
-	{FungibleTransfer, fungibleTransferHandler},
-}
+}{{FungibleTransfer, fungibleTransferHandler}}
 
 func fungibleTransferHandler(evtI interface{}, log log15.Logger) (msg.Message, error) {
 	evt, ok := evtI.(events.EventFungibleTransfer)
@@ -32,13 +30,6 @@ func fungibleTransferHandler(evtI interface{}, log log15.Logger) (msg.Message, e
 	resourceId := msg.ResourceId(evt.ResourceId)
 	log.Info("Got fungible transfer event!", "destination", evt.Destination, "resourceId", resourceId.Hex(), "amount", evt.Amount)
 
-
-	return msg.NewFungibleTransfer(
-		0, // Unset
-		msg.ChainId(evt.Destination),
-		msg.Nonce(evt.DepositNonce),
-		evt.Amount.Mul(evt.Amount.Int, config.DecimalFactor),
-		resourceId,
-		evt.Recipient,
-	), nil
+	return msg.NewFungibleTransfer(0, msg.ChainId(evt.Destination), msg.Nonce(evt.DepositNonce),
+		evt.Amount.Mul(evt.Amount.Int, config.DecimalFactor), resourceId, evt.Recipient), nil
 }

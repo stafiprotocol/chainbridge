@@ -7,60 +7,41 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 )
 
-func RegisterResource(client *Client, bridge, handler common.Address, rId msg.ResourceId, addr common.Address) error {
-	instance, err := Bridge.NewBridge(bridge, client.Client)
-	if err != nil {
-		return err
-	}
+type EventSig string
 
-	err = client.LockNonceAndUpdate()
-	if err != nil {
-		return err
-	}
+const (
+	ProposalEvent EventSig = "ProposalEvent(uint8,uint64,uint8,bytes32,bytes32)"
+	ProposalVote  EventSig = "ProposalVote(uint8,uint64,uint8,bytes32)"
+)
 
-	tx, err := instance.AdminSetResource(client.Opts, handler, rId, addr)
-	if err != nil {
-		return err
-	}
+type ProposalStatus int
 
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return err
-	}
+const (
+	Inactive ProposalStatus = iota
+	Active
+	Passed
+	Executed
+	Cancelled
+)
 
-	client.UnlockNonce()
-
-	return nil
+func (es EventSig) GetTopic() common.Hash {
+	return crypto.Keccak256Hash([]byte(es))
 }
 
-func SetBurnable(client *Client, bridge, handler, contract common.Address) error {
-	instance, err := Bridge.NewBridge(bridge, client.Client)
-	if err != nil {
-		return err
-	}
+func IsActive(status uint8) bool {
+	return ProposalStatus(status) == Active
+}
 
-	err = client.LockNonceAndUpdate()
-	if err != nil {
-		return err
-	}
+func IsFinalized(status uint8) bool {
+	return ProposalStatus(status) == Passed
+}
 
-	tx, err := instance.AdminSetBurnable(client.Opts, handler, contract)
-	if err != nil {
-		return err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return err
-	}
-
-	client.UnlockNonce()
-
-	return nil
+func IsExecuted(status uint8) bool {
+	return ProposalStatus(status) == Executed
 }
 
 func IDAndNonce(srcId msg.ChainId, nonce msg.Nonce) *big.Int {
@@ -69,3 +50,11 @@ func IDAndNonce(srcId msg.ChainId, nonce msg.Nonce) *big.Int {
 	data = append(data, uint8(srcId))
 	return big.NewInt(0).SetBytes(data)
 }
+
+func Hash(data []byte) [32]byte {
+	return crypto.Keccak256Hash(data)
+}
+
+
+
+

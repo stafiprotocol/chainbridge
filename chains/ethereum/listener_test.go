@@ -4,14 +4,12 @@
 package ethereum
 
 import (
-	"fmt"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	ethtest "github.com/stafiprotocol/chainbridge/shared/ethereum/testing"
-	"reflect"
 	"testing"
 )
 
@@ -72,19 +70,4 @@ func TestListener_start_stop(t *testing.T) {
 
 	// Initiate shutdown
 	close(stop)
-}
-
-func compareMessage(expected, actual msg.Message) error {
-	if !reflect.DeepEqual(expected, actual) {
-		if !reflect.DeepEqual(expected.Source, actual.Source) {
-			return fmt.Errorf("Source doesn't match. \n\tExpected: %#v\n\tGot: %#v\n", expected.Source, actual.Source)
-		} else if !reflect.DeepEqual(expected.Destination, actual.Destination) {
-			return fmt.Errorf("Destination doesn't match. \n\tExpected: %#v\n\tGot: %#v\n", expected.Destination, actual.Destination)
-		} else if !reflect.DeepEqual(expected.DepositNonce, actual.DepositNonce) {
-			return fmt.Errorf("Deposit nonce doesn't match. \n\tExpected: %#v\n\tGot: %#v\n", expected.DepositNonce, actual.DepositNonce)
-		} else if !reflect.DeepEqual(expected.Payload, actual.Payload) {
-			return fmt.Errorf("Payload doesn't match. \n\tExpected: %#v\n\tGot: %#v\n", expected.Payload, actual.Payload)
-		}
-	}
-	return nil
 }

@@ -4,25 +4,14 @@
 package substrate
 
 import (
-	"github.com/ChainSafe/log15"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
 )
 
 type writer struct {
-	conn    *Connection
-	log     log15.Logger
-	sysErr  chan<- error
-	metrics *metrics.ChainMetrics
 }
 
-func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, m *metrics.ChainMetrics) *writer {
-	return &writer{
-		conn:    conn,
-		log:     log,
-		sysErr:  sysErr,
-		metrics: m,
-	}
+func NewWriter() *writer {
+	return &writer{}
 }
 
 func (w *writer) start() error {
@@ -30,6 +19,5 @@ func (w *writer) start() error {
 }
 
 func (w *writer) ResolveMessage(m msg.Message) bool {
-	w.log.Info("msg resolved: ", m)
 	return true
 }

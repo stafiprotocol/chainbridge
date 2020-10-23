@@ -10,6 +10,8 @@ import (
 	"time"
 
 	log "github.com/ChainSafe/log15"
+	eth "github.com/ethereum/go-ethereum"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 )
@@ -249,4 +251,17 @@ func (w *writer) executeProposal(m msg.Message, data []byte, dataHash [32]byte) 
 	}
 	w.log.Error("Submission of Execute transaction failed", "source", m.Source, "dest", m.Destination, "depositNonce", m.DepositNonce)
 	w.sysErr <- ErrFatalTx
+}
+
+// buildQuery constructs a query for the bridgeContract by hashing sig to get the event topic
+func buildQuery(contract ethcommon.Address, sig utils.EventSig, startBlock *big.Int, endBlock *big.Int) eth.FilterQuery {
+	query := eth.FilterQuery{
+		FromBlock: startBlock,
+		ToBlock:   endBlock,
+		Addresses: []ethcommon.Address{contract},
+		Topics: [][]ethcommon.Hash{
+			{sig.GetTopic()},
+		},
+	}
+	return query
 }

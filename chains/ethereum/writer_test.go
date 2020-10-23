@@ -9,15 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
-	ethtest "github.com/stafiprotocol/chainbridge/shared/ethereum/testing"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/ChainSafe/log15"
 	eth "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
+	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
+	ethtest "github.com/stafiprotocol/chainbridge/shared/ethereum/testing"
 )
 
 func createWriters(t *testing.T, client *utils.Client, contracts *utils.DeployedContracts) (*writer, *writer, func(), func(), chan error, chan error) {

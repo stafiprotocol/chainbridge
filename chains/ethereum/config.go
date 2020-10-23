@@ -8,48 +8,48 @@ import (
 	"fmt"
 	"math/big"
 
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stafiprotocol/chainbridge-utils/core"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 const DefaultGasLimit = 6721975
 const DefaultGasPrice = 20000000000
+var ZeroAddress = common.HexToAddress("0x0000000000000000000000000000000000000000")
 
 // Config encapsulates all necessary parameters in ethereum compatible forms
 type Config struct {
-	name                   string      // Human-readable chain name
-	id                     msg.ChainId // ChainID
-	endpoint               string      // url for rpc endpoint
-	from                   string      // address of key to use
-	keystorePath           string      // Location of keyfiles
-	blockstorePath         string
-	freshStart             bool // Disables loading from blockstore at start
-	bridgeContract         common.Address
-	erc20HandlerContract   common.Address
-	gasLimit               *big.Int
-	maxGasPrice            *big.Int
-	http                   bool // Config for type of connection
-	startBlock             *big.Int
+	name                 string      // Human-readable chain name
+	id                   msg.ChainId // ChainID
+	endpoint             string      // url for rpc endpoint
+	from                 string      // address of key to use
+	keystorePath         string      // Location of keyfiles
+	blockstorePath       string
+	freshStart           bool // Disables loading from blockstore at start
+	bridgeContract       common.Address
+	erc20HandlerContract common.Address
+	gasLimit             *big.Int
+	maxGasPrice          *big.Int
+	http                 bool // Config for type of connection
+	startBlock           *big.Int
 }
 
 // parseChainConfig uses a core.ChainConfig to construct a corresponding Config
 func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 	config := &Config{
-		name:                   chainCfg.Name,
-		id:                     chainCfg.Id,
-		endpoint:               chainCfg.Endpoint,
-		from:                   chainCfg.From,
-		keystorePath:           chainCfg.KeystorePath,
-		blockstorePath:         chainCfg.BlockstorePath,
-		freshStart:             chainCfg.FreshStart,
-		bridgeContract:         utils.ZeroAddress,
-		erc20HandlerContract:   utils.ZeroAddress,
-		gasLimit:               big.NewInt(DefaultGasLimit),
-		maxGasPrice:            big.NewInt(DefaultGasPrice),
-		http:                   false,
-		startBlock:             big.NewInt(0),
+		name:                 chainCfg.Name,
+		id:                   chainCfg.Id,
+		endpoint:             chainCfg.Endpoint,
+		from:                 chainCfg.From,
+		keystorePath:         chainCfg.KeystorePath,
+		blockstorePath:       chainCfg.BlockstorePath,
+		freshStart:           chainCfg.FreshStart,
+		bridgeContract:       ZeroAddress,
+		erc20HandlerContract: ZeroAddress,
+		gasLimit:             big.NewInt(DefaultGasLimit),
+		maxGasPrice:          big.NewInt(DefaultGasPrice),
+		http:                 false,
+		startBlock:           big.NewInt(0),
 	}
 
 	if contract, ok := chainCfg.Opts["bridge"]; ok && contract != "" {

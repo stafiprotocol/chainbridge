@@ -9,14 +9,11 @@ import (
 	"time"
 
 	"github.com/ChainSafe/log15"
-	eth "github.com/ethereum/go-ethereum"
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	"github.com/stafiprotocol/chainbridge/chains"
-	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 )
 
 var BlockDelay = big.NewInt(10)
@@ -25,17 +22,17 @@ var BlockRetryLimit = 5
 var ErrFatalPolling = errors.New("listener block polling failed")
 
 type listener struct {
-	cfg                    Config
-	conn                   Connection
-	router                 chains.Router
-	bridgeContract         *Bridge.Bridge // instance of bound bridge contract
-	erc20HandlerContract   *ERC20Handler.ERC20Handler
-	log                    log15.Logger
-	blockstore             blockstore.Blockstorer
-	stop                   <-chan int
-	sysErr                 chan<- error // Reports fatal error to core
-	latestBlock            metrics.LatestBlock
-	metrics                *metrics.ChainMetrics
+	cfg                  Config
+	conn                 Connection
+	router               chains.Router
+	bridgeContract       *Bridge.Bridge // instance of bound bridge contract
+	erc20HandlerContract *ERC20Handler.ERC20Handler
+	log                  log15.Logger
+	blockstore           blockstore.Blockstorer
+	stop                 <-chan int
+	sysErr               chan<- error // Reports fatal error to core
+	latestBlock          metrics.LatestBlock
+	metrics              *metrics.ChainMetrics
 }
 
 // NewListener creates and returns a listener
@@ -127,17 +124,4 @@ func (l *listener) pollBlocks() error {
 			}
 		}
 	}
-}
-
-// buildQuery constructs a query for the bridgeContract by hashing sig to get the event topic
-func buildQuery(contract ethcommon.Address, sig utils.EventSig, startBlock *big.Int, endBlock *big.Int) eth.FilterQuery {
-	query := eth.FilterQuery{
-		FromBlock: startBlock,
-		ToBlock:   endBlock,
-		Addresses: []ethcommon.Address{contract},
-		Topics: [][]ethcommon.Hash{
-			{sig.GetTopic()},
-		},
-	}
-	return query
 }
