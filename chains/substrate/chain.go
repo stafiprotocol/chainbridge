@@ -29,7 +29,6 @@ import (
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/blockstore"
 	"github.com/stafiprotocol/chainbridge-utils/core"
-	"github.com/stafiprotocol/chainbridge-utils/crypto/sr25519"
 	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
@@ -49,8 +48,6 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 		return nil, err
 	}
 
-	krp := kp.(*sr25519.Keypair).AsKeyringPair()
-
 	// Attempt to load latest block
 	bs, err := blockstore.NewBlockstore(cfg.BlockstorePath, cfg.Id, kp.Address())
 	if err != nil {
@@ -66,7 +63,7 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 
 	stop := make(chan int)
 	// Setup connection
-	conn := NewConnection(cfg.Endpoint, cfg.Name, krp, logger, stop, sysErr)
+	conn := NewConnection(cfg.Endpoint, cfg.Name, logger, stop, sysErr)
 	err = conn.Connect()
 	if err != nil {
 		return nil, err

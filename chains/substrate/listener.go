@@ -150,7 +150,7 @@ func (l *listener) pollBlocks() error {
 				continue
 			}
 
-			err = l.processEvents(hash)
+			err = l.processEvents(currentBlock, hash)
 			if err != nil {
 				l.log.Error("Failed to process events in block", "block", currentBlock, "err", err)
 				retry--
@@ -175,10 +175,14 @@ func (l *listener) pollBlocks() error {
 }
 
 // processEvents fetches a block and parses out the events, calling Listener.handleEvents()
-func (l *listener) processEvents(hash types.Hash) error {
+func (l *listener) processEvents(blockNum uint64, hash types.Hash) error {
 	l.log.Trace("Fetching block for events", "hash", hash.Hex())
-	meta := l.conn.getMetadata()
-	key, err := types.CreateStorageKey(&meta, "System", "Events", nil, nil)
+	meta, err := l.conn.getMetadataByBlockNum(blockNum)
+	if err != nil {
+		return err
+	}
+
+	key, err := types.CreateStorageKey(meta, "System", "Events", nil, nil)
 	if err != nil {
 		return err
 	}
@@ -190,33 +194,20 @@ func (l *listener) processEvents(hash types.Hash) error {
 	}
 
 	e := events.SubEvents{}
-	err = records.DecodeEventRecords(&meta, &e)
+	err = records.DecodeEventRecords(meta, &e)
 	if err != nil {
 		return err
 	}
 
-	l.handleEvents(e)
-	l.log.Trace("Finished processing events", "block", hash.Hex())
-
-	return nil
-}
-
-// handleEvents calls the associated handler for all registered event types
-func (l *listener) handleEvents(evts events.SubEvents) {
 	if l.subscriptions[FungibleTransfer] != nil {
-		for _, evt := range evts.BridgeCommon_FungibleTransfer {
+		for _, evt := range e.BridgeCommon_FungibleTransfer {
 			l.log.Trace("Handling FungibleTransfer event")
 			l.submitMessage(l.subscriptions[FungibleTransfer](evt, l.log))
 		}
 	}
+	l.log.Trace("Finished processing events", "block", hash.Hex())
 
-	if len(evts.System_CodeUpdated) > 0 {
-		l.log.Trace("Received CodeUpdated event")
-		err := l.conn.updateMetatdata()
-		if err != nil {
-			l.log.Error("Unable to update Metadata", "error", err)
-		}
-	}
+	return nil
 }
 
 // submitMessage inserts the chainId into the msg and sends it to the router

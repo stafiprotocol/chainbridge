@@ -5,13 +5,10 @@ package substrate
 
 import (
 	"fmt"
-	"github.com/stafiprotocol/chainbridge/config"
-	"sync"
-
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/config"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
-	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
@@ -20,37 +17,12 @@ type Connection struct {
 	log         log15.Logger
 	url         string                 // API endpoint
 	name        string                 // Chain name
-	meta        types.Metadata         // Latest chain metadata
-	metaLock    sync.RWMutex           // Lock metadata for updates, allows concurrent reads
-	genesisHash types.Hash             // Chain genesis hash
-	key         *signature.KeyringPair // Keyring used for signing
-	nonce       types.U32              // Latest account nonce
-	nonceLock   sync.Mutex             // Locks nonce for updates
 	stop        <-chan int             // Signals system shutdown, should be observed in all selects and loops
 	sysErr      chan<- error           // Propagates fatal errors to core
 }
 
-func NewConnection(url string, name string, key *signature.KeyringPair, log log15.Logger, stop <-chan int, sysErr chan<- error) *Connection {
-	return &Connection{url: url, name: name, key: key, log: log, stop: stop, sysErr: sysErr}
-}
-
-func (c *Connection) getMetadata() (meta types.Metadata) {
-	c.metaLock.RLock()
-	meta = c.meta
-	c.metaLock.RUnlock()
-	return meta
-}
-
-func (c *Connection) updateMetatdata() error {
-	c.metaLock.Lock()
-	meta, err := c.api.RPC.State.GetMetadataLatest()
-	if err != nil {
-		c.metaLock.Unlock()
-		return err
-	}
-	c.meta = *meta
-	c.metaLock.Unlock()
-	return nil
+func NewConnection(url string, name string, log log15.Logger, stop <-chan int, sysErr chan<- error) *Connection {
+	return &Connection{url: url, name: name, log: log, stop: stop, sysErr: sysErr}
 }
 
 func (c *Connection) Connect() error {
@@ -60,27 +32,12 @@ func (c *Connection) Connect() error {
 		return err
 	}
 	c.api = api
-
-	// Fetch metadata
-	meta, err := api.RPC.State.GetMetadataLatest()
-	if err != nil {
-		return err
-	}
-	c.meta = *meta
-
-	// Fetch genesis hash
-	genesisHash, err := c.api.RPC.Chain.GetBlockHash(0)
-	if err != nil {
-		return err
-	}
-	c.genesisHash = genesisHash
-	c.log.Info("Fetched substrate genesis hash", "hash", genesisHash.Hex())
 	return nil
 }
 
 func (c *Connection) checkChainId(expected msg.ChainId) error {
 	var actual msg.ChainId
-	err := c.getConst(config.BridgeCommon, config.ChainIdentity, &actual)
+	err := c.api.RPC.State.GetConst(config.BridgeCommon, config.ChainIdentity, &actual)
 	if err != nil {
 		return err
 	}
@@ -88,13 +45,21 @@ func (c *Connection) checkChainId(expected msg.ChainId) error {
 	if actual != expected {
 		return fmt.Errorf("ChainID is incorrect, Expected chainId: %d, got chainId: %d", expected, actual)
 	}
-
 	return nil
 }
 
-func (c *Connection) getConst(prefix, name string, res interface{}) error {
-	meta := c.getMetadata()
-	return c.api.RPC.State.GetConstWithMetadata(&meta, prefix, name, res)
+func (c *Connection) getMetadataByBlockNum(blockNum uint64) (*types.Metadata, error) {
+	bh, err := c.api.RPC.Chain.GetBlockHash(blockNum)
+	if err != nil {
+		return nil, err
+	}
+
+	meta, err := c.api.RPC.State.GetMetadata(bh)
+	if err != nil {
+		return nil, err
+	}
+
+	return meta, nil
 }
 
 func (c *Connection) Close() {

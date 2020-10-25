@@ -7,13 +7,11 @@ import (
 	"testing"
 
 	"github.com/ChainSafe/log15"
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
 )
 
 const TestEndpoint = "ws://127.0.0.1:9944"
 
-var AliceKey = keystore.TestKeyRing.SubstrateKeys[keystore.AliceKey].AsKeyringPair()
 var TestLogLevel = log15.LvlTrace
 var AliceTestLogger = newTestLogger("Alice")
 var ThisChain msg.ChainId = 1
@@ -21,7 +19,7 @@ var ThisChain msg.ChainId = 1
 func TestConnect_CheckChainId(t *testing.T) {
 	// Create connection with Alice key
 	errs := make(chan error)
-	conn := NewConnection(TestEndpoint, "Alice", AliceKey, AliceTestLogger, make(chan int), errs)
+	conn := NewConnection(TestEndpoint, "Alice", AliceTestLogger, make(chan int), errs)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
