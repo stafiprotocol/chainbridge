@@ -69,10 +69,10 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 		return nil, err
 	}
 
-	err = conn.checkChainId(cfg.Id)
-	if err != nil {
-		return nil, err
-	}
+	//err = conn.checkChainId(cfg.Id)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	if cfg.LatestBlock {
 		curr, err := conn.api.RPC.Chain.GetHeaderLatest()
