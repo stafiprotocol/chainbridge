@@ -1,6 +1,9 @@
 package substrate
 
 import (
+	"github.com/itering/scale.go/source"
+	"github.com/itering/scale.go/types"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stafiprotocol/chainbridge-utils/core"
@@ -24,4 +27,13 @@ func TestParseStartBlock(t *testing.T) {
 	if blk != 0 {
 		t.Fatalf("Got: %d Expected: %d", blk, 0)
 	}
+}
+
+func TestSome(t *testing.T) {
+	types.RuntimeType{}.Reg()
+	content, err := ioutil.ReadFile(DefaultTypeFilePath)
+	if err != nil {
+		panic(err)
+	}
+	types.RegCustomTypes(source.LoadTypeRegistry(content))
 }

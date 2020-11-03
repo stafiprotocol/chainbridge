@@ -1,0 +1,43 @@
+{
+  "Weight": "u64",
+  "DispatchResult": {
+    "type": "enum",
+    "type_mapping": [
+      [
+        "Ok",
+        "Null"
+      ],
+      [
+        "Error",
+        "DispatchError"
+      ]
+    ]
+  },
+  "Address": "GenericAddress",
+  "LookupSource": "GenericAddress",
+  "Keys": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "grandpa",
+        "AccountId"
+      ],
+      [
+        "babe",
+        "AccountId"
+      ],
+      [
+        "im_online",
+        "AccountId"
+      ],
+      [
+        "authority_discovery",
+        "AccountId"
+      ]
+    ]
+  },
+  "ChainId": "u8",
+  "ResourceId": "[u8; 32]",
+  "DepositNonce": "u64",
+  "U256": "H256"
+}

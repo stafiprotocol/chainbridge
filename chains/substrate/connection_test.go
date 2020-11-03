@@ -19,7 +19,7 @@ var ThisChain msg.ChainId = 1
 func TestConnect_CheckChainId(t *testing.T) {
 	// Create connection with Alice key
 	errs := make(chan error)
-	conn := NewConnection(TestEndpoint, "Alice", AliceTestLogger, make(chan int), errs)
+	conn := NewConnection(TestEndpoint, "Alice", nil, AliceTestLogger, make(chan int), errs)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)

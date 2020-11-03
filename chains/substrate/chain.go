@@ -63,16 +63,19 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 
 	stop := make(chan int)
 	// Setup connection
-	conn := NewConnection(cfg.Endpoint, cfg.Name, logger, stop, sysErr)
+	conn := NewConnection(cfg.Endpoint, cfg.Name, cfg.Opts, logger, stop, sysErr)
 	err = conn.Connect()
 	if err != nil {
 		return nil, err
 	}
 
-	err = conn.checkChainId(cfg.Id)
-	if err != nil {
-		return nil, err
+	if cfg.Opts["skipCheckChainId"] != "true" {
+		err = conn.checkChainId(cfg.Id)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 
 	if cfg.LatestBlock {
 		curr, err := conn.api.RPC.Chain.GetHeaderLatest()

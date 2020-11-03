@@ -3,8 +3,9 @@ package config
 import "math/big"
 
 const (
-	BridgeCommon = "BridgeCommon"
-	ChainIdentity = "ChainIdentity"
+	BridgeCommon            = "BridgeCommon"
+	ChainIdentity           = "ChainIdentity"
+	FungibleTransferEventId = "FungibleTransfer"
 )
 
 var (

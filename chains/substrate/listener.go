@@ -6,7 +6,6 @@ package substrate
 import (
 	"errors"
 	"fmt"
-	"github.com/stafiprotocol/chainbridge/substrate-events"
 	"math/big"
 	"time"
 
@@ -15,7 +14,6 @@ import (
 	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/chains"
-	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 type listener struct {
@@ -138,19 +136,7 @@ func (l *listener) pollBlocks() error {
 				continue
 			}
 
-			// Get hash for latest block, sleep and retry if not ready
-			hash, err := l.conn.api.RPC.Chain.GetBlockHash(currentBlock)
-			if err != nil && err.Error() == ErrBlockNotReady.Error() {
-				time.Sleep(BlockRetryInterval)
-				continue
-			} else if err != nil {
-				l.log.Error("Failed to query latest block", "block", currentBlock, "err", err)
-				retry--
-				time.Sleep(BlockRetryInterval)
-				continue
-			}
-
-			err = l.processEvents(currentBlock, hash)
+			err = l.processEvents(currentBlock)
 			if err != nil {
 				l.log.Error("Failed to process events in block", "block", currentBlock, "err", err)
 				retry--
@@ -175,37 +161,18 @@ func (l *listener) pollBlocks() error {
 }
 
 // processEvents fetches a block and parses out the events, calling Listener.handleEvents()
-func (l *listener) processEvents(blockNum uint64, hash types.Hash) error {
-	l.log.Trace("Fetching block for events", "hash", hash.Hex())
-	meta, err := l.conn.getMetadataByBlockNum(blockNum)
-	if err != nil {
-		return err
-	}
-
-	key, err := types.CreateStorageKey(meta, "System", "Events", nil, nil)
-	if err != nil {
-		return err
-	}
-
-	var records types.EventRecordsRaw
-	_, err = l.conn.api.RPC.State.GetStorage(key, &records, hash)
-	if err != nil {
-		return err
-	}
-
-	e := events.SubEvents{}
-	err = records.DecodeEventRecords(meta, &e)
+func (l *listener) processEvents(blockNum uint64) error {
+	evts, err := l.GetEventsAt(blockNum)
 	if err != nil {
 		return err
 	}
 
 	if l.subscriptions[FungibleTransfer] != nil {
-		for _, evt := range e.BridgeCommon_FungibleTransfer {
+		for _, evt := range evts {
 			l.log.Trace("Handling FungibleTransfer event")
 			l.submitMessage(l.subscriptions[FungibleTransfer](evt, l.log))
 		}
 	}
-	l.log.Trace("Finished processing events", "block", hash.Hex())
 
 	return nil
 }

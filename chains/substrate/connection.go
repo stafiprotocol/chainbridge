@@ -6,23 +6,28 @@ package substrate
 import (
 	"fmt"
 	"github.com/ChainSafe/log15"
+	"github.com/itering/scale.go/source"
+	"github.com/itering/scale.go/types"
+	"github.com/itering/substrate-api-rpc/websocket"
 	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/config"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
-	"github.com/stafiprotocol/go-substrate-rpc-client/types"
+	"io/ioutil"
 )
 
 type Connection struct {
-	api         *gsrpc.SubstrateAPI
-	log         log15.Logger
-	url         string                 // API endpoint
-	name        string                 // Chain name
-	stop        <-chan int             // Signals system shutdown, should be observed in all selects and loops
-	sysErr      chan<- error           // Propagates fatal errors to core
+	api    *gsrpc.SubstrateAPI
+	log    log15.Logger
+	url    string            // API endpoint
+	name   string            // Chain name
+	opts   map[string]string // opts
+	stop   <-chan int        // Signals system shutdown, should be observed in all selects and loops
+	sysErr chan<- error      // Propagates fatal errors to core
+
 }
 
-func NewConnection(url string, name string, log log15.Logger, stop <-chan int, sysErr chan<- error) *Connection {
-	return &Connection{url: url, name: name, log: log, stop: stop, sysErr: sysErr}
+func NewConnection(url string, name string, opts map[string]string, log log15.Logger, stop <-chan int, sysErr chan<- error) *Connection {
+	return &Connection{url: url, name: name, opts: opts, log: log, stop: stop, sysErr: sysErr}
 }
 
 func (c *Connection) Connect() error {
@@ -32,6 +37,17 @@ func (c *Connection) Connect() error {
 		return err
 	}
 	c.api = api
+	websocket.SetEndpoint(c.url)
+	types.RuntimeType{}.Reg()
+	path := DefaultTypeFilePath
+	if file, ok := c.opts["typeRegister"]; ok {
+		path = file
+	}
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	types.RegCustomTypes(source.LoadTypeRegistry(content))
 	return nil
 }
 
@@ -46,20 +62,6 @@ func (c *Connection) checkChainId(expected msg.ChainId) error {
 		return fmt.Errorf("ChainID is incorrect, Expected chainId: %d, got chainId: %d", expected, actual)
 	}
 	return nil
-}
-
-func (c *Connection) getMetadataByBlockNum(blockNum uint64) (*types.Metadata, error) {
-	bh, err := c.api.RPC.Chain.GetBlockHash(blockNum)
-	if err != nil {
-		return nil, err
-	}
-
-	meta, err := c.api.RPC.State.GetMetadata(bh)
-	if err != nil {
-		return nil, err
-	}
-
-	return meta, nil
 }
 
 func (c *Connection) Close() {
