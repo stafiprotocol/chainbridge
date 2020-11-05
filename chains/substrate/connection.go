@@ -6,13 +6,9 @@ package substrate
 import (
 	"fmt"
 	"github.com/ChainSafe/log15"
-	"github.com/itering/scale.go/source"
-	"github.com/itering/scale.go/types"
-	"github.com/itering/substrate-api-rpc/websocket"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/config"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
-	"io/ioutil"
 )
 
 type Connection struct {
@@ -37,17 +33,6 @@ func (c *Connection) Connect() error {
 		return err
 	}
 	c.api = api
-	websocket.SetEndpoint(c.url)
-	types.RuntimeType{}.Reg()
-	path := DefaultTypeFilePath
-	if file, ok := c.opts["typeRegister"]; ok {
-		path = file
-	}
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-	types.RegCustomTypes(source.LoadTypeRegistry(content))
 	return nil
 }
 

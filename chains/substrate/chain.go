@@ -27,11 +27,11 @@ import (
 	"strconv"
 
 	"github.com/ChainSafe/log15"
-	"github.com/stafiprotocol/chainbridge-utils/blockstore"
-	"github.com/stafiprotocol/chainbridge-utils/core"
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/utils/blockstore"
+	"github.com/stafiprotocol/chainbridge/utils/core"
+	"github.com/stafiprotocol/chainbridge/utils/keystore"
+	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 type Chain struct {
@@ -75,7 +75,6 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 			return nil, err
 		}
 	}
-
 
 	if cfg.LatestBlock {
 		curr, err := conn.api.RPC.Chain.GetHeaderLatest()

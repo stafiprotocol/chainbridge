@@ -10,9 +10,9 @@ import (
 
 	"github.com/ChainSafe/log15"
 	ethcmn "github.com/ethereum/go-ethereum/common"
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	ethutils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	ethtest "github.com/stafiprotocol/chainbridge/shared/ethereum/testing"
+	"github.com/stafiprotocol/chainbridge/utils/keystore"
 )
 
 var TestEndpoint = "ws://localhost:8545"

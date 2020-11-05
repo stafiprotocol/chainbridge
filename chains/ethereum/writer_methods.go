@@ -12,8 +12,8 @@ import (
 	log "github.com/ChainSafe/log15"
 	eth "github.com/ethereum/go-ethereum"
 	ethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 // Number of blocks to wait for an finalization event

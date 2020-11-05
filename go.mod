@@ -8,8 +8,8 @@ require (
 	github.com/itering/scale.go v0.7.0
 	github.com/itering/substrate-api-rpc v0.2.0
 	github.com/prometheus/client_golang v1.4.1
-	github.com/stafiprotocol/chainbridge-utils v1.0.2
 	github.com/stafiprotocol/go-substrate-rpc-client v1.0.2
 	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli/v2 v2.2.0
+	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 )

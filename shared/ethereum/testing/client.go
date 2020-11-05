@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
+	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
 )
 
 func NewClient(t *testing.T, endpoint string, kp *secp256k1.Keypair) *utils.Client {

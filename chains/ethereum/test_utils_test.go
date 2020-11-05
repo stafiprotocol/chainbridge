@@ -11,10 +11,10 @@ import (
 
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
+	"github.com/stafiprotocol/chainbridge/utils/keystore"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 const TestEndpoint = "ws://localhost:8545"

@@ -4,7 +4,7 @@
 package chains
 
 import (
-	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 type Router interface {

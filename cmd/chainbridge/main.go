@@ -12,13 +12,13 @@ import (
 
 	log "github.com/ChainSafe/log15"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/stafiprotocol/chainbridge-utils/core"
-	"github.com/stafiprotocol/chainbridge-utils/metrics/health"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/chains/ethereum"
 	"github.com/stafiprotocol/chainbridge/chains/substrate"
 	"github.com/stafiprotocol/chainbridge/config"
+	"github.com/stafiprotocol/chainbridge/utils/core"
+	"github.com/stafiprotocol/chainbridge/utils/metrics/health"
+	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/urfave/cli/v2"
 )
 

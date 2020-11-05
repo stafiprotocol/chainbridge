@@ -4,7 +4,7 @@
 package substrate
 
 import (
-	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 type writer struct {

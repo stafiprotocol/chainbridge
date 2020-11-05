@@ -17,7 +17,7 @@ import (
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
+	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
 )
 
 var BlockRetryInterval = time.Second * 5

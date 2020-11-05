@@ -5,9 +5,9 @@ package ethereum
 
 import (
 	"github.com/ChainSafe/log15"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
+	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 // https://github.com/stafiprotocol/chainbridge-solidity/blob/b5ed13d9798feb7c340e737a726dd415b8815366/contracts/Bridge.sol#L20

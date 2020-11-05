@@ -4,12 +4,12 @@
 package ethereum
 
 import (
-	"github.com/stafiprotocol/chainbridge-utils/blockstore"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	ethtest "github.com/stafiprotocol/chainbridge/shared/ethereum/testing"
+	"github.com/stafiprotocol/chainbridge/utils/blockstore"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"testing"
 )
 

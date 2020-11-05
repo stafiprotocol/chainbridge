@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/stafiprotocol/chainbridge-utils/core"
+	"github.com/stafiprotocol/chainbridge/utils/core"
 )
 
 //TestParseChainConfig tests parseChainConfig with all handlerContracts provided

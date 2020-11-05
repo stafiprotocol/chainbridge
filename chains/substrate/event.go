@@ -3,27 +3,47 @@ package substrate
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stafiprotocol/chainbridge/utils/ethereum"
+	"io/ioutil"
 	"math/big"
+	"sync"
 
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	scalecodec "github.com/itering/scale.go"
+	"github.com/itering/scale.go/source"
 	"github.com/itering/scale.go/types"
 	"github.com/itering/scale.go/utiles"
 	"github.com/itering/substrate-api-rpc/rpc"
 	"github.com/itering/substrate-api-rpc/util"
 	"github.com/itering/substrate-api-rpc/websocket"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/config"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 const (
 	wsId                = 1
 	storageKey          = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
-	DefaultTypeFilePath = "./network/stafi.json"
+	DefaultTypeFilePath = "../../network/stafi.json"
 )
 
+var once sync.Once
+
 func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error) {
+	once.Do(func() {
+		websocket.SetEndpoint(l.conn.url)
+		types.RuntimeType{}.Reg()
+		path := DefaultTypeFilePath
+		if file, ok := l.conn.opts["typeRegister"]; ok {
+			path = file
+		}
+		content, err := ioutil.ReadFile(path)
+		if err != nil {
+			panic(err)
+		}
+		types.RegCustomTypes(source.LoadTypeRegistry(content))
+	})
+
 	//l.log.Info("GetEventsAt", "CurrentBlockNum", blockNum)
 	evts := make([]*EventFungibleTransfer, 0)
 	v := &rpc.JsonRpcResult{}
@@ -37,14 +57,14 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 		return nil, err
 	}
 
-	// event
+	// event raw
 	err = websocket.SendWsRequest(nil, v, rpc.StateGetStorage(wsId, storageKey, blockHash))
 	eventRaw, err := v.ToString()
 	if err != nil {
 		return nil, err
 	}
 
-	// metadata
+	// metadata raw
 	err = websocket.SendWsRequest(nil, v, rpc.StateGetMetadata(wsId, blockHash))
 	metaRaw, err := v.ToString()
 	if err != nil {
@@ -57,6 +77,7 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 		return nil, err
 	}
 
+	// parse event raw into []ChainEvent
 	e := scalecodec.EventsDecoder{}
 	option := types.ScaleDecoderOption{Metadata: &m.Metadata}
 	e.Init(types.ScaleBytes{Data: util.HexToBytes(eventRaw)}, &option)
@@ -78,41 +99,49 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 		}
 
 		evt := new(EventFungibleTransfer)
+		skip := false
 		for _, p := range ev.Params {
 			switch p.Type {
 			case "ChainId":
 				var cp ChainIdParam
 				x, _ := json.Marshal(p)
-				err := json.Unmarshal(x, &cp)
-				if err != nil {
-					return nil, err
-				}
+				json.Unmarshal(x, &cp)
 				evt.Destination = cp.Value
 			case "DepositNonce":
 				var dn DepositNonceParam
 				x, _ := json.Marshal(p)
-				err := json.Unmarshal(x, &dn)
-				if err != nil {
-					return nil, err
-				}
+				json.Unmarshal(x, &dn)
 				evt.DepositNonce = dn.Value
 			case "ResourceId":
 				val := p.Value.(string)
 				r, _ := hexutil.Decode(val)
-				var rId [32]byte
-				copy(rId[:], r)
-				evt.ResourceId = rId
+				evt.ResourceId = msg.ResourceIdFromSlice(r)
 			case "U256":
 				amount := new(big.Int)
 				b := utiles.HexToBytes(p.Value.(string))
-				a := utiles.ReverseBytes(b)
-				amount.SetBytes(a)
+				rb := utiles.ReverseBytes(b)
+				amount.SetBytes(rb)
 				evt.Amount = amount
 			case "Vec<u8>":
-				evt.Recipient, _ = hexutil.Decode(utiles.AddHex(p.Value.(string)))
+				addr := utiles.AddHex(p.Value.(string))
+				if !ethereum.IsAddressValid(addr) {
+					l.log.Warn("GetEventsAt", "Recipient address is not valid: ", addr, "blockNum", l.latestBlock.Height)
+					skip = true
+					break
+				}
+				evt.Recipient, _ = hexutil.Decode(addr)
+			case "AccountId":
+				l.log.Info("GetEventsAt", "from", p.Value.(string))
+			default:
+				l.log.Warn("GetEventsAt", "EventFungibleTransfer got an unexpected type", p.Type, "blockNum", l.latestBlock.Height)
+				skip = true
+				break
 			}
 		}
-		evts = append(evts, evt)
+		if !skip {
+			evts = append(evts, evt)
+		}
+
 	}
 	return evts, nil
 }

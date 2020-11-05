@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/ChainSafe/log15"
-	"github.com/stafiprotocol/chainbridge-utils/blockstore"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	"github.com/stafiprotocol/chainbridge/chains"
+	"github.com/stafiprotocol/chainbridge/utils/blockstore"
+	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 type listener struct {
@@ -92,8 +92,6 @@ func (l *listener) registerEventHandler(name eventName, handler eventHandler) er
 	return nil
 }
 
-var ErrBlockNotReady = errors.New("required result to be 32 bytes, but got 0")
-
 // pollBlocks will poll for the latest block and proceed to parse the associated events as it sees new blocks.
 // Polling begins at the block defined in `l.startBlock`. Failed attempts to fetch the latest block or parse
 // a block will be retried up to BlockRetryLimit times before returning with an error.
@@ -162,6 +160,10 @@ func (l *listener) pollBlocks() error {
 
 // processEvents fetches a block and parses out the events, calling Listener.handleEvents()
 func (l *listener) processEvents(blockNum uint64) error {
+	if blockNum%100 == 0 {
+		l.log.Trace("processEvents", "blockNum", blockNum)
+	}
+
 	evts, err := l.GetEventsAt(blockNum)
 	if err != nil {
 		return err
@@ -180,12 +182,12 @@ func (l *listener) processEvents(blockNum uint64) error {
 // submitMessage inserts the chainId into the msg and sends it to the router
 func (l *listener) submitMessage(m msg.Message, err error) {
 	if err != nil {
-		log15.Error("Critical error processing event", "err", err)
+		l.log.Error("Critical error processing event", "err", err)
 		return
 	}
 	m.Source = l.chainId
 	err = l.router.Send(m)
 	if err != nil {
-		log15.Error("failed to process event", "err", err)
+		l.log.Error("failed to process event", "err", err)
 	}
 }

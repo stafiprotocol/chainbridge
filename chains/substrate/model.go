@@ -2,7 +2,7 @@ package substrate
 
 import (
 	scalecodec "github.com/itering/scale.go"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"math/big"
 )
 

@@ -9,15 +9,15 @@ import (
 	"time"
 
 	"github.com/ChainSafe/log15"
-	"github.com/stafiprotocol/chainbridge-utils/blockstore"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	"github.com/stafiprotocol/chainbridge/chains"
+	"github.com/stafiprotocol/chainbridge/utils/blockstore"
+	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 )
 
 var BlockDelay = big.NewInt(10)
-var BlockRetryInterval = time.Second * 5
+var BlockRetryInterval = time.Second * 10
 var BlockRetryLimit = 5
 var ErrFatalPolling = errors.New("listener block polling failed")
 

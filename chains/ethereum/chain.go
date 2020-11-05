@@ -28,15 +28,15 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stafiprotocol/chainbridge-utils/blockstore"
-	"github.com/stafiprotocol/chainbridge-utils/core"
-	"github.com/stafiprotocol/chainbridge-utils/crypto/secp256k1"
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
-	metrics "github.com/stafiprotocol/chainbridge-utils/metrics/types"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
 	bridge "github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	erc20Handler "github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
+	"github.com/stafiprotocol/chainbridge/utils/blockstore"
+	"github.com/stafiprotocol/chainbridge/utils/core"
+	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
+	"github.com/stafiprotocol/chainbridge/utils/keystore"
+	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 type Connection interface {

@@ -8,9 +8,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/stafiprotocol/chainbridge-utils/keystore"
 	bridge "github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	erc20Handler "github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
+	"github.com/stafiprotocol/chainbridge/utils/keystore"
 )
 
 var (

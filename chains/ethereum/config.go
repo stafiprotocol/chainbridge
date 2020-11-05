@@ -9,11 +9,11 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/stafiprotocol/chainbridge-utils/core"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/utils/core"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
-const DefaultGasLimit = 6721975
+const DefaultGasLimit = 1000000
 const DefaultGasPrice = 20000000000
 
 var ZeroAddress = common.HexToAddress("0x0000000000000000000000000000000000000000")

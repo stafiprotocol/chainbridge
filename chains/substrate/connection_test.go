@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/ChainSafe/log15"
-	"github.com/stafiprotocol/chainbridge-utils/msg"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
 const TestEndpoint = "ws://127.0.0.1:9944"
