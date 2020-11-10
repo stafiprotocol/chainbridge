@@ -13,7 +13,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const DefaultConfigPath = "../config.json"
+const DefaultConfigPath = "./config.json"
 const DefaultKeystorePath = "./keys"
 
 type Config struct {

@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	ERC20 "github.com/stafiprotocol/chainbridge/bindings/ERC20PresetMinterPauser"
 )
 
@@ -105,19 +104,23 @@ func Erc20GetBalance(client *Client, erc20Contract, account common.Address) (*bi
 
 }
 
-func FundErc20Handler(client *Client, handlerAddress, erc20Address common.Address, amount *big.Int) error {
-	err := Erc20Approve(client, erc20Address, handlerAddress, amount)
+func Erc20AddMinter(client *Client, erc20Contract, handler common.Address) error {
+	err := client.LockNonceAndUpdate()
 	if err != nil {
 		return err
 	}
 
-	instance, err := ERC20Handler.NewERC20Handler(handlerAddress, client.Client)
+	instance, err := ERC20.NewERC20PresetMinterPauser(erc20Contract, client.Client)
 	if err != nil {
 		return err
 	}
 
-	client.Opts.Nonce = client.Opts.Nonce.Add(client.Opts.Nonce, big.NewInt(1))
-	tx, err := instance.FundERC20(client.Opts, erc20Address, client.Opts.From, amount)
+	role, err := instance.MINTERROLE(client.CallOpts)
+	if err != nil {
+		return err
+	}
+
+	tx, err := instance.GrantRole(client.Opts, role, handler)
 	if err != nil {
 		return err
 	}
@@ -126,6 +129,8 @@ func FundErc20Handler(client *Client, handlerAddress, erc20Address common.Addres
 	if err != nil {
 		return err
 	}
+
+	client.UnlockNonce()
 
 	return nil
 }

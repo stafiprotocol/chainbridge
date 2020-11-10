@@ -31,10 +31,3 @@ func Erc20AssertBalance(t *testing.T, client *utils.Client, amount *big.Int, erc
 	}
 	log15.Info("Asserted balance", "account", account, "balance", actual, "erc20Contract", erc20Contract.Hex())
 }
-
-func FundErc20Handler(t *testing.T, client *utils.Client, handlerAddress, erc20Address common.Address, amount *big.Int) {
-	err := utils.FundErc20Handler(client, handlerAddress, erc20Address, amount)
-	if err != nil {
-		t.Fatal(err)
-	}
-}

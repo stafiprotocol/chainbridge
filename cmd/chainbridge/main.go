@@ -35,6 +35,43 @@ var cliFlags = []cli.Flag{
 	config.MetricsPort,
 }
 
+var generateFlags = []cli.Flag{
+	config.PathFlag,
+}
+
+var accountCommand = cli.Command{
+	Name:  "accounts",
+	Usage: "manage bridge keystore",
+	Description: "The accounts command is used to manage the bridge keystore.\n" +
+		"\tTo generate a substrate keystore: chainbridge accounts gensub\n" +
+		"\tTo generate a ethereum keystore: chainbridge accounts geneth\n" +
+		"\tTo list keys: chainbridge accounts list",
+	Subcommands: []*cli.Command{
+		{
+			Action: wrapHandler(handleGenerateSubCmd),
+			Name:   "gensub",
+			Usage:  "generate subsrate keystore",
+			Flags:  generateFlags,
+			Description: "The generate subcommand is used to generate the substrate keystore.\n" +
+				"\tkeystore path should be given.",
+		},
+		{
+			Action: wrapHandler(handleGenerateEthCmd),
+			Name:   "geneth",
+			Usage:  "generate ethereum keystore",
+			Flags:  generateFlags,
+			Description: "The generate subcommand is used to generate the ethereum keystore.\n" +
+				"\tkeystore path should be given.",
+		},
+		{
+			Action:      wrapHandler(handleListCmd),
+			Name:        "list",
+			Usage:       "list bridge keystore",
+			Description: "The list subcommand is used to list all of the bridge keystores.\n",
+		},
+	},
+}
+
 // init initializes CLI
 func init() {
 	app.Action = run
@@ -44,7 +81,9 @@ func init() {
 	app.Authors = []*cli.Author{{Name: "Stafi Protocol 2020"}}
 	app.Version = "0.0.1"
 	app.EnableBashCompletion = true
-	app.Commands = []*cli.Command{}
+	app.Commands = []*cli.Command{
+		&accountCommand,
+	}
 
 	app.Flags = append(app.Flags, cliFlags...)
 }
