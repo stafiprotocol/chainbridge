@@ -42,7 +42,7 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 	}
 
 	// runtime version
-	if err = websocket.SendWsRequest(l.wsconn, v, rpc.ChainGetRuntimeVersion(wsId, blockHash)); err != nil {
+	if err := websocket.SendWsRequest(l.wsconn, v, rpc.ChainGetRuntimeVersion(wsId, blockHash)); err != nil {
 		return nil, fmt.Errorf("websocket get runtime version error: %v", err)
 	}
 	r := v.ToRuntimeVersion()
