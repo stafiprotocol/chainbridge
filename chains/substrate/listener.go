@@ -161,7 +161,7 @@ func (l *listener) pollBlocks() error {
 // processEvents fetches a block and parses out the events, calling Listener.handleEvents()
 func (l *listener) processEvents(blockNum uint64) error {
 	if blockNum%100 == 0 {
-		l.log.Trace("processEvents", "blockNum", blockNum)
+		l.log.Info("processEvents", "blockNum", blockNum)
 	}
 
 	evts, err := l.GetEventsAt(blockNum)
