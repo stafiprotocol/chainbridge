@@ -1,10 +1,11 @@
 package substrate
 
 import (
-	"github.com/stafiprotocol/chainbridge/utils/blockstore"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stafiprotocol/chainbridge/utils/blockstore"
+	"github.com/stretchr/testify/assert"
 )
 
 const StafiMainetEndpoint = "wss://mainnet-rpc.stafi.io"

@@ -3,6 +3,8 @@ package substrate
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
+
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	scalecodec "github.com/itering/scale.go"
@@ -14,7 +16,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/stafiprotocol/chainbridge/utils/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
-	"math/big"
 )
 
 const (

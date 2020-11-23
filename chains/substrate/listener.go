@@ -6,14 +6,14 @@ package substrate
 import (
 	"errors"
 	"fmt"
-	"github.com/itering/scale.go/source"
-	"github.com/itering/scale.go/types"
-	"github.com/itering/substrate-api-rpc/websocket"
 	"io/ioutil"
 	"math/big"
 	"time"
 
 	"github.com/ChainSafe/log15"
+	"github.com/itering/scale.go/source"
+	"github.com/itering/scale.go/types"
+	"github.com/itering/substrate-api-rpc/websocket"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
