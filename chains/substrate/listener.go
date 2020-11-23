@@ -6,6 +6,10 @@ package substrate
 import (
 	"errors"
 	"fmt"
+	"github.com/itering/scale.go/source"
+	"github.com/itering/scale.go/types"
+	"github.com/itering/substrate-api-rpc/websocket"
+	"io/ioutil"
 	"math/big"
 	"time"
 
@@ -29,11 +33,14 @@ type listener struct {
 	sysErr        chan<- error
 	latestBlock   metrics.LatestBlock
 	metrics       *metrics.ChainMetrics
+	wsconn		  websocket.WsConn
 }
 
 // Frequency of polling for a new block
 var BlockRetryInterval = time.Second * 5
 var BlockRetryLimit = 5
+
+const DefaultTypeFilePath = "../../network/stafi.json"
 
 func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, m *metrics.ChainMetrics) *listener {
 	return &listener{
@@ -74,7 +81,28 @@ func (l *listener) start() error {
 	}
 
 	go func() {
-		err := l.pollBlocks()
+		websocket.SetEndpoint(l.conn.url)
+		types.RuntimeType{}.Reg()
+		path := DefaultTypeFilePath
+		if file, ok := l.conn.opts["typeRegister"]; ok {
+			path = file
+		}
+		content, err := ioutil.ReadFile(path)
+		if err != nil {
+			panic(err)
+		}
+		types.RegCustomTypes(source.LoadTypeRegistry(content))
+
+		var pool *websocket.PoolConn
+		if pool, err = websocket.Init(); err == nil {
+			defer pool.Close()
+			l.wsconn = pool.Conn
+		} else {
+			l.log.Error("listener", "websocket init", err.Error())
+			return
+		}
+
+		err = l.pollBlocks()
 		if err != nil {
 			l.log.Error("Polling blocks failed", "err", err)
 		}
@@ -161,7 +189,7 @@ func (l *listener) pollBlocks() error {
 // processEvents fetches a block and parses out the events, calling Listener.handleEvents()
 func (l *listener) processEvents(blockNum uint64) error {
 	if blockNum%100 == 0 {
-		l.log.Info("processEvents", "blockNum", blockNum)
+		l.log.Debug("processEvents", "blockNum", blockNum)
 	}
 
 	evts, err := l.GetEventsAt(blockNum)

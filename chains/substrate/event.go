@@ -3,52 +3,36 @@ package substrate
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stafiprotocol/chainbridge/utils/ethereum"
-	"io/ioutil"
-	"math/big"
-	"sync"
-
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	scalecodec "github.com/itering/scale.go"
-	"github.com/itering/scale.go/source"
 	"github.com/itering/scale.go/types"
 	"github.com/itering/scale.go/utiles"
 	"github.com/itering/substrate-api-rpc/rpc"
 	"github.com/itering/substrate-api-rpc/util"
 	"github.com/itering/substrate-api-rpc/websocket"
 	"github.com/stafiprotocol/chainbridge/config"
+	"github.com/stafiprotocol/chainbridge/utils/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
+	"math/big"
 )
 
 const (
 	wsId                = 1
 	storageKey          = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
-	DefaultTypeFilePath = "../../network/stafi.json"
 )
 
-var once sync.Once
+var (
+	metaRaw string
+	m = scalecodec.MetadataDecoder{}
+)
 
 func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error) {
-	once.Do(func() {
-		websocket.SetEndpoint(l.conn.url)
-		types.RuntimeType{}.Reg()
-		path := DefaultTypeFilePath
-		if file, ok := l.conn.opts["typeRegister"]; ok {
-			path = file
-		}
-		content, err := ioutil.ReadFile(path)
-		if err != nil {
-			panic(err)
-		}
-		types.RegCustomTypes(source.LoadTypeRegistry(content))
-	})
-
 	//l.log.Info("GetEventsAt", "CurrentBlockNum", blockNum)
 	evts := make([]*EventFungibleTransfer, 0)
 	v := &rpc.JsonRpcResult{}
 	// Block Hash
-	err := websocket.SendWsRequest(nil, v, rpc.ChainGetBlockHash(wsId, int(blockNum)))
+	err := websocket.SendWsRequest(l.wsconn, v, rpc.ChainGetBlockHash(wsId, int(blockNum)))
 	if err != nil {
 		return nil, err
 	}
@@ -58,23 +42,24 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 	}
 
 	// event raw
-	err = websocket.SendWsRequest(nil, v, rpc.StateGetStorage(wsId, storageKey, blockHash))
+	err = websocket.SendWsRequest(l.wsconn, v, rpc.StateGetStorage(wsId, storageKey, blockHash))
 	eventRaw, err := v.ToString()
 	if err != nil {
 		return nil, err
 	}
 
 	// metadata raw
-	err = websocket.SendWsRequest(nil, v, rpc.StateGetMetadata(wsId, blockHash))
-	metaRaw, err := v.ToString()
-	if err != nil {
-		return nil, err
-	}
-	m := scalecodec.MetadataDecoder{}
-	m.Init(utiles.HexToBytes(metaRaw))
-	err = m.Process()
-	if err != nil {
-		return nil, err
+	if metaRaw == "" {
+		err = websocket.SendWsRequest(l.wsconn, v, rpc.StateGetMetadata(wsId, blockHash))
+		metaRaw, err = v.ToString()
+		if err != nil {
+			return nil, err
+		}
+		m.Init(utiles.HexToBytes(metaRaw))
+		err = m.Process()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// parse event raw into []ChainEvent
@@ -92,6 +77,8 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 	if err != nil {
 		return nil, err
 	}
+
+	l.log.Trace("block", "eventsNum", len(events), "blockNum", blockNum)
 
 	for _, ev := range events {
 		if ev.ModuleId != config.BridgeCommon || ev.EventId != config.FungibleTransferEventId {
