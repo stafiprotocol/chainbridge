@@ -6,6 +6,7 @@ package ethereum
 import (
 	"testing"
 )
+
 func TestWriter_start_stop(t *testing.T) {
 	conn := newLocalConnection(t, aliceTestConfig)
 	defer conn.Close()

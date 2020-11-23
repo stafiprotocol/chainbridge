@@ -33,7 +33,7 @@ type listener struct {
 	sysErr        chan<- error
 	latestBlock   metrics.LatestBlock
 	metrics       *metrics.ChainMetrics
-	wsconn		  websocket.WsConn
+	wsconn        websocket.WsConn
 }
 
 // Frequency of polling for a new block

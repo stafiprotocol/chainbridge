@@ -21,9 +21,9 @@ var (
 	mintAmount = big.NewInt(10000000)
 
 	//resourceId should be found through substrate constants
-	resouceId    = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901"))
-	adminAddr    = "0x3aab5AE578FA45744aFe8224DdA506cFE67c508b"
-	endpoint     = "wss://ropsten.infura.io/ws/v3/a325d28f7dda49ec9190c8cb4b7f90b2" //ws
+	resouceId = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901"))
+	adminAddr = "0x3aab5AE578FA45744aFe8224DdA506cFE67c508b"
+	endpoint  = "wss://ropsten.infura.io/ws/v3/a325d28f7dda49ec9190c8cb4b7f90b2" //ws
 
 	//fill this with keystore path, for eg: /home/stafi/chainbridge/keys
 	keystorePath = "/home/stafi/chainbridge/keys"

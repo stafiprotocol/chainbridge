@@ -18,53 +18,66 @@ import (
 )
 
 const (
-	wsId                = 1
-	storageKey          = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
+	wsId       = 1
+	storageKey = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
 )
 
 var (
-	metaRaw string
-	m = scalecodec.MetadataDecoder{}
+	CurrentRuntimeSpecVersion = 6
+	metaRaw                   string
+	metaDecoder               = scalecodec.MetadataDecoder{}
 )
 
 func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error) {
-	//l.log.Info("GetEventsAt", "CurrentBlockNum", blockNum)
 	evts := make([]*EventFungibleTransfer, 0)
 	v := &rpc.JsonRpcResult{}
 	// Block Hash
-	err := websocket.SendWsRequest(l.wsconn, v, rpc.ChainGetBlockHash(wsId, int(blockNum)))
-	if err != nil {
-		return nil, err
+	if err := websocket.SendWsRequest(l.wsconn, v, rpc.ChainGetBlockHash(wsId, int(blockNum))); err != nil {
+		return nil, fmt.Errorf("websocket get block hash error: %v", err)
 	}
 	blockHash, err := v.ToString()
 	if err != nil {
 		return nil, err
 	}
 
+	// runtime version
+	if err = websocket.SendWsRequest(l.wsconn, v, rpc.ChainGetRuntimeVersion(wsId, blockHash)); err != nil {
+		return nil, fmt.Errorf("websocket get runtime version error: %v", err)
+	}
+	r := v.ToRuntimeVersion()
+	if r == nil {
+		return nil, fmt.Errorf("runtime version nil")
+	}
+
+	// metadata raw
+	if metaRaw == "" || r.SpecVersion > CurrentRuntimeSpecVersion {
+		if err := websocket.SendWsRequest(l.wsconn, v, rpc.StateGetMetadata(wsId, blockHash)); err != nil {
+			return nil, fmt.Errorf("websocket get metadata error: %v", err)
+		}
+		metaRaw, err = v.ToString()
+		if err != nil {
+			return nil, err
+		}
+		metaDecoder.Init(utiles.HexToBytes(metaRaw))
+		err = metaDecoder.Process()
+		if err != nil {
+			return nil, err
+		}
+		CurrentRuntimeSpecVersion = r.SpecVersion
+	}
+
 	// event raw
-	err = websocket.SendWsRequest(l.wsconn, v, rpc.StateGetStorage(wsId, storageKey, blockHash))
+	if err := websocket.SendWsRequest(l.wsconn, v, rpc.StateGetStorage(wsId, storageKey, blockHash)); err != nil {
+		return nil, fmt.Errorf("websocket get event raw error: %v", err)
+	}
 	eventRaw, err := v.ToString()
 	if err != nil {
 		return nil, err
 	}
 
-	// metadata raw
-	if metaRaw == "" {
-		err = websocket.SendWsRequest(l.wsconn, v, rpc.StateGetMetadata(wsId, blockHash))
-		metaRaw, err = v.ToString()
-		if err != nil {
-			return nil, err
-		}
-		m.Init(utiles.HexToBytes(metaRaw))
-		err = m.Process()
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	// parse event raw into []ChainEvent
 	e := scalecodec.EventsDecoder{}
-	option := types.ScaleDecoderOption{Metadata: &m.Metadata}
+	option := types.ScaleDecoderOption{Metadata: &metaDecoder.Metadata}
 	e.Init(types.ScaleBytes{Data: util.HexToBytes(eventRaw)}, &option)
 	e.Process()
 
