@@ -39,5 +39,14 @@
   "ChainId": "u8",
   "ResourceId": "[u8; 32]",
   "DepositNonce": "u64",
-  "U256": "H256"
+  "U256": "H256",
+  "RateType": "u64",
+  "AccountRData": {
+    "free": "u128"
+  },
+  "RSymbol": {
+    "_enum": [
+      "RFIS"
+    ]
+  }
 }
