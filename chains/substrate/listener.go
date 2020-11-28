@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ChainSafe/log15"
@@ -98,7 +99,7 @@ func (l *listener) start() error {
 			defer pool.Close()
 			l.wsconn = pool.Conn
 		} else {
-			l.log.Error("listener", "websocket init", err.Error())
+			l.log.Error("listener", "websocket init", err)
 			return
 		}
 
@@ -165,6 +166,12 @@ func (l *listener) pollBlocks() error {
 			err = l.processEvents(currentBlock)
 			if err != nil {
 				l.log.Error("Failed to process events in block", "block", currentBlock, "err", err)
+				if strings.Contains(err.Error(), "close 1006") || strings.Contains(err.Error(), "websocket: not connected") {
+					l.log.Info("listener", "is webscoket connected", l.wsconn.IsConnected())
+					if _, _, err := l.wsconn.ReadMessage(); err != nil {
+						l.log.Error("listener", "websocket reconnect error", err)
+					}
+				}
 				retry--
 				continue
 			}
