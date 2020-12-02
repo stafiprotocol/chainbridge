@@ -21,6 +21,7 @@ import (
 )
 
 var BlockRetryInterval = time.Second * 5
+var ExtraGasPrice = big.NewInt(10000000000)
 
 type Connection struct {
 	endpoint    string
@@ -120,12 +121,7 @@ func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
 		return nil, err
 	}
 
-	// Check we aren't exceeding our limit
-	if gasPrice.Cmp(c.maxGasPrice) == 1 {
-		return c.maxGasPrice, nil
-	} else {
-		return gasPrice, nil
-	}
+	return gasPrice.Add(gasPrice, ExtraGasPrice), nil
 }
 
 // LockAndUpdateOpts acquires a lock on the opts before updating the nonce
