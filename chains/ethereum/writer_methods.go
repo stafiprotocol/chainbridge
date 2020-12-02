@@ -136,6 +136,8 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 			if err != nil {
 				w.log.Error("Failed to fetch logs", "err", err)
 				return
+			} else {
+				w.log.Info("watchThenExecute", "QueriedLatestBlock", latestBlock, "EventNum", len(evts))
 			}
 
 			// execute the proposal once we find the matching finalized event
