@@ -38,3 +38,4 @@ centrifuge-chain/
 /solidity
 /cfgBuilder/*.toml
 config*.json
+bridge_log*.json

@@ -9,7 +9,6 @@ import (
 	"math/big"
 	"time"
 
-	log "github.com/ChainSafe/log15"
 	eth "github.com/ethereum/go-ethereum"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
@@ -17,7 +16,7 @@ import (
 )
 
 // Number of blocks to wait for an finalization event
-const ExecuteBlockWatchLimit = 100
+const ExecuteBlockWatchLimit = 200
 
 // Time between retrying a failed tx
 const TxRetryInterval = time.Second * 2
@@ -29,6 +28,16 @@ var ErrNonceTooLow = errors.New("nonce too low")
 var ErrTxUnderpriced = errors.New("replacement transaction underpriced")
 var ErrFatalTx = errors.New("submission of transaction failed")
 var ErrFatalQuery = errors.New("query of chain state failed")
+
+type ExecuteErrEnum string
+
+const (
+	ExecuteErrStop          = ExecuteErrEnum("stop")
+	ExecuteErrRetryExceeded = ExecuteErrEnum("retry_exceeded")
+	ExecuteErrFetchLog      = ExecuteErrEnum("fetch_log")
+	ExecuteErrBlockLimit    = ExecuteErrEnum("block_limit")
+	ExecuteErrNormal        = ExecuteErrEnum("execued")
+)
 
 // proposalIsComplete returns true if the proposal state is either Passed, Transferred or Cancelled
 func (w *writer) proposalIsComplete(srcId msg.ChainId, nonce msg.Nonce, dataHash [32]byte) bool {
@@ -97,7 +106,19 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 	}
 
 	// watch for execution event
-	go w.watchThenExecute(m, data, dataHash, latestBlock)
+	go func() {
+		// copy latestBlock
+		from := big.NewInt(0)
+		from = from.Add(from, latestBlock)
+		w.log.Info("watchThenExecute first try", "latestBlock", latestBlock)
+		result := w.watchThenExecute(m, data, dataHash, latestBlock)
+		if result != ExecuteErrNormal {
+			w.log.Info("watchThenExecute first try failed", "errPoint", result)
+			w.log.Info("watchThenExecute second try", "from", from)
+			result = w.watchThenExecute(m, data, dataHash, from)
+			w.log.Info("watchThenExecute second try", "result", result)
+		}
+	}()
 
 	w.voteProposal(m, dataHash)
 
@@ -105,14 +126,14 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 }
 
 // watchThenExecute watches for the latest block and executes once the matching finalized event is found
-func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte, latestBlock *big.Int) {
+func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte, latestBlock *big.Int) ExecuteErrEnum {
 	w.log.Info("Watching for finalization event", "src", m.Source, "nonce", m.DepositNonce)
 
 	// watching for the latest block, querying and matching the finalized event will be retried up to ExecuteBlockWatchLimit times
 	for i := 0; i < ExecuteBlockWatchLimit; i++ {
 		select {
 		case <-w.stop:
-			return
+			return ExecuteErrStop
 		default:
 			// watch for the lastest block, retry up to BlockRetryLimit times
 			for waitRetrys := 0; waitRetrys < BlockRetryLimit; waitRetrys++ {
@@ -123,7 +144,7 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 					if waitRetrys+1 == BlockRetryLimit {
 						w.log.Error("Waiting for block retries exceeded, shutting down")
 						w.sysErr <- ErrFatalQuery
-						return
+						return ExecuteErrRetryExceeded
 					}
 				} else {
 					break
@@ -135,7 +156,7 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 			evts, err := w.conn.Client().FilterLogs(context.Background(), query)
 			if err != nil {
 				w.log.Error("Failed to fetch logs", "err", err)
-				return
+				return ExecuteErrFetchLog
 			} else {
 				w.log.Info("watchThenExecute", "QueriedLatestBlock", latestBlock, "EventNum", len(evts))
 			}
@@ -150,7 +171,7 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 					m.DepositNonce.Big().Uint64() == depositNonce &&
 					utils.IsFinalized(uint8(status)) {
 					w.executeProposal(m, data, dataHash)
-					return
+					return ExecuteErrNormal
 				} else {
 					w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
 				}
@@ -159,7 +180,8 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 			latestBlock = latestBlock.Add(latestBlock, big.NewInt(1))
 		}
 	}
-	log.Warn("Block watch limit exceeded, skipping execution", "source", m.Source, "dest", m.Destination, "nonce", m.DepositNonce)
+	w.log.Warn("Block watch limit exceeded, skipping execution", "source", m.Source, "dest", m.Destination, "nonce", m.DepositNonce)
+	return ExecuteErrBlockLimit
 }
 
 // voteProposal submits a vote proposal

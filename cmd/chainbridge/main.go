@@ -97,7 +97,6 @@ func main() {
 
 func startLogger(ctx *cli.Context) error {
 	logger := log.Root()
-	handler := logger.GetHandler()
 	var lvl log.Lvl
 
 	if lvlToInt, err := strconv.Atoi(ctx.String(config.VerbosityFlag.Name)); err == nil {
@@ -105,7 +104,15 @@ func startLogger(ctx *cli.Context) error {
 	} else if lvl, err = log.LvlFromString(ctx.String(config.VerbosityFlag.Name)); err != nil {
 		return err
 	}
-	log.Root().SetHandler(log.LvlFilterHandler(lvl, handler))
+
+	logger.SetHandler(log.MultiHandler(
+		log.LvlFilterHandler(
+			lvl,
+			log.StreamHandler(os.Stdout, log.LogfmtFormat())),
+		log.Must.FileHandler("bridge_log.json", log.JsonFormat()),
+		log.LvlFilterHandler(
+			log.LvlError,
+			log.Must.FileHandler("bridge_log_errors.json", log.JsonFormat()))))
 
 	return nil
 }
