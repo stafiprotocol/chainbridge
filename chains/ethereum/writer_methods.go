@@ -17,6 +17,7 @@ import (
 
 // Number of blocks to wait for an finalization event
 const ExecuteBlockWatchLimit = 200
+const ExecuteBlockQueryLimit = 3
 
 // Time between retrying a failed tx
 const TxRetryInterval = time.Second * 2
@@ -36,6 +37,7 @@ const (
 	ExecuteErrRetryExceeded = ExecuteErrEnum("retry_exceeded")
 	ExecuteErrFetchLog      = ExecuteErrEnum("fetch_log")
 	ExecuteErrBlockLimit    = ExecuteErrEnum("block_limit")
+	ExecuteErrEventNotFound = ExecuteErrEnum("event_not_found")
 	ExecuteErrNormal        = ExecuteErrEnum("execued")
 )
 
@@ -110,13 +112,20 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 		// copy latestBlock
 		from := big.NewInt(0)
 		from = from.Add(from, latestBlock)
-		w.log.Info("watchThenExecute first try", "latestBlock", latestBlock)
 		result := w.watchThenExecute(m, data, dataHash, latestBlock)
-		if result != ExecuteErrNormal {
-			w.log.Info("watchThenExecute first try failed", "errPoint", result)
-			w.log.Info("watchThenExecute second try", "from", from)
-			result = w.watchThenExecute(m, data, dataHash, from)
-			w.log.Info("watchThenExecute second try", "result", result)
+		if result == ExecuteErrNormal {
+			return
+		}
+
+		for i := 0; i < ExecuteBlockQueryLimit; i++ {
+			result = w.queryAndExecute(m, data, dataHash, from, latestBlock)
+			switch result {
+			case ExecuteErrNormal:
+				w.log.Info("queryAndExecuteRetrySuccess", "i", i, "from", from, "to", latestBlock)
+				return
+			default:
+				w.log.Info("queryAndExecuteRetryFail", "i", i, "from", from, "to", latestBlock, "result", result)
+			}
 		}
 	}()
 
@@ -127,7 +136,7 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 
 // watchThenExecute watches for the latest block and executes once the matching finalized event is found
 func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte, latestBlock *big.Int) ExecuteErrEnum {
-	w.log.Info("Watching for finalization event", "src", m.Source, "nonce", m.DepositNonce)
+	w.log.Info("Watching for finalization event", "src", m.Source, "nonce", m.DepositNonce, "latestBlock", latestBlock)
 
 	// watching for the latest block, querying and matching the finalized event will be retried up to ExecuteBlockWatchLimit times
 	for i := 0; i < ExecuteBlockWatchLimit; i++ {
@@ -150,38 +159,47 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 					break
 				}
 			}
-
-			// query for logs
-			query := buildQuery(w.cfg.bridgeContract, utils.ProposalEvent, latestBlock, latestBlock)
-			evts, err := w.conn.Client().FilterLogs(context.Background(), query)
-			if err != nil {
-				w.log.Error("Failed to fetch logs", "err", err)
-				return ExecuteErrFetchLog
-			} else {
-				w.log.Info("watchThenExecute", "QueriedLatestBlock", latestBlock, "EventNum", len(evts))
+			result := w.queryAndExecute(m, data, dataHash, latestBlock, latestBlock)
+			switch result {
+			case ExecuteErrEventNotFound:
+				latestBlock = latestBlock.Add(latestBlock, big.NewInt(1))
+			default:
+				return result
 			}
-
-			// execute the proposal once we find the matching finalized event
-			for _, evt := range evts {
-				sourceId := evt.Topics[1].Big().Uint64()
-				depositNonce := evt.Topics[2].Big().Uint64()
-				status := evt.Topics[3].Big().Uint64()
-
-				if m.Source == msg.ChainId(sourceId) &&
-					m.DepositNonce.Big().Uint64() == depositNonce &&
-					utils.IsFinalized(uint8(status)) {
-					w.executeProposal(m, data, dataHash)
-					return ExecuteErrNormal
-				} else {
-					w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
-				}
-			}
-			w.log.Trace("No finalization event found in current block", "block", latestBlock, "src", m.Source, "nonce", m.DepositNonce)
-			latestBlock = latestBlock.Add(latestBlock, big.NewInt(1))
 		}
 	}
 	w.log.Warn("Block watch limit exceeded, skipping execution", "source", m.Source, "dest", m.Destination, "nonce", m.DepositNonce)
 	return ExecuteErrBlockLimit
+}
+
+func (w *writer) queryAndExecute(m msg.Message, data []byte, dataHash [32]byte, from, to *big.Int) ExecuteErrEnum {
+	// query for logs
+	query := buildQuery(w.cfg.bridgeContract, utils.ProposalEvent, from, to)
+	evts, err := w.conn.Client().FilterLogs(context.Background(), query)
+	if err != nil {
+		w.log.Error("Failed to fetch logs", "err", err)
+		return ExecuteErrFetchLog
+	} else {
+		w.log.Debug("queryAndExecute", "from", from, "to", to, "EventNum", len(evts))
+	}
+
+	// execute the proposal once we find the matching finalized event
+	for _, evt := range evts {
+		sourceId := evt.Topics[1].Big().Uint64()
+		depositNonce := evt.Topics[2].Big().Uint64()
+		status := evt.Topics[3].Big().Uint64()
+
+		if m.Source == msg.ChainId(sourceId) &&
+			m.DepositNonce.Big().Uint64() == depositNonce &&
+			utils.IsFinalized(uint8(status)) {
+			w.executeProposal(m, data, dataHash)
+			return ExecuteErrNormal
+		} else {
+			w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
+		}
+	}
+	w.log.Trace("No finalization event found in current block", "from", from, "to", to, "src", m.Source, "nonce", m.DepositNonce)
+	return ExecuteErrEventNotFound
 }
 
 // voteProposal submits a vote proposal
