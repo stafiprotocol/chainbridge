@@ -190,10 +190,16 @@ func (w *writer) queryAndExecute(m msg.Message, data []byte, dataHash [32]byte, 
 		status := evt.Topics[3].Big().Uint64()
 
 		if m.Source == msg.ChainId(sourceId) &&
-			m.DepositNonce.Big().Uint64() == depositNonce &&
-			utils.IsFinalized(uint8(status)) {
-			w.executeProposal(m, data, dataHash)
-			return ExecuteErrNormal
+			m.DepositNonce.Big().Uint64() == depositNonce {
+			if utils.IsFinalized(uint8(status)) {
+				w.executeProposal(m, data, dataHash)
+				return ExecuteErrNormal
+			} else if utils.IsExecuted(uint8(status)) {
+				w.log.Info("Proposal already be complete", "src", m.Source, "depositNonce", m.DepositNonce)
+				return ExecuteErrNormal
+			} else {
+				w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
+			}	
 		} else {
 			w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
 		}
