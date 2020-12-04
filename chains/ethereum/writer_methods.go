@@ -118,7 +118,7 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 		}
 
 		for i := 0; i < ExecuteBlockQueryLimit; i++ {
-			result = w.queryAndExecute(m, data, dataHash, from, latestBlock)
+			result = w.queryThenExecute(m, data, dataHash, from, latestBlock)
 			switch result {
 			case ExecuteErrNormal:
 				w.log.Info("queryAndExecuteRetrySuccess", "i", i, "from", from, "to", latestBlock)
@@ -159,7 +159,7 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 					break
 				}
 			}
-			result := w.queryAndExecute(m, data, dataHash, latestBlock, latestBlock)
+			result := w.queryThenExecute(m, data, dataHash, latestBlock, latestBlock)
 			switch result {
 			case ExecuteErrEventNotFound:
 				latestBlock = latestBlock.Add(latestBlock, big.NewInt(1))
@@ -172,7 +172,7 @@ func (w *writer) watchThenExecute(m msg.Message, data []byte, dataHash [32]byte,
 	return ExecuteErrBlockLimit
 }
 
-func (w *writer) queryAndExecute(m msg.Message, data []byte, dataHash [32]byte, from, to *big.Int) ExecuteErrEnum {
+func (w *writer) queryThenExecute(m msg.Message, data []byte, dataHash [32]byte, from, to *big.Int) ExecuteErrEnum {
 	// query for logs
 	query := buildQuery(w.cfg.bridgeContract, utils.ProposalEvent, from, to)
 	evts, err := w.conn.Client().FilterLogs(context.Background(), query)
@@ -180,7 +180,7 @@ func (w *writer) queryAndExecute(m msg.Message, data []byte, dataHash [32]byte, 
 		w.log.Error("Failed to fetch logs", "err", err)
 		return ExecuteErrFetchLog
 	} else {
-		w.log.Debug("queryAndExecute", "from", from, "to", to, "EventNum", len(evts))
+		w.log.Debug("queryThenExecute", "from", from, "to", to, "EventNum", len(evts))
 	}
 
 	// execute the proposal once we find the matching finalized event
@@ -189,19 +189,20 @@ func (w *writer) queryAndExecute(m msg.Message, data []byte, dataHash [32]byte, 
 		depositNonce := evt.Topics[2].Big().Uint64()
 		status := evt.Topics[3].Big().Uint64()
 
-		if m.Source == msg.ChainId(sourceId) &&
-			m.DepositNonce.Big().Uint64() == depositNonce {
-			if utils.IsFinalized(uint8(status)) {
+		if m.Source == msg.ChainId(sourceId) && m.DepositNonce.Big().Uint64() == depositNonce {
+			st := uint8(status)
+			switch {
+			case utils.IsFinalized(st):
 				w.executeProposal(m, data, dataHash)
 				return ExecuteErrNormal
-			} else if utils.IsExecuted(uint8(status)) {
-				w.log.Info("Proposal already be complete", "src", m.Source, "depositNonce", m.DepositNonce)
+			case utils.IsExecuted(st):
+				w.log.Info("Proposal already executed", "src", m.Source, "depositNonce", m.DepositNonce)
 				return ExecuteErrNormal
-			} else {
-				w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
-			}	
+			default:
+				w.log.Trace("event status not satisfied", "src", sourceId, "nonce", depositNonce, "status", st)
+			}
 		} else {
-			w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce)
+			w.log.Trace("Ignoring event", "src", sourceId, "nonce", depositNonce, "status", status)
 		}
 	}
 	w.log.Trace("No finalization event found in current block", "from", from, "to", to, "src", m.Source, "nonce", m.DepositNonce)
