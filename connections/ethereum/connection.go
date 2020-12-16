@@ -172,6 +172,8 @@ func (c *Connection) EnsureHasBytecode(addr ethcommon.Address) error {
 
 // WaitForBlock will poll for the block number until the current block is equal or greater than
 func (c *Connection) WaitForBlock(block *big.Int) error {
+	blk := big.NewInt(2)
+	blk = blk.Add(blk, block)
 	for {
 		select {
 		case <-c.stop:
@@ -183,7 +185,7 @@ func (c *Connection) WaitForBlock(block *big.Int) error {
 			}
 
 			// Greater than target
-			if currBlock.Sub(currBlock, big.NewInt(2)).Cmp(block) >= 0 {
+			if currBlock.Cmp(blk) >= 0 {
 				return nil
 			}
 			c.log.Trace("Block not ready, waiting", "target", block, "current", currBlock)
