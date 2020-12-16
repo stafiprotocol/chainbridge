@@ -183,7 +183,7 @@ func (c *Connection) WaitForBlock(block *big.Int) error {
 			}
 
 			// Greater than target
-			if currBlock.Cmp(block) >= 1 {
+			if currBlock.Cmp(block) >= 2 {
 				return nil
 			}
 			c.log.Trace("Block not ready, waiting", "target", block, "current", currBlock)
