@@ -29,7 +29,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	bridge "github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	erc20Handler "github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
+	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
@@ -107,7 +107,7 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 		return nil, fmt.Errorf("chainId (%d) and configuration chainId (%d) do not match", chainId, chainCfg.Id)
 	}
 
-	erc20HandlerContract, err := erc20Handler.NewERC20Handler(cfg.erc20HandlerContract, conn.Client())
+	erc20HandlerContract, err := ERC20Handler.NewERC20Handler(cfg.erc20HandlerContract, conn.Client())
 	if err != nil {
 		return nil, err
 	}

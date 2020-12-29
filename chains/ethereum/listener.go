@@ -4,7 +4,11 @@
 package ethereum
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"math/big"
 	"time"
 
@@ -12,6 +16,7 @@ import (
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	"github.com/stafiprotocol/chainbridge/chains"
+	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 )
@@ -100,11 +105,20 @@ func (l *listener) pollBlocks() error {
 				time.Sleep(BlockRetryInterval)
 				continue
 			}
+			l.log.Debug("pollBlocks", "latestBlock", latestBlock)
 
 			// Sleep if the difference is less than BlockDelay; (latest - current) < BlockDelay
 			if big.NewInt(0).Sub(latestBlock, currentBlock).Cmp(BlockDelay) == -1 {
 				l.log.Debug("Block not ready, will retry", "target", currentBlock, "latest", latestBlock)
 				time.Sleep(BlockRetryInterval)
+				continue
+			}
+
+			// Parse out events
+			err = l.getDepositEventsForBlock(currentBlock)
+			if err != nil {
+				l.log.Error("Failed to get events for block", "block", currentBlock, "err", err)
+				retry--
 				continue
 			}
 
@@ -124,4 +138,47 @@ func (l *listener) pollBlocks() error {
 			}
 		}
 	}
+}
+
+// getDepositEventsForBlock looks for the deposit event in the latest block
+func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
+	l.log.Debug("Querying block for deposit events", "block", latestBlock)
+	query := buildQuery(l.cfg.bridgeContract, utils.Deposit, latestBlock, latestBlock)
+
+	// querying for logs
+	logs, err := l.conn.Client().FilterLogs(context.Background(), query)
+	if err != nil {
+		return fmt.Errorf("unable to Filter Logs: %s", err)
+	}
+
+	// read through the log events and handle their deposit event if handler is recognized
+	for _, log := range logs {
+		var m msg.Message
+		destId := msg.ChainId(log.Topics[1].Big().Uint64())
+		rId := msg.ResourceIdFromSlice(log.Topics[2].Bytes())
+		nonce := msg.Nonce(log.Topics[3].Big().Uint64())
+
+		addr, err := l.bridgeContract.ResourceIDToHandlerAddress(&bind.CallOpts{From: l.conn.Keypair().CommonAddress()}, rId)
+		if err != nil {
+			return fmt.Errorf("failed to get handler from resource ID %x", rId)
+		}
+
+		if addr == l.cfg.erc20HandlerContract {
+			m, err = l.handleErc20DepositedEvent(destId, nonce)
+		} else {
+			l.log.Error("event has unrecognized handler", "handler", addr.Hex())
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		err = l.router.Send(m)
+		if err != nil {
+			l.log.Error("subscription error: failed to route message", "err", err)
+		}
+	}
+
+	return nil
 }

@@ -188,7 +188,7 @@ func generateKeyFileByRawseed(keypath string) error {
 		return fmt.Errorf("could not write key to file: %s", err)
 	}
 
-	log.Info("key generated", "address", kp.Address(), "type", "file", fp)
+	log.Info("key generated", "address", kp.Address(), "type", "sub", "file", fp)
 	return nil
 }
 
@@ -231,6 +231,6 @@ func generateKeyFileByPrivateKey(keypath string) error {
 		return fmt.Errorf("could not write key to file: %s", err)
 	}
 
-	log.Info("key generated", "address", kp.Address(), "type", "file", fp)
+	log.Info("key generated", "address", kp.Address(), "type", "eth", "file", fp)
 	return nil
 }
