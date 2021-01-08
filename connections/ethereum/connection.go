@@ -172,7 +172,7 @@ func (c *Connection) EnsureHasBytecode(addr ethcommon.Address) error {
 
 // WaitForBlock will poll for the block number until the current block is equal or greater than
 func (c *Connection) WaitForBlock(block *big.Int) error {
-	blk := big.NewInt(2)
+	blk := big.NewInt(3)
 	blk = blk.Add(blk, block)
 	for {
 		select {

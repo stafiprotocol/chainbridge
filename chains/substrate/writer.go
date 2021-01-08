@@ -113,6 +113,7 @@ func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 		method,
 		recipient,
 		amount,
+		types.NewBytes32(m.ResourceId),
 	)
 	if err != nil {
 		return nil, err
