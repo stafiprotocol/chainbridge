@@ -55,5 +55,31 @@
         "u128"
       ]
     ]
+  },
+  "ProposalStatus": {
+    "type": "enum",
+    "value_list": [
+      "Active",
+      "Passed",
+      "Expired",
+      "Executed"
+    ]
+  },
+  "ProposalVotes": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "voted",
+        "Vec<AccountId>"
+      ],
+      [
+        "status",
+        "ProposalStatus"
+      ],
+      [
+        "expiry",
+        "BlockNumber"
+      ]
+    ]
   }
 }
