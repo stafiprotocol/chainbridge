@@ -72,6 +72,20 @@ func (w *writer) hasVoted(srcId msg.ChainId, nonce msg.Nonce, dataHash [32]byte)
 	return hasVoted
 }
 
+func (w *writer) onlyVoted(m msg.Message, dataHash [32]byte) bool {
+	prop, err := w.bridgeContract.GetProposal(w.conn.CallOpts(), uint8(m.Source), uint64(m.DepositNonce), dataHash)
+	if err != nil {
+		w.log.Error("Failed to check proposal existence", "err", err)
+		return false
+	}
+
+	if prop.Status != PassedStatus {
+		return false
+	}
+
+	return w.hasVoted(m.Source, m.DepositNonce, dataHash)
+}
+
 func (w *writer) shouldVote(m msg.Message, dataHash [32]byte) bool {
 	// Check if proposal has passed and skip if Passed or Transferred
 	if w.proposalIsComplete(m.Source, m.DepositNonce, dataHash) {
@@ -95,6 +109,13 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 
 	data := ConstructErc20ProposalData(m.Payload[0].([]byte), m.Payload[1].([]byte))
 	dataHash := utils.Hash(append(w.cfg.erc20HandlerContract.Bytes(), data...))
+
+	if w.onlyVoted(m, dataHash) {
+		w.executeProposal(m, data, dataHash)
+		result := w.proposalIsFinalized(m.Source, m.DepositNonce, dataHash)
+		w.log.Info("executeProposal for those onlyVoted", "source", m.Source, "DepositNonce", m.DepositNonce, "result", result)
+		return result
+	}
 
 	if !w.shouldVote(m, dataHash) {
 		return false
