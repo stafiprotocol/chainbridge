@@ -41,6 +41,21 @@
   "ResourceId": "[u8; 32]",
   "DepositNonce": "u64",
   "U256": "H256",
+  "XSymbol": {
+    "type": "enum",
+    "value_list": [
+      "WRA"
+    ]
+  },
+  "AccountXData": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "free",
+        "u128"
+      ]
+    ]
+  },
   "RSymbol": {
     "type": "enum",
     "value_list": [
@@ -82,19 +97,6 @@
       [
         "expiry",
         "BlockNumber"
-      ]
-    ]
-  },
-  "BondKey": {
-    "type": "struct",
-    "type_mapping": [
-      [
-        "symbol",
-        "RSymbol"
-      ],
-      [
-        "bond_id",
-        "H256"
       ]
     ]
   },
