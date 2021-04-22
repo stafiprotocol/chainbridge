@@ -106,12 +106,12 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 			case "ChainId":
 				var cp ChainIdParam
 				x, _ := json.Marshal(p)
-				json.Unmarshal(x, &cp)
+				_ = json.Unmarshal(x, &cp)
 				evt.Destination = cp.Value
 			case "DepositNonce":
 				var dn DepositNonceParam
 				x, _ := json.Marshal(p)
-				json.Unmarshal(x, &dn)
+				_ = json.Unmarshal(x, &dn)
 				evt.DepositNonce = dn.Value
 			case "ResourceId":
 				val := p.Value.(string)
@@ -126,7 +126,7 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 			case "Vec<u8>":
 				addr := utiles.AddHex(p.Value.(string))
 				if !ethereum.IsAddressValid(addr) {
-					l.log.Warn("GetEventsAt", "Recipient address is not valid: ", addr, "blockNum", l.latestBlock.Height)
+					l.log.Warn("GetEventsAt", "Recipient address is not valid: ", addr, "blockNum", blockNum)
 					skip = true
 					break
 				}
@@ -134,7 +134,7 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 			case "AccountId":
 				l.log.Info("GetEventsAt", "from", p.Value.(string))
 			default:
-				l.log.Warn("GetEventsAt", "EventFungibleTransfer got an unexpected type", p.Type, "blockNum", l.latestBlock.Height)
+				l.log.Warn("GetEventsAt", "EventFungibleTransfer got an unexpected type", p.Type, "blockNum", blockNum)
 				skip = true
 				break
 			}
@@ -142,7 +142,6 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 		if !skip {
 			evts = append(evts, evt)
 		}
-
 	}
 	return evts, nil
 }

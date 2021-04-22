@@ -19,6 +19,8 @@ var (
 )
 
 func TestWriter_resolveResourceId(t *testing.T) {
+	stop := make(chan int)
+	defer close(stop)
 	errs := make(chan error)
 	conn := NewConnection(TestEndpoint, "Alice", AliceKey, nil, AliceTestLogger, make(chan int), errs)
 	err := conn.Connect()
@@ -27,7 +29,7 @@ func TestWriter_resolveResourceId(t *testing.T) {
 	}
 	defer conn.Close()
 
-	w := NewWriter(conn, AliceTestLogger, errs)
+	w := NewWriter(conn, AliceTestLogger, errs, stop)
 	re, err := w.resolveResourceId(rId)
 	if err != nil {
 		t.Fatal(err)
@@ -39,6 +41,10 @@ func TestWriter_resolveResourceId(t *testing.T) {
 func TestStr(t *testing.T) {
 	fmt.Println(hexutil.Encode([]byte(config.BridgeSwap + ".transfer_native_back")))
 	//0x427269646765537761702e7472616e736665725f6e61746976655f6261636b
+	fmt.Println(hexutil.Encode([]byte(config.BridgeSwap + ".transfer_rtoken_back")))
+	//0x427269646765537761702e7472616e736665725f72746f6b656e5f6261636b
+	fmt.Println(hexutil.Encode([]byte(config.BridgeSwap + ".transfer_xtoken_back")))
+	//0x427269646765537761702e7472616e736665725f78746f6b656e5f6261636b
 }
 
 func TestNewProp(t *testing.T) {
@@ -73,8 +79,9 @@ func TestNewProp(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer conn.Close()
-
-	w := NewWriter(conn, AliceTestLogger, errs)
+	stop := make(chan int)
+	defer close(stop)
+	w := NewWriter(conn, AliceTestLogger, errs, stop)
 
 	exists, err := w.conn.queryStorage(config.BridgeCommon, "Votes", srcId, propBz, &voteRes)
 	assert.NoError(t, err)
@@ -87,4 +94,32 @@ func TestNewProp(t *testing.T) {
 	fmt.Println(hexutil.Encode(acId[:]))
 	cmp := containsVote(voteRes.Voted, acId)
 	fmt.Println(cmp)
+}
+
+func TestConnection_NewExtrinsic(t *testing.T) {
+	//the password which used to encrypt keystore file, remove it after this test pass
+	password := "123456"
+	os.Setenv(keystore.EnvPassword, password)
+
+	kp, err := keystore.KeypairFromAddress(From, keystore.SubChain, KeystorePath, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	krp := kp.(*sr25519.Keypair).AsKeyringPair()
+	errs := make(chan error)
+	conn := NewConnection(TestEndpoint, "Alice", krp, nil, AliceTestLogger, make(chan int), errs)
+	err = conn.Connect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	conn.NewUnsignedExtrinsic("Balances.transfer", "")
+}
+
+func TestEncode(t *testing.T) {
+	//a := "msg"
+	b := []byte("sdfsdf")
+	fmt.Println(hexutil.Encode(b))
 }

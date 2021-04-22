@@ -4,7 +4,6 @@
 package core
 
 import (
-	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -13,7 +12,6 @@ type Chain interface {
 	SetRouter(*Router)
 	Id() msg.ChainId
 	Name() string
-	LatestBlock() metrics.LatestBlock
 	Stop()
 }
 

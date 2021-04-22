@@ -42,8 +42,8 @@ func NewClient(endpoint string, kp *secp256k1.Keypair) (*Client, error) {
 
 	opts := bind.NewKeyedTransactor(kp.PrivateKey())
 	opts.Nonce = big.NewInt(0)
-	opts.Value = big.NewInt(1)              // in wei
-	opts.GasLimit = uint64(DefaultGasLimit) // in units
+	opts.Value = big.NewInt(1000000000000000) // in wei
+	opts.GasLimit = uint64(DefaultGasLimit)   // in units
 	opts.GasPrice = big.NewInt(DefaultMaxGasPrice)
 	opts.Context = ctx
 

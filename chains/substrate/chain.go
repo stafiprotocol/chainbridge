@@ -31,7 +31,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/sr25519"
 	"github.com/stafiprotocol/chainbridge/utils/keystore"
-	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -43,7 +42,7 @@ type Chain struct {
 	stop     chan<- int
 }
 
-func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error, m *metrics.ChainMetrics) (*Chain, error) {
+func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error) (*Chain, error) {
 	kp, err := keystore.KeypairFromAddress(cfg.From, keystore.SubChain, cfg.KeystorePath, cfg.Insecure)
 	if err != nil {
 		return nil, err
@@ -88,8 +87,8 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	}
 
 	// Setup listener & writer
-	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr, m)
-	w := NewWriter(conn, logger, sysErr)
+	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr)
+	w := NewWriter(conn, logger, sysErr, stop)
 	return &Chain{cfg: cfg, conn: conn, listener: l, writer: w, stop: stop}, nil
 }
 
@@ -98,6 +97,12 @@ func (c *Chain) Start() error {
 	if err != nil {
 		return err
 	}
+
+	err = c.writer.start()
+	if err != nil {
+		return err
+	}
+
 	c.conn.log.Debug("Successfully started chain", "chainId", c.cfg.Id)
 	return nil
 }
@@ -105,10 +110,6 @@ func (c *Chain) Start() error {
 func (c *Chain) SetRouter(r *core.Router) {
 	r.Listen(c.cfg.Id, c.writer)
 	c.listener.setRouter(r)
-}
-
-func (c *Chain) LatestBlock() metrics.LatestBlock {
-	return c.listener.latestBlock
 }
 
 func (c *Chain) Id() msg.ChainId {

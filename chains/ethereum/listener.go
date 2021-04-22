@@ -18,7 +18,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/chains"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
-	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 )
 
 var BlockDelay = big.NewInt(10)
@@ -36,21 +35,17 @@ type listener struct {
 	blockstore           blockstore.Blockstorer
 	stop                 <-chan int
 	sysErr               chan<- error // Reports fatal error to core
-	latestBlock          metrics.LatestBlock
-	metrics              *metrics.ChainMetrics
 }
 
 // NewListener creates and returns a listener
-func NewListener(conn Connection, cfg *Config, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, m *metrics.ChainMetrics) *listener {
+func NewListener(conn Connection, cfg *Config, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error) *listener {
 	return &listener{
-		cfg:         *cfg,
-		conn:        conn,
-		log:         log,
-		blockstore:  bs,
-		stop:        stop,
-		sysErr:      sysErr,
-		latestBlock: metrics.LatestBlock{LastUpdated: time.Now()},
-		metrics:     m,
+		cfg:        *cfg,
+		conn:       conn,
+		log:        log,
+		blockstore: bs,
+		stop:       stop,
+		sysErr:     sysErr,
 	}
 }
 
@@ -130,12 +125,7 @@ func (l *listener) pollBlocks() error {
 
 			// Goto next block and reset retry counter
 			currentBlock.Add(currentBlock, big.NewInt(1))
-			l.latestBlock.Height = big.NewInt(0).Set(latestBlock)
-			l.latestBlock.LastUpdated = time.Now()
 			retry = BlockRetryLimit
-			if l.metrics != nil {
-				l.metrics.BlocksProcessed.Inc()
-			}
 		}
 	}
 }

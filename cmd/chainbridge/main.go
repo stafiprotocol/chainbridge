@@ -5,19 +5,14 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"net/http"
 	"os"
 	"strconv"
 
 	log "github.com/ChainSafe/log15"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/stafiprotocol/chainbridge/chains/ethereum"
 	"github.com/stafiprotocol/chainbridge/chains/substrate"
 	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/stafiprotocol/chainbridge/utils/core"
-	"github.com/stafiprotocol/chainbridge/utils/metrics/health"
-	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/urfave/cli/v2"
 )
@@ -152,18 +147,13 @@ func run(ctx *cli.Context) error {
 			Opts:           chain.Opts,
 		}
 		var newChain core.Chain
-		var m *metrics.ChainMetrics
 
 		logger := log.Root().New("chain", chainConfig.Name)
 
-		if ctx.Bool(config.MetricsFlag.Name) {
-			m = metrics.NewChainMetrics(chain.Name)
-		}
-
 		if chain.Type == "ethereum" {
-			newChain, err = ethereum.InitializeChain(chainConfig, logger, sysErr, m)
+			newChain, err = ethereum.InitializeChain(chainConfig, logger, sysErr)
 		} else if chain.Type == "substrate" {
-			newChain, err = substrate.InitializeChain(chainConfig, logger, sysErr, m)
+			newChain, err = substrate.InitializeChain(chainConfig, logger, sysErr)
 		} else {
 			return errors.New("unrecognized Chain Type")
 		}
@@ -173,23 +163,6 @@ func run(ctx *cli.Context) error {
 		}
 		c.AddChain(newChain)
 
-	}
-
-	// Start prometheus and health server
-	if ctx.Bool(config.MetricsFlag.Name) {
-		port := ctx.Int(config.MetricsPort.Name)
-		h := health.NewHealthServer(port, c.Registry)
-
-		go func() {
-			http.Handle("/metrics", promhttp.Handler())
-			http.HandleFunc("/health", h.HealthStatus)
-			err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-			if err == http.ErrServerClosed {
-				log.Info("Health status server is shutting down", err)
-			} else {
-				log.Error("Error serving metrics", "err", err)
-			}
-		}()
 	}
 
 	c.Start()

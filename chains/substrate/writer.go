@@ -16,27 +16,54 @@ import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
+const (
+	msgLimit = 4096
+)
+
 var TerminatedError = errors.New("terminated")
 
 type writer struct {
-	conn   *Connection
-	log    log15.Logger
-	sysErr chan<- error
+	conn    *Connection
+	log     log15.Logger
+	sysErr  chan<- error
+	msgChan chan msg.Message
+	stop    <-chan int
 }
 
-func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error) *writer {
+func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int) *writer {
 	return &writer{
-		conn:   conn,
-		log:    log,
-		sysErr: sysErr,
+		conn:    conn,
+		log:     log,
+		sysErr:  sysErr,
+		msgChan: make(chan msg.Message, msgLimit),
+		stop:    stop,
 	}
 }
 
 func (w *writer) start() error {
+	go func() {
+		for {
+			select {
+			case <-w.stop:
+				close(w.msgChan)
+				w.log.Info("writer stopped")
+				return
+			case msg := <-w.msgChan:
+				result := w.processMessage(msg)
+				w.log.Info("processMessage", "result", result)
+			}
+		}
+	}()
+
 	return nil
 }
 
 func (w *writer) ResolveMessage(m msg.Message) bool {
+	w.msgChan <- m
+	return true
+}
+
+func (w *writer) processMessage(m msg.Message) bool {
 	w.log.Info("ResolveMessage", "Name", w.conn.name, "Destination", m.Destination)
 
 	var prop *proposal

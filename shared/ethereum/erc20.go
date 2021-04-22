@@ -15,14 +15,14 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
-func DeployMintApproveErc20(client *Client, erc20Handler common.Address, amount *big.Int) (common.Address, error) {
+func DeployAndMintErc20(client *Client, amount *big.Int) (common.Address, error) {
 	err := client.LockNonceAndUpdate()
 	if err != nil {
 		return ZeroAddress, err
 	}
 
 	// Deploy
-	erc20Addr, tx, erc20Instance, err := ERC20.DeployERC20PresetMinterPauser(client.Opts, client.Client, "", "")
+	erc20Addr, tx, _, err := ERC20.DeployERC20PresetMinterPauser(client.Opts, client.Client, "WRA", "WRA")
 	if err != nil {
 		return ZeroAddress, err
 	}
@@ -31,39 +31,25 @@ func DeployMintApproveErc20(client *Client, erc20Handler common.Address, amount 
 	if err != nil {
 		return ZeroAddress, err
 	}
-
 	client.UnlockNonce()
 
-	// Mint
-	err = client.LockNonceAndUpdate()
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	_, err = erc20Instance.Mint(client.Opts, client.Opts.From, amount)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	client.UnlockNonce()
-
-	// Approve
-	err = client.LockNonceAndUpdate()
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	tx, err = erc20Instance.Approve(client.Opts, erc20Handler, amount)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	client.UnlockNonce()
+	//// Mint
+	//err = client.LockNonceAndUpdate()
+	//if err != nil {
+	//	return ZeroAddress, err
+	//}
+	//
+	//mintTx, err := erc20Instance.Mint(client.Opts, client.Opts.From, amount)
+	//if err != nil {
+	//	return ZeroAddress, err
+	//}
+	//
+	//err = WaitForTx(client, mintTx)
+	//if err != nil {
+	//	return ZeroAddress, err
+	//}
+	//
+	//client.UnlockNonce()
 
 	return erc20Addr, nil
 }

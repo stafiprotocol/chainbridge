@@ -35,7 +35,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
 	"github.com/stafiprotocol/chainbridge/utils/keystore"
-	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -61,7 +60,7 @@ type Chain struct {
 	stop     chan<- int
 }
 
-func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error, m *metrics.ChainMetrics) (*Chain, error) {
+func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error) (*Chain, error) {
 	cfg, err := parseChainConfig(chainCfg)
 	if err != nil {
 		return nil, err
@@ -120,10 +119,10 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 		cfg.startBlock = curr
 	}
 
-	listener := NewListener(conn, cfg, logger, bs, stop, sysErr, m)
+	listener := NewListener(conn, cfg, logger, bs, stop, sysErr)
 	listener.setContracts(bridgeContract, erc20HandlerContract)
 
-	writer := NewWriter(conn, cfg, logger, stop, sysErr, m)
+	writer := NewWriter(conn, cfg, logger, stop, sysErr)
 	writer.setContract(bridgeContract)
 
 	return &Chain{
@@ -161,10 +160,6 @@ func (c *Chain) Id() msg.ChainId {
 
 func (c *Chain) Name() string {
 	return c.cfg.Name
-}
-
-func (c *Chain) LatestBlock() metrics.LatestBlock {
-	return c.listener.latestBlock
 }
 
 // Stop signals to any running routines to exit

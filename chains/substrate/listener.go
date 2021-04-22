@@ -17,7 +17,6 @@ import (
 	"github.com/itering/substrate-api-rpc/websocket"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
-	metrics "github.com/stafiprotocol/chainbridge/utils/metrics/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -32,8 +31,6 @@ type listener struct {
 	log           log15.Logger
 	stop          <-chan int
 	sysErr        chan<- error
-	latestBlock   metrics.LatestBlock
-	metrics       *metrics.ChainMetrics
 	wsconn        websocket.WsConn
 }
 
@@ -43,7 +40,7 @@ var BlockRetryLimit = 5
 
 const DefaultTypeFilePath = "../../network/stafi.json"
 
-func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, m *metrics.ChainMetrics) *listener {
+func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error) *listener {
 	return &listener{
 		name:          name,
 		chainId:       id,
@@ -54,8 +51,6 @@ func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint6
 		log:           log,
 		stop:          stop,
 		sysErr:        sysErr,
-		latestBlock:   metrics.LatestBlock{LastUpdated: time.Now()},
-		metrics:       m,
 	}
 }
 
@@ -183,12 +178,7 @@ func (l *listener) pollBlocks() error {
 			}
 
 			currentBlock++
-			l.latestBlock.Height = big.NewInt(0).SetUint64(currentBlock)
-			l.latestBlock.LastUpdated = time.Now()
 			retry = BlockRetryLimit
-			if l.metrics != nil {
-				l.metrics.BlocksProcessed.Inc()
-			}
 		}
 	}
 }
