@@ -26,4 +26,5 @@ type ChainConfig struct {
 	FreshStart     bool              // If true, blockstore is ignored at start.
 	LatestBlock    bool              // If true, overrides blockstore or latest block in config and starts from current block
 	Opts           map[string]string // Per chain options
+	Symbols        []interface{}     // map info for symbols and resourceIds
 }

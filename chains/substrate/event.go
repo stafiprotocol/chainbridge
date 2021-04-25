@@ -117,6 +117,14 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 				val := p.Value.(string)
 				r, _ := hexutil.Decode(val)
 				evt.ResourceId = msg.ResourceIdFromSlice(r)
+				decimal, ok := l.decimals[evt.ResourceId.Hex()]
+				if !ok {
+					decimal, ok = l.decimals["Default"]
+					if !ok {
+						return nil, fmt.Errorf("failed to get decimal")
+					}
+				}
+				evt.Decimal = decimal
 			case "U256":
 				amount := new(big.Int)
 				b := utiles.HexToBytes(p.Value.(string))
@@ -169,7 +177,7 @@ func fungibleTransferHandler(evtI interface{}, log log15.Logger) (msg.Message, e
 		0,
 		msg.ChainId(evt.Destination),
 		msg.Nonce(evt.DepositNonce),
-		evt.Amount.Mul(evt.Amount, config.DecimalFactor),
+		evt.Amount.Mul(evt.Amount, evt.Decimal),
 		resourceId,
 		evt.Recipient,
 	), nil

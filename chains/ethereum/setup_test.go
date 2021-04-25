@@ -98,3 +98,7 @@ func TestSetUpWRA(t *testing.T) {
 	ethutils.RegisterResource(client, BridgeContract, Erc20Handler, wraResourceId, WRAContract)
 	ethutils.SetBurnable(client, BridgeContract, Erc20Handler, WRAContract)
 }
+
+func TestResourceId(t *testing.T) {
+	t.Log(rfisResourceId.Hex())
+}

@@ -160,5 +160,4 @@ func TestGetConfig(t *testing.T) {
 	assert.NoError(t, err)
 
 	fmt.Printf("%+v\n", cfg)
-
 }

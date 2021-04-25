@@ -23,20 +23,22 @@ const (
 var TerminatedError = errors.New("terminated")
 
 type writer struct {
-	conn    *Connection
-	log     log15.Logger
-	sysErr  chan<- error
-	msgChan chan msg.Message
-	stop    <-chan int
+	conn     *Connection
+	log      log15.Logger
+	sysErr   chan<- error
+	msgChan  chan msg.Message
+	stop     <-chan int
+	decimals map[string]*big.Int
 }
 
-func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int) *writer {
+func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int, decimals map[string]*big.Int) *writer {
 	return &writer{
-		conn:    conn,
-		log:     log,
-		sysErr:  sysErr,
-		msgChan: make(chan msg.Message, msgLimit),
-		stop:    stop,
+		conn:     conn,
+		log:      log,
+		sysErr:   sysErr,
+		msgChan:  make(chan msg.Message, msgLimit),
+		stop:     stop,
+		decimals: decimals,
 	}
 }
 
@@ -121,7 +123,14 @@ func (w *writer) processMessage(m msg.Message) bool {
 
 func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 	bigAmt := big.NewInt(0).SetBytes(m.Payload[0].([]byte))
-	bigAmt.Div(bigAmt, config.DecimalFactor)
+	decimal, ok := w.decimals[m.ResourceId.Hex()]
+	if !ok {
+		decimal, ok = w.decimals["Default"]
+		if !ok {
+			return nil, fmt.Errorf("failed to get decimal")
+		}
+	}
+	bigAmt.Div(bigAmt, decimal)
 	amount := types.NewU128(*bigAmt)
 	recipient := types.NewAccountID(m.Payload[1].([]byte))
 	depositNonce := types.U64(m.DepositNonce)

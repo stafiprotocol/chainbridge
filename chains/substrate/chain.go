@@ -24,6 +24,8 @@ As the writer receives messages from the router, nothing happened.
 package substrate
 
 import (
+	"fmt"
+	"math/big"
 	"strconv"
 
 	"github.com/ChainSafe/log15"
@@ -43,6 +45,11 @@ type Chain struct {
 }
 
 func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error) (*Chain, error) {
+	decimals, err := getDecimals(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	kp, err := keystore.KeypairFromAddress(cfg.From, keystore.SubChain, cfg.KeystorePath, cfg.Insecure)
 	if err != nil {
 		return nil, err
@@ -87,8 +94,8 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	}
 
 	// Setup listener & writer
-	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr)
-	w := NewWriter(conn, logger, sysErr, stop)
+	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr, decimals)
+	w := NewWriter(conn, logger, sysErr, stop, decimals)
 	return &Chain{cfg: cfg, conn: conn, listener: l, writer: w, stop: stop}, nil
 }
 
@@ -148,4 +155,38 @@ func parseStartBlock(cfg *core.ChainConfig) uint64 {
 		return res
 	}
 	return 0
+}
+
+func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
+	symbols := cfg.Symbols
+	if symbols == nil || len(symbols) == 0 {
+		return nil, fmt.Errorf("config does not contains symbols")
+	}
+
+	decimals := make(map[string]*big.Int)
+	for _, sym := range symbols {
+		info, ok := sym.(map[string]string)
+		if !ok {
+			return nil, fmt.Errorf("symbol not a string map")
+		}
+
+		rId, ok := info["resourceId"]
+		if !ok {
+			return nil, fmt.Errorf("unable to get symbol resourceId")
+		}
+
+		df, ok := info["decimalFactor"]
+		if !ok {
+			return nil, fmt.Errorf("unable to get symbol decimalFactor")
+		}
+
+		decimal, ok := big.NewInt(0).SetString(df, 10)
+		if !ok {
+			return nil, fmt.Errorf("parse symbol decimalFactor not ok")
+		}
+
+		decimals[rId] = decimal
+	}
+
+	return decimals, nil
 }

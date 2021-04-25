@@ -32,6 +32,7 @@ type listener struct {
 	stop          <-chan int
 	sysErr        chan<- error
 	wsconn        websocket.WsConn
+	decimals      map[string]*big.Int
 }
 
 // Frequency of polling for a new block
@@ -40,7 +41,7 @@ var BlockRetryLimit = 5
 
 const DefaultTypeFilePath = "../../network/stafi.json"
 
-func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error) *listener {
+func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]*big.Int) *listener {
 	return &listener{
 		name:          name,
 		chainId:       id,
@@ -51,6 +52,7 @@ func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint6
 		log:           log,
 		stop:          stop,
 		sysErr:        sysErr,
+		decimals:      decimals,
 	}
 }
 

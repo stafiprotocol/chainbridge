@@ -145,6 +145,7 @@ func run(ctx *cli.Context) error {
 			FreshStart:     ctx.Bool(config.FreshStartFlag.Name),
 			LatestBlock:    ctx.Bool(config.LatestBlockFlag.Name),
 			Opts:           chain.Opts,
+			Symbols:        chain.Symbols,
 		}
 		var newChain core.Chain
 

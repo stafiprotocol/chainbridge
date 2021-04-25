@@ -3,6 +3,10 @@ package substrate
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"os"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/sr25519"
@@ -10,12 +14,13 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 var (
-	rId = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901"))
+	rId      = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901"))
+	decimals = map[string]*big.Int{
+		"Default": big.NewInt(1000000),
+	}
 )
 
 func TestWriter_resolveResourceId(t *testing.T) {
@@ -29,7 +34,7 @@ func TestWriter_resolveResourceId(t *testing.T) {
 	}
 	defer conn.Close()
 
-	w := NewWriter(conn, AliceTestLogger, errs, stop)
+	w := NewWriter(conn, AliceTestLogger, errs, stop, decimals)
 	re, err := w.resolveResourceId(rId)
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +86,7 @@ func TestNewProp(t *testing.T) {
 	defer conn.Close()
 	stop := make(chan int)
 	defer close(stop)
-	w := NewWriter(conn, AliceTestLogger, errs, stop)
+	w := NewWriter(conn, AliceTestLogger, errs, stop, decimals)
 
 	exists, err := w.conn.queryStorage(config.BridgeCommon, "Votes", srcId, propBz, &voteRes)
 	assert.NoError(t, err)

@@ -12,7 +12,7 @@ func TestWriter_start_stop(t *testing.T) {
 	defer conn.Close()
 
 	stop := make(chan int)
-	writer := NewWriter(conn, aliceTestConfig, TestLogger, stop, nil, nil)
+	writer := NewWriter(conn, aliceTestConfig, TestLogger, stop, nil)
 
 	err := writer.start()
 	if err != nil {

@@ -21,6 +21,7 @@ type EventFungibleTransfer struct {
 	ResourceId   msg.ResourceId
 	Amount       *big.Int
 	Recipient    []byte
+	Decimal      *big.Int
 }
 
 type ChainIdParam struct {
