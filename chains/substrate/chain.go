@@ -165,17 +165,17 @@ func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
 
 	decimals := make(map[string]*big.Int)
 	for _, sym := range symbols {
-		info, ok := sym.(map[string]string)
+		info, ok := sym.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("symbol not a string map")
 		}
 
-		rId, ok := info["resourceId"]
+		rId, ok := info["resourceId"].(string)
 		if !ok {
 			return nil, fmt.Errorf("unable to get symbol resourceId")
 		}
 
-		df, ok := info["decimalFactor"]
+		df, ok := info["decimalFactor"].(string)
 		if !ok {
 			return nil, fmt.Errorf("unable to get symbol decimalFactor")
 		}
@@ -187,6 +187,7 @@ func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
 
 		decimals[rId] = decimal
 	}
+	fmt.Println(decimals)
 
 	return decimals, nil
 }
