@@ -104,7 +104,7 @@ func (w *writer) shouldVote(m msg.Message, dataHash [32]byte) bool {
 
 // createErc20Proposal creates an Erc20 proposal.
 // Returns true if the proposal is successfully created or is complete
-func (w *writer) createErc20Proposal(m msg.Message) bool {
+func (w *writer) createErc20Proposal(m msg.Message, propResult chan<- bool) {
 	w.log.Info("Creating erc20 proposal", "src", m.Source, "nonce", m.DepositNonce)
 
 	data := ConstructErc20ProposalData(m.Payload[0].([]byte), m.Payload[1].([]byte))
@@ -114,18 +114,21 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 		w.executeProposal(m, data, dataHash)
 		result := w.proposalIsFinalized(m.Source, m.DepositNonce, dataHash)
 		w.log.Info("executeProposal for those onlyVoted", "source", m.Source, "DepositNonce", m.DepositNonce, "result", result)
-		return result
+		propResult <- result
+		return
 	}
 
 	if !w.shouldVote(m, dataHash) {
-		return false
+		propResult <- false
+		return
 	}
 
 	// Capture latest block so when know where to watch from
 	latestBlock, err := w.conn.LatestBlock()
 	if err != nil {
 		w.log.Error("Unable to fetch latest block", "err", err)
-		return false
+		propResult <- false
+		return
 	}
 
 	// watch for execution event
@@ -135,6 +138,7 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 		from = from.Add(from, latestBlock)
 		result := w.watchThenExecute(m, data, dataHash, latestBlock)
 		if result == ExecuteErrNormal {
+			propResult <- true
 			return
 		}
 
@@ -143,16 +147,16 @@ func (w *writer) createErc20Proposal(m msg.Message) bool {
 			switch result {
 			case ExecuteErrNormal:
 				w.log.Info("queryAndExecuteRetrySuccess", "i", i, "from", from, "to", latestBlock)
+				propResult <- true
 				return
 			default:
 				w.log.Info("queryAndExecuteRetryFail", "i", i, "from", from, "to", latestBlock, "result", result)
 			}
 		}
+		propResult <- false
 	}()
 
 	w.voteProposal(m, dataHash)
-
-	return true
 }
 
 // watchThenExecute watches for the latest block and executes once the matching finalized event is found

@@ -75,7 +75,15 @@ func (w *writer) processMessage(m msg.Message) bool {
 
 	switch m.Type {
 	case msg.FungibleTransfer:
-		return w.createErc20Proposal(m)
+		result := make(chan bool)
+		defer close(result)
+		w.createErc20Proposal(m, result)
+		select {
+		case <-w.stop:
+			return false
+		case re := <- result:
+			return re
+		}
 	default:
 		w.log.Error("Unknown message type received", "type", m.Type)
 		return false
