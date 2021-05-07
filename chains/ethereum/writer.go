@@ -64,6 +64,8 @@ func (w *writer) setContract(bridge *Bridge.Bridge) {
 }
 
 func (w *writer) ResolveMessage(m msg.Message) bool {
+	w.log.Info("Attempting to resolve message", "type", m.Type, "src", m.Source, "dst", m.Destination, "nonce", m.DepositNonce, "rId", m.ResourceId.Hex())
+	w.log.Info("ResolveMessage: size of msgChan", "size", len(w.msgChan))
 	w.msgChan <- m
 	return true
 }
@@ -71,13 +73,12 @@ func (w *writer) ResolveMessage(m msg.Message) bool {
 // ResolveMessage handles any given message based on type
 // A bool is returned to indicate failure/success, this should be ignored except for within tests.
 func (w *writer) processMessage(m msg.Message) bool {
-	w.log.Info("Attempting to resolve message", "type", m.Type, "src", m.Source, "dst", m.Destination, "nonce", m.DepositNonce, "rId", m.ResourceId.Hex())
-
+	w.log.Info("Attempting to process message", "type", m.Type, "src", m.Source, "dst", m.Destination, "nonce", m.DepositNonce, "rId", m.ResourceId.Hex())
 	switch m.Type {
 	case msg.FungibleTransfer:
 		result := make(chan bool)
 		defer close(result)
-		w.createErc20Proposal(m, result)
+		go w.createErc20Proposal(m, result)
 		select {
 		case <-w.stop:
 			return false

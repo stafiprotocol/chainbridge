@@ -119,7 +119,7 @@ func (w *writer) createErc20Proposal(m msg.Message, propResult chan<- bool) {
 	}
 
 	if !w.shouldVote(m, dataHash) {
-		propResult <- false
+		propResult <- true
 		return
 	}
 
