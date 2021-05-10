@@ -10,9 +10,8 @@ import (
 )
 
 const (
-	PassedStatus      uint8 = 2
-	TransferredStatus uint8 = 3
-	CancelledStatus   uint8 = 4
+	TransferredStatus uint8 = 2
+	CancelledStatus   uint8 = 3
 
 	msgLimit = 4096
 )
