@@ -14,10 +14,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
-// Number of blocks to wait for an finalization event
-const ExecuteBlockWatchLimit = 200
-const ExecuteBlockQueryLimit = 3
-
 // Time between retrying a failed tx
 const TxRetryInterval = time.Second * 2
 
@@ -29,18 +25,7 @@ var ErrTxUnderpriced = errors.New("replacement transaction underpriced")
 var ErrFatalTx = errors.New("submission of transaction failed")
 var ErrFatalQuery = errors.New("query of chain state failed")
 
-type ExecuteErrEnum string
-
-const (
-	ExecuteErrStop          = ExecuteErrEnum("stop")
-	ExecuteErrRetryExceeded = ExecuteErrEnum("retry_exceeded")
-	ExecuteErrFetchLog      = ExecuteErrEnum("fetch_log")
-	ExecuteErrBlockLimit    = ExecuteErrEnum("block_limit")
-	ExecuteErrEventNotFound = ExecuteErrEnum("event_not_found")
-	ExecuteErrNormal        = ExecuteErrEnum("execued")
-)
-
-// proposalIsComplete returns true if the proposal state is either Passed, Transferred or Cancelled
+// proposalIsComplete returns true if the proposal state is either Transferred or Cancelled
 func (w *writer) proposalIsComplete(srcId msg.ChainId, nonce msg.Nonce, dataHash [32]byte) bool {
 	prop, err := w.bridgeContract.GetProposal(w.conn.CallOpts(), uint8(srcId), uint64(nonce), dataHash)
 	if err != nil {
@@ -48,16 +33,6 @@ func (w *writer) proposalIsComplete(srcId msg.ChainId, nonce msg.Nonce, dataHash
 		return false
 	}
 	return prop.Status == TransferredStatus || prop.Status == CancelledStatus
-}
-
-// proposalIsComplete returns true if the proposal state is Transferred or Cancelled
-func (w *writer) proposalIsFinalized(srcId msg.ChainId, nonce msg.Nonce, dataHash [32]byte) bool {
-	prop, err := w.bridgeContract.GetProposal(w.conn.CallOpts(), uint8(srcId), uint64(nonce), dataHash)
-	if err != nil {
-		w.log.Error("Failed to check proposal existence", "err", err)
-		return false
-	}
-	return prop.Status == TransferredStatus || prop.Status == CancelledStatus // Transferred (3)
 }
 
 // hasVoted checks if this relayer has already voted

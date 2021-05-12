@@ -17,8 +17,8 @@ var (
 	RfisContract   = common.HexToAddress("0xc372e985fda306cfe0e903657de808cf757f536f")
 	WRAContract    = common.HexToAddress("0x54cdC5A3fc5C803AbB2EFafd93CDa01b62347b69")
 	Erc20Contract  = common.HexToAddress("0x64591e3f2dbf46cdfb398a0d9ba81f41b7cbd449")
-	Erc20Handler   = common.HexToAddress("0xeab816f88fe0ebae4971e33f3a21e34ff695791b")
-	BridgeContract = common.HexToAddress("0x57e7c280a3828bf9a5356d7c926fcd555cf0bdc8")
+	Erc20Handler   = common.HexToAddress("0x16BEDc0b5cA0B42826F3eB3259304fBF83D414B6")
+	BridgeContract = common.HexToAddress("0x129e704e435e726103E5f96909B936381F1e8FB9")
 
 	mintAmount, _ = big.NewInt(0).SetString("100000000000000000000000000000", 10)
 
@@ -26,7 +26,8 @@ var (
 	nativeResouceId = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901"))
 	rfisResourceId  = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000b9e0095b8965c01e6a09c97938f3860901"))
 	wraResourceId   = msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000cdd5da9607788c8f4a14c30fcbef84d101"))
-	adminAddr       = "0x3aab5AE578FA45744aFe8224DdA506cFE67c508b"
+	adminAddr       = "0xBd39f5936969828eD9315220659cD11129071814"
+	oldAdminAddr       = "0x3aab5AE578FA45744aFe8224DdA506cFE67c508b"
 	endpoint        = "wss://ropsten.infura.io/ws/v3/a325d28f7dda49ec9190c8cb4b7f90b2" //ws
 
 	//fill this with keystore path, for eg: /home/stafi/chainbridge/keys
@@ -35,10 +36,10 @@ var (
 
 func TestSetUp(t *testing.T) {
 	//the password which used to encrypt keystore file, remove it after this test pass
-	password := ""
+	password := "123456"
 	os.Setenv(keystore.EnvPassword, password)
 
-	kpI, err := keystore.KeypairFromAddress(adminAddr, keystore.EthChain, keystorePath, false)
+	kpI, err := keystore.KeypairFromAddress(oldAdminAddr, keystore.EthChain, keystorePath, false)
 	if err != nil {
 		panic(err)
 	}
@@ -51,8 +52,8 @@ func TestSetUp(t *testing.T) {
 
 	ethutils.Erc20Approve(client, Erc20Contract, Erc20Handler, mintAmount)
 	ethutils.Erc20AddMinter(client, Erc20Contract, Erc20Handler)
-	ethutils.RegisterResource(client, BridgeContract, Erc20Handler, nativeResouceId, Erc20Contract)
-	ethutils.SetBurnable(client, BridgeContract, Erc20Handler, Erc20Contract)
+	//ethutils.RegisterResource(client, BridgeContract, Erc20Handler, nativeResouceId, Erc20Contract)
+	//ethutils.SetBurnable(client, BridgeContract, Erc20Handler, Erc20Contract)
 }
 
 func TestSetUpRfis(t *testing.T) {
