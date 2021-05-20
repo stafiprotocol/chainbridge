@@ -92,8 +92,6 @@ func (l *listener) GetEventsAt(blockNum uint64) ([]*EventFungibleTransfer, error
 		return nil, err
 	}
 
-	l.log.Trace("block", "eventsNum", len(events), "blockNum", blockNum)
-
 	for _, ev := range events {
 		if ev.ModuleId != config.BridgeCommon || ev.EventId != config.FungibleTransferEventId {
 			continue

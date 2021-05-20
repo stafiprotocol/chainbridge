@@ -155,7 +155,9 @@ func (l *listener) pollBlocks() error {
 
 			// Sleep if the block we want comes after the most recently finalized block
 			if currentBlock > uint64(finalizedHeader.Number) {
-				l.log.Trace("Block not yet finalized", "target", currentBlock, "latest", finalizedHeader.Number)
+				if currentBlock%100 == 0 {
+					l.log.Trace("Block not yet finalized", "target", currentBlock, "latest", finalizedHeader.Number)
+				}
 				time.Sleep(BlockRetryInterval)
 				continue
 			}
@@ -198,7 +200,6 @@ func (l *listener) processEvents(blockNum uint64) error {
 
 	if l.subscriptions[FungibleTransfer] != nil {
 		for _, evt := range evts {
-			l.log.Trace("Handling FungibleTransfer event")
 			l.submitMessage(l.subscriptions[FungibleTransfer](evt, l.log))
 		}
 	}
