@@ -138,7 +138,6 @@ func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
 }
 
 func (c *Connection) GetGasPriceFromEtherscan() (*big.Int, error) {
-	// "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=RFPRRAX9BZGX2SHNNHXIRVPCSDPZUUGDFN"
 	res, err := http.Get(c.etherscanUrl)
 	if err != nil {
 		return nil, err

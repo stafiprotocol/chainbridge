@@ -1,7 +1,7 @@
 // Copyright 2020 Stafi Protocol
 // SPDX-License-Identifier: LGPL-3.0-only
 
-package ethereum
+package ethereum_test
 
 import (
 	"context"
@@ -13,15 +13,16 @@ import (
 	ethutils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	ethtest "github.com/stafiprotocol/chainbridge/shared/ethereum/testing"
 	"github.com/stafiprotocol/chainbridge/utils/keystore"
+	"github.com/stafiprotocol/chainbridge/connections/ethereum"
 )
 
-var TestEndpoint = "ws://localhost:8545"
+var TestEndpoint = "https://mainnet.infura.io/v3/4cb873af07a84e42a952189eff3a6954"
 var AliceKp = keystore.TestKeyRing.EthereumKeys[keystore.AliceKey]
 var GasLimit = big.NewInt(ethutils.DefaultGasLimit)
 var MaxGasPrice = big.NewInt(ethutils.DefaultMaxGasPrice)
-var EtherScanUrl = "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=RFPRRAX9BZGX2SHNNHXIRVPCSDPZUUGDFN"
+var EtherScanUrl = "https://api-cn.etherscan.com/api?module=gastracker&action=gasoracle&apikey=RFPRRAX9BZGX2SHNNHXIRVPCSDPZUUGDFN"
 func TestConnect(t *testing.T) {
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice,EtherScanUrl)
+	conn := ethereum.NewConnection(TestEndpoint, true, AliceKp, log15.Root(), GasLimit, MaxGasPrice,EtherScanUrl)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -38,7 +39,7 @@ func TestContractCode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice,EtherScanUrl)
+	conn := ethereum.NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice,EtherScanUrl)
 	err = conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +61,7 @@ func TestContractCode(t *testing.T) {
 
 func TestConnection_SafeEstimateGas(t *testing.T) {
 	// MaxGasPrice is the constant price on the dev network, so we increase it here by 1 to ensure it adjusts
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, 
+	conn := ethereum.NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, 
 	MaxGasPrice.Add(MaxGasPrice, big.NewInt(1)),EtherScanUrl)
 	err := conn.Connect()
 	if err != nil {
@@ -79,8 +80,8 @@ func TestConnection_SafeEstimateGas(t *testing.T) {
 }
 
 func TestConnection_SafeEstimateGasMax(t *testing.T) {
-	maxPrice := big.NewInt(1)
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, maxPrice,EtherScanUrl)
+	maxPrice := big.NewInt(300e9)
+	conn := ethereum.NewConnection(TestEndpoint, true, AliceKp, log15.Root(), GasLimit, maxPrice,EtherScanUrl)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -91,6 +92,7 @@ func TestConnection_SafeEstimateGasMax(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log(price.String())
 
 	if price.Cmp(maxPrice) != 0 {
 		t.Fatalf("Gas price should equal max. Suggested: %s Max: %s", price.String(), maxPrice.String())
