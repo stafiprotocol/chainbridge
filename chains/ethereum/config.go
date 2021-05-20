@@ -14,7 +14,7 @@ import (
 )
 
 const DefaultGasLimit = 1000000
-const DefaultGasPrice = 20000000000
+const DefaultGasPrice = 300000000000
 
 var ZeroAddress = common.HexToAddress("0x0000000000000000000000000000000000000000")
 
@@ -33,6 +33,7 @@ type Config struct {
 	maxGasPrice          *big.Int
 	http                 bool // Config for type of connection
 	startBlock           *big.Int
+	etherscanUrl         string
 }
 
 // parseChainConfig uses a core.ChainConfig to construct a corresponding Config
@@ -102,6 +103,13 @@ func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 		} else {
 			return nil, errors.New("unable to parse start block")
 		}
+	}
+
+	if etherScanUrl, ok := chainCfg.Opts["etherscanUrl"]; ok && etherScanUrl != "" {
+		config.etherscanUrl = etherScanUrl
+		delete(chainCfg.Opts, "etherscanUrl")
+	} else {
+		return nil, errors.New("etherscan url is nil")
 	}
 
 	if len(chainCfg.Opts) != 0 {

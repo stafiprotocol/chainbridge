@@ -19,9 +19,9 @@ var TestEndpoint = "ws://localhost:8545"
 var AliceKp = keystore.TestKeyRing.EthereumKeys[keystore.AliceKey]
 var GasLimit = big.NewInt(ethutils.DefaultGasLimit)
 var MaxGasPrice = big.NewInt(ethutils.DefaultMaxGasPrice)
-
+var EtherScanUrl = "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=RFPRRAX9BZGX2SHNNHXIRVPCSDPZUUGDFN"
 func TestConnect(t *testing.T) {
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice)
+	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice,EtherScanUrl)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -38,7 +38,7 @@ func TestContractCode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice)
+	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice,EtherScanUrl)
 	err = conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,8 @@ func TestContractCode(t *testing.T) {
 
 func TestConnection_SafeEstimateGas(t *testing.T) {
 	// MaxGasPrice is the constant price on the dev network, so we increase it here by 1 to ensure it adjusts
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, MaxGasPrice.Add(MaxGasPrice, big.NewInt(1)))
+	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, 
+	MaxGasPrice.Add(MaxGasPrice, big.NewInt(1)),EtherScanUrl)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -79,7 +80,7 @@ func TestConnection_SafeEstimateGas(t *testing.T) {
 
 func TestConnection_SafeEstimateGasMax(t *testing.T) {
 	maxPrice := big.NewInt(1)
-	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, maxPrice)
+	conn := NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit, maxPrice,EtherScanUrl)
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
