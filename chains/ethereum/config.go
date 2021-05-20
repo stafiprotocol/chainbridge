@@ -105,12 +105,12 @@ func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 		}
 	}
 
-	if etherScanUrl, ok := chainCfg.Opts["etherscanUrl"]; ok && etherScanUrl != "" {
-		config.etherscanUrl = etherScanUrl
-		delete(chainCfg.Opts, "etherscanUrl")
-	} else {
-		return nil, errors.New("etherscan url is nil")
-	}
+	// if etherScanUrl, ok := chainCfg.Opts["etherscanUrl"]; ok && etherScanUrl != "" {
+	// 	config.etherscanUrl = etherScanUrl
+	// 	delete(chainCfg.Opts, "etherscanUrl")
+	// } else {
+	// 	return nil, errors.New("etherscan url is nil")
+	// }
 
 	if len(chainCfg.Opts) != 0 {
 		return nil, fmt.Errorf("unknown Opts Encountered: %#v", chainCfg.Opts)

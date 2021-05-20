@@ -62,7 +62,7 @@ Ethereum chains support the following additional options:
     "gasLimit": "0x1234"            // Gas limit for transactions (default: 6721975)
     "http": "true"                  // Whether the chain connection is ws or http (default: false)
     "startBlock": "1234"            // The block to start processing events from (default: 0)
-    "etherscanUrl":"xxxxx"
+    "etherscanUrl":"https://api-cn.etherscan.com/api?module=gastracker&action=gasoracle&apikey=RFPRRAX9BZGX2SHNNHXIRVPCSDPZUUGDFN"
 }
 ```
 

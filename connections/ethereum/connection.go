@@ -123,7 +123,7 @@ func (c *Connection) CallOpts() *bind.CallOpts {
 }
 
 func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
-	gasPrice, err := c.GetGasPriceFromEtherscan()
+	gasPrice, err := c.conn.SuggestGasPrice(ctx)
 	if err != nil {
 		return nil, err
 	}
