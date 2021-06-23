@@ -62,7 +62,8 @@
       "RFIS",
       "RDOT",
       "RKSM",
-      "RATOM"
+      "RATOM",
+      "RSOL"
     ]
   },
   "AccountRData": {
