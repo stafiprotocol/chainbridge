@@ -4,7 +4,6 @@
 package ethereum
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -70,22 +69,4 @@ func newLocalConnection(t *testing.T, cfg *Config) *connection.Connection {
 	}
 
 	return conn
-}
-
-func deployTestContracts(t *testing.T, client *utils.Client, id msg.ChainId) *utils.DeployedContracts {
-	contracts, err := utils.DeployContracts(
-		client,
-		uint8(id),
-		TestRelayerThreshold,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println("=======================================================")
-	fmt.Printf("Bridge: %s\n", contracts.BridgeAddress.Hex())
-	fmt.Printf("Erc20Handler: %s\n", contracts.ERC20HandlerAddress.Hex())
-	fmt.Println("========================================================")
-
-	return contracts
 }

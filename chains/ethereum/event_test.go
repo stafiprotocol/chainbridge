@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	rfisContract        = common.HexToAddress("0xc372e985fda306cfe0e903657de808cf757f536f")
-	userAddr            = "0xBd39f5936969828eD9315220659cD11129071814"
-	userCommonAddr      = common.HexToAddress(userAddr)
+	rfisContract   = common.HexToAddress("0xc372e985fda306cfe0e903657de808cf757f536f")
+	userAddr       = "0xBd39f5936969828eD9315220659cD11129071814"
+	userCommonAddr = common.HexToAddress(userAddr)
 )
 
 func TestDepositEvent(t *testing.T) {
@@ -30,7 +30,7 @@ func TestDepositEvent(t *testing.T) {
 	}
 	kp, _ := kpI.(*secp256k1.Keypair)
 
-	client, err := ethutils.NewClient(endpoint, kp)
+	client, err := ethutils.NewClient(ropstenEndpoint, kp)
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +91,7 @@ func TestRfisDepositEvent(t *testing.T) {
 	}
 	kp, _ := kpI.(*secp256k1.Keypair)
 
-	client, err := ethutils.NewClient(endpoint, kp)
+	client, err := ethutils.NewClient(ropstenEndpoint, kp)
 	if err != nil {
 		panic(err)
 	}

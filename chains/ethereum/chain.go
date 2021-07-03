@@ -78,16 +78,8 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 	}
 
 	stop := make(chan int)
-	conn := connection.NewConnection(cfg.endpoint, cfg.http, kp, logger, cfg.gasLimit, cfg.maxGasPrice, cfg.etherscanUrl)
+	conn := connection.NewConnection(cfg.endpoint, cfg.http, kp, logger, cfg.gasLimit, cfg.maxGasPrice)
 	err = conn.Connect()
-	if err != nil {
-		return nil, err
-	}
-	err = conn.EnsureHasBytecode(cfg.bridgeContract)
-	if err != nil {
-		return nil, err
-	}
-	err = conn.EnsureHasBytecode(cfg.erc20HandlerContract)
 	if err != nil {
 		return nil, err
 	}

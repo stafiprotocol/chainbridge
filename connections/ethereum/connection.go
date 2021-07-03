@@ -5,12 +5,9 @@ package ethereum
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/big"
-	"net/http"
 	"sync"
 	"time"
 
@@ -20,7 +17,6 @@ import (
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
 )
 
@@ -28,13 +24,12 @@ var BlockRetryInterval = time.Second * 5
 var ExtraGasPrice = big.NewInt(10000000000)
 
 type Connection struct {
-	endpoint     string
-	etherscanUrl string
-	http         bool
-	kp           *secp256k1.Keypair
-	gasLimit     *big.Int
-	maxGasPrice  *big.Int
-	conn         *ethclient.Client
+	endpoint    string
+	http        bool
+	kp          *secp256k1.Keypair
+	gasLimit    *big.Int
+	maxGasPrice *big.Int
+	conn        *ethclient.Client
 	// signer    ethtypes.Signer
 	opts     *bind.TransactOpts
 	callOpts *bind.CallOpts
@@ -46,16 +41,15 @@ type Connection struct {
 
 // NewConnection returns an uninitialized connection, must call Connection.Connect() before using.
 func NewConnection(endpoint string, http bool, kp *secp256k1.Keypair, log log15.Logger, gasLimit,
-	gasPrice *big.Int, etherscanUrl string) *Connection {
+	gasPrice *big.Int) *Connection {
 	return &Connection{
-		endpoint:     endpoint,
-		etherscanUrl: etherscanUrl,
-		http:         http,
-		kp:           kp,
-		gasLimit:     gasLimit,
-		maxGasPrice:  gasPrice,
-		log:          log,
-		stop:         make(chan int),
+		endpoint:    endpoint,
+		http:        http,
+		kp:          kp,
+		gasLimit:    gasLimit,
+		maxGasPrice: gasPrice,
+		log:         log,
+		stop:        make(chan int),
 	}
 }
 
@@ -135,34 +129,6 @@ func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
 	}
 
 	return gasPrice, nil
-}
-
-func (c *Connection) GetGasPriceFromEtherscan() (*big.Int, error) {
-	res, err := http.Get(c.etherscanUrl)
-	if err != nil {
-		return nil, err
-	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("err status code %d", res.StatusCode)
-	}
-	resBts, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	gasRes := GasRes{}
-	err = json.Unmarshal(resBts, &gasRes)
-	if err != nil {
-		return nil, err
-	}
-
-	if gasRes.Status != "1" {
-		return nil, fmt.Errorf("err res %s", gasRes.Status)
-	}
-	gasPriceDeci, err := decimal.NewFromString(gasRes.Result.FastGasPrice)
-	if err != nil {
-		return nil, err
-	}
-	return gasPriceDeci.Mul(decimal.New(1, 9)).BigInt(), nil
 }
 
 type GasRes struct {

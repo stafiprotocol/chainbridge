@@ -1,0 +1,45 @@
+{
+  "chains": [
+    {
+      "name": "Stafi",
+      "type": "substrate",
+      "id": "1",
+      "endpoint": "ws://127.0.0.1:9944",
+      "from": "31d96Cq9idWQqPq3Ch5BFY84zrThVE3r98M7vG4xYaSWHwsX",
+      "symbols": [
+        {
+          "symbol": "Default",
+          "resourceId": "Default",
+          "decimalFactor": "1000000"
+        },
+        {
+          "symbol": "RDOT",
+          "resourceId": "000000000000000000000000000000bada4d69537ffd62dbcde10ddda21b2001",
+          "decimalFactor": "100000000"
+        },
+        {
+          "symbol": "RATOM",
+          "resourceId": "0x0000000000000000000000000000006e15faef60f5e197166fe64110456a8601",
+          "decimalFactor": "1000000000000"
+        }
+      ],
+      "opts": {
+        "startBlock": "1",
+        "typeRegister": "/Users/fwj/Go/stafi/chainbridge/network/stafi.json"
+      }
+    },
+    {
+      "name": "Bsc-Relayer1",
+      "type": "ethereum",
+      "id": "3",
+      "endpoint": "https://data-seed-prebsc-2-s3.binance.org:8545",
+      "from": "0xBca9567A9e8D5F6F58C419d32aF6190F74C880e6",
+      "opts": {
+        "bridge": "0xb5Dc44e4e680d9a485fCbe1f465eA0F65287FBc0",
+        "erc20Handler": "0x88D106ffd21e01ccd4a0011ecaBc06DfD7f60319",
+        "http": "true",
+        "startBlock": "10237314"
+      }
+    }
+  ]
+}

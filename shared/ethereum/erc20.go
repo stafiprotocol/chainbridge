@@ -5,6 +5,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -14,45 +15,6 @@ import (
 	ERC20 "github.com/stafiprotocol/chainbridge/bindings/ERC20PresetMinterPauser"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
-
-func DeployAndMintErc20(client *Client, amount *big.Int) (common.Address, error) {
-	err := client.LockNonceAndUpdate()
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	// Deploy
-	erc20Addr, tx, _, err := ERC20.DeployERC20PresetMinterPauser(client.Opts, client.Client, "WRA", "WRA")
-	if err != nil {
-		return ZeroAddress, err
-	}
-
-	err = WaitForTx(client, tx)
-	if err != nil {
-		return ZeroAddress, err
-	}
-	client.UnlockNonce()
-
-	//// Mint
-	//err = client.LockNonceAndUpdate()
-	//if err != nil {
-	//	return ZeroAddress, err
-	//}
-	//
-	//mintTx, err := erc20Instance.Mint(client.Opts, client.Opts.From, amount)
-	//if err != nil {
-	//	return ZeroAddress, err
-	//}
-	//
-	//err = WaitForTx(client, mintTx)
-	//if err != nil {
-	//	return ZeroAddress, err
-	//}
-	//
-	//client.UnlockNonce()
-
-	return erc20Addr, nil
-}
 
 func Erc20Approve(client *Client, erc20Contract, recipient common.Address, amount *big.Int) error {
 	err := client.LockNonceAndUpdate()
@@ -74,6 +36,8 @@ func Erc20Approve(client *Client, erc20Contract, recipient common.Address, amoun
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Erc20Approve txhash", tx.Hash())
 
 	client.UnlockNonce()
 
@@ -121,7 +85,37 @@ func Erc20AddMinter(client *Client, erc20Contract, handler common.Address) error
 		return err
 	}
 
+	fmt.Println("Erc20AddMinter txhash", tx.Hash())
+
 	client.UnlockNonce()
+
+	return nil
+}
+
+func SetResourceAndBurnable(client *Client, bridge, handler common.Address, rIds [][32]byte, tokenContractAddresses, burnablTokenContractAddresses []common.Address) error {
+	instance, err := Bridge.NewBridge(bridge, client.Client)
+	if err != nil {
+		return err
+	}
+
+	err = client.LockNonceAndUpdate()
+	if err != nil {
+		return err
+	}
+
+	tx, err := instance.AdminSetResourceAndBurnable(client.Opts, handler, rIds, tokenContractAddresses, burnablTokenContractAddresses)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForTx(client, tx)
+	if err != nil {
+		return err
+	}
+
+	client.UnlockNonce()
+
+	fmt.Println("SetResourceAndBurnable txhash", tx.Hash())
 
 	return nil
 }
@@ -169,6 +163,8 @@ func CreateErc20Deposit(client *Client, bridge common.Address, destId msg.ChainI
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("CreateErc20Deposit txhash", tx.Hash())
 
 	return WaitForTx(client, tx)
 }

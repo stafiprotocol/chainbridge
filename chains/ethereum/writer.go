@@ -81,7 +81,7 @@ func (w *writer) processMessage(m msg.Message) bool {
 		select {
 		case <-w.stop:
 			return false
-		case re := <- result:
+		case re := <-result:
 			return re
 		}
 	default:
