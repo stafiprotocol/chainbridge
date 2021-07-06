@@ -13,12 +13,12 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const DefaultConfigPath = "./config.json"
 const DefaultKeystorePath = "./keys"
 
 type Config struct {
-	Chains       []RawChainConfig `json:"chains"`
-	KeystorePath string           `json:"keystorePath,omitempty"`
+	Chains         []RawChainConfig `json:"chains"`
+	KeystorePath   string           `json:"keystorePath,omitempty"`
+	BlockStorePath string           `json:"blockstorePath,omitempty"`
 }
 
 // RawChainConfig is parsed directly from the config file and should be using to construct the core.ChainConfig
@@ -88,9 +88,11 @@ func (c *Config) validate() error {
 
 func GetConfig(ctx *cli.Context) (*Config, error) {
 	var fig Config
-	path := DefaultConfigPath
+	var path string
 	if file := ctx.String(ConfigFileFlag.Name); file != "" {
 		path = file
+	} else {
+		return nil, fmt.Errorf("config file not specified")
 	}
 	err := loadConfig(path, &fig)
 	if err != nil {
@@ -99,6 +101,9 @@ func GetConfig(ctx *cli.Context) (*Config, error) {
 	}
 	if ksPath := ctx.String(KeystorePathFlag.Name); ksPath != "" {
 		fig.KeystorePath = ksPath
+	}
+	if blkPath := ctx.String(BlockstorePathFlag.Name); blkPath != "" {
+		fig.BlockStorePath = blkPath
 	}
 	log.Debug("Loaded config", "path", path)
 	err = fig.validate()

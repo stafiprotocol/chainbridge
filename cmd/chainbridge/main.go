@@ -141,7 +141,7 @@ func run(ctx *cli.Context) error {
 			From:           chain.From,
 			KeystorePath:   cfg.KeystorePath,
 			Insecure:       false,
-			BlockstorePath: ctx.String(config.BlockstorePathFlag.Name),
+			BlockstorePath: cfg.BlockStorePath,
 			FreshStart:     ctx.Bool(config.FreshStartFlag.Name),
 			LatestBlock:    ctx.Bool(config.LatestBlockFlag.Name),
 			Opts:           chain.Opts,

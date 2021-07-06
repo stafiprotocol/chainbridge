@@ -26,5 +26,7 @@
         "startBlock": "10237314"
       }
     }
-  ]
+  ],
+  "keystorePath": "keystorePath",
+  "blockstorePath": "blockstorePath"
 }

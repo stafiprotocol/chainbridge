@@ -39,3 +39,4 @@ centrifuge-chain/
 /cfgBuilder/*.toml
 config*.json
 bridge_log*.json
+blockstore/
