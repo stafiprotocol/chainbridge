@@ -39,6 +39,8 @@ type listener struct {
 var BlockRetryInterval = time.Second * 5
 var BlockRetryLimit = 5
 
+const DefaultTypeFilePath = "./network/stafi.json"
+
 func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]*big.Int) *listener {
 	return &listener{
 		name:          name,
@@ -79,11 +81,11 @@ func (l *listener) start() error {
 	go func() {
 		websocket.SetEndpoint(l.conn.url)
 		types.RuntimeType{}.Reg()
-		file, ok := l.conn.opts["typeRegister"]
-		if !ok {
-			panic("typeRegister not specified")
+		path := DefaultTypeFilePath
+		if file, ok := l.conn.opts["typeRegister"]; ok {
+			path = file
 		}
-		content, err := ioutil.ReadFile(file)
+		content, err := ioutil.ReadFile(path)
 		if err != nil {
 			panic(err)
 		}
