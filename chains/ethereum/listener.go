@@ -20,10 +20,13 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 )
 
-var BlockDelay = big.NewInt(10)
-var BlockRetryInterval = time.Second * 10
-var BlockRetryLimit = 5
-var ErrFatalPolling = errors.New("listener block polling failed")
+var (
+	BlockDelay         = big.NewInt(10)
+	BlockRetryInterval = time.Second * 10
+	BlockRetryLimit    = 5
+	ErrFatalPolling    = errors.New("listener block polling failed")
+	logInterval        = uint64(100)
+)
 
 type listener struct {
 	cfg                  Config
@@ -101,13 +104,16 @@ func (l *listener) pollBlocks() error {
 				continue
 			}
 
-			if latestBlock.Uint64()%100 == 0 {
-				l.log.Debug("pollBlocks", "latestBlock", latestBlock)
+			if l.cfg.id == 3 {
+				logInterval = 200
+			}
+
+			if latestBlock.Uint64()%logInterval == 0 {
+				l.log.Debug("pollBlocks", "target", currentBlock, "latest", latestBlock)
 			}
 
 			// Sleep if the difference is less than BlockDelay; (latest - current) < BlockDelay
 			if big.NewInt(0).Sub(latestBlock, currentBlock).Cmp(BlockDelay) == -1 {
-				l.log.Debug("Block not ready, will retry", "target", currentBlock, "latest", latestBlock)
 				time.Sleep(BlockRetryInterval)
 				continue
 			}
