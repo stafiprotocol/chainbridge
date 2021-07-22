@@ -31,7 +31,7 @@ var cliFlags = []cli.Flag{
 }
 
 var generateFlags = []cli.Flag{
-	config.PathFlag,
+	config.KeystorePathFlag,
 }
 
 var accountCommand = cli.Command{

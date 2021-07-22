@@ -169,6 +169,34 @@ func CreateErc20Deposit(client *Client, bridge common.Address, destId msg.ChainI
 	return WaitForTx(client, tx)
 }
 
+func AddRelayer(client *Client, bridge, relayer common.Address) error {
+	bridgeInstance, err := Bridge.NewBridge(bridge, client.Client)
+	if err != nil {
+		return err
+	}
+
+	err = client.LockNonceAndUpdate()
+	if err != nil {
+		return err
+	}
+
+	tx, err := bridgeInstance.AdminAddRelayer(client.Opts, relayer)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForTx(client, tx)
+	if err != nil {
+		return err
+	}
+
+	client.UnlockNonce()
+
+	fmt.Println("AddRelayer txhash", tx.Hash())
+
+	return nil
+}
+
 func Erc20GetAllowance(client *Client, erc20Contract, owner, spender common.Address) (*big.Int, error) {
 	instance, err := ERC20.NewERC20PresetMinterPauser(erc20Contract, client.Client)
 	if err != nil {
