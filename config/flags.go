@@ -23,6 +23,7 @@ var (
 	KeystorePathFlag = &cli.StringFlag{
 		Name:  "keystore",
 		Usage: "Path to keystore directory",
+		Value: DefaultKeystorePath,
 	}
 
 	BlockstorePathFlag = &cli.StringFlag{
