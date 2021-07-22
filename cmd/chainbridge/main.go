@@ -38,6 +38,7 @@ var accountCommand = cli.Command{
 	Name:  "accounts",
 	Usage: "manage bridge keystore",
 	Description: "The accounts command is used to manage the bridge keystore.\n" +
+		"\tMake sure the keystore dir is exist before generating\n" +
 		"\tTo generate a substrate keystore: chainbridge accounts gensub\n" +
 		"\tTo generate a ethereum keystore: chainbridge accounts geneth\n" +
 		"\tTo list keys: chainbridge accounts list",
@@ -47,16 +48,14 @@ var accountCommand = cli.Command{
 			Name:   "gensub",
 			Usage:  "generate subsrate keystore",
 			Flags:  generateFlags,
-			Description: "The generate subcommand is used to generate the substrate keystore.\n" +
-				"\tkeystore path should be given.",
+			Description: "The generate subcommand is used to generate the substrate keystore.\n",
 		},
 		{
 			Action: wrapHandler(handleGenerateEthCmd),
 			Name:   "geneth",
 			Usage:  "generate ethereum keystore",
 			Flags:  generateFlags,
-			Description: "The generate subcommand is used to generate the ethereum keystore.\n" +
-				"\tkeystore path should be given.",
+			Description: "The generate subcommand is used to generate the ethereum keystore.\n",
 		},
 		{
 			Action:      wrapHandler(handleListCmd),

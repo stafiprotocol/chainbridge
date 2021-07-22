@@ -56,11 +56,3 @@ var (
 		Value: 8001,
 	}
 )
-
-// Generate subcommand flags
-var (
-	PathFlag = &cli.StringFlag{
-		Name:  "keypath",
-		Usage: "Dir to keep key file.",
-	}
-)

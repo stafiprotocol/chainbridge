@@ -26,7 +26,6 @@ type dataHandler struct {
 // wrapHandler takes in a Cmd function (all declared below) and wraps
 // it in the correct signature for the Cli Commands
 func wrapHandler(hdl func(*cli.Context, *dataHandler) error) cli.ActionFunc {
-
 	return func(ctx *cli.Context) error {
 		err := startLogger(ctx)
 		if err != nil {
@@ -44,13 +43,13 @@ func wrapHandler(hdl func(*cli.Context, *dataHandler) error) cli.ActionFunc {
 
 func handleGenerateSubCmd(ctx *cli.Context, dHandler *dataHandler) error {
 	log.Info("Generating substrate keyfile by rawseed...")
-	path := ctx.String(config.PathFlag.Name)
+	path := ctx.String(config.KeystorePathFlag.Name)
 	return generateKeyFileByRawseed(path)
 }
 
 func handleGenerateEthCmd(ctx *cli.Context, dHandler *dataHandler) error {
 	log.Info("Generating ethereum keyfile by private key...")
-	path := ctx.String(config.PathFlag.Name)
+	path := ctx.String(config.KeystorePathFlag.Name)
 	return generateKeyFileByPrivateKey(path)
 }
 
