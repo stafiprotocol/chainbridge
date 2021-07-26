@@ -2,18 +2,12 @@ package substrate
 
 import (
 	"fmt"
-	scalecodec "github.com/itering/scale.go"
+	"math/big"
+
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
-	"math/big"
 )
-
-type ChainEvent struct {
-	ModuleId string                  `json:"module_id" `
-	EventId  string                  `json:"event_id" `
-	Params   []scalecodec.EventParam `json:"params"`
-}
 
 type EventFungibleTransfer struct {
 	Destination  uint8

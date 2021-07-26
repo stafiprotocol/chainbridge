@@ -31,8 +31,6 @@ import (
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
-	"github.com/stafiprotocol/chainbridge/utils/crypto/sr25519"
-	"github.com/stafiprotocol/chainbridge/utils/keystore"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -50,15 +48,14 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 		return nil, err
 	}
 
-	kp, err := keystore.KeypairFromAddress(cfg.From, keystore.SubChain, cfg.KeystorePath, cfg.Insecure)
+	stop := make(chan int)
+	conn, err := NewConnection(cfg, logger, stop)
 	if err != nil {
 		return nil, err
 	}
 
-	krp := kp.(*sr25519.Keypair).AsKeyringPair()
-
 	// Attempt to load latest block
-	bs, err := blockstore.NewBlockstore(cfg.BlockstorePath, cfg.Id, kp.Address())
+	bs, err := blockstore.NewBlockstore(cfg.BlockstorePath, cfg.Id, conn.Address())
 	if err != nil {
 		return nil, err
 	}
@@ -70,14 +67,6 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 		}
 	}
 
-	stop := make(chan int)
-	// Setup connection
-	conn := NewConnection(cfg.Endpoint, cfg.Name, krp, cfg.Opts, logger, stop, sysErr)
-	err = conn.Connect()
-	if err != nil {
-		return nil, err
-	}
-
 	if cfg.Opts["skipCheckChainId"] != "true" {
 		err = conn.checkChainId(cfg.Id)
 		if err != nil {
@@ -86,11 +75,11 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	}
 
 	if cfg.LatestBlock {
-		curr, err := conn.api.RPC.Chain.GetHeaderLatest()
+		curr, err := conn.LatestBlockNumber()
 		if err != nil {
 			return nil, err
 		}
-		startBlock = uint64(curr.Number)
+		startBlock = curr
 	}
 
 	// Setup listener & writer

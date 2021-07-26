@@ -44,17 +44,17 @@ var accountCommand = cli.Command{
 		"\tTo list keys: chainbridge accounts list",
 	Subcommands: []*cli.Command{
 		{
-			Action: wrapHandler(handleGenerateSubCmd),
-			Name:   "gensub",
-			Usage:  "generate subsrate keystore",
-			Flags:  generateFlags,
+			Action:      wrapHandler(handleGenerateSubCmd),
+			Name:        "gensub",
+			Usage:       "generate subsrate keystore",
+			Flags:       generateFlags,
 			Description: "The generate subcommand is used to generate the substrate keystore.\n",
 		},
 		{
-			Action: wrapHandler(handleGenerateEthCmd),
-			Name:   "geneth",
-			Usage:  "generate ethereum keystore",
-			Flags:  generateFlags,
+			Action:      wrapHandler(handleGenerateEthCmd),
+			Name:        "geneth",
+			Usage:       "generate ethereum keystore",
+			Flags:       generateFlags,
 			Description: "The generate subcommand is used to generate the ethereum keystore.\n",
 		},
 		{

@@ -4,13 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stafiprotocol/chainbridge/config"
-	"github.com/stafiprotocol/chainbridge/utils/crypto/sr25519"
-	"github.com/stafiprotocol/chainbridge/utils/keystore"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
@@ -27,8 +24,7 @@ func TestWriter_resolveResourceId(t *testing.T) {
 	stop := make(chan int)
 	defer close(stop)
 	errs := make(chan error)
-	conn := NewConnection(TestEndpoint, "Alice", AliceKey, nil, AliceTestLogger, make(chan int), errs)
-	err := conn.Connect()
+	conn, err := NewConnection(localCfg, AliceTestLogger, make(chan int))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,19 +63,8 @@ func TestNewProp(t *testing.T) {
 	propBz, err := prop.encode()
 	assert.NoError(t, err)
 
-	//the password which used to encrypt keystore file, remove it after this test pass
-	password := "123456"
-	os.Setenv(keystore.EnvPassword, password)
-
-	kp, err := keystore.KeypairFromAddress(From, keystore.SubChain, KeystorePath, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	krp := kp.(*sr25519.Keypair).AsKeyringPair()
 	errs := make(chan error)
-	conn := NewConnection(TestEndpoint, "Alice", krp, nil, AliceTestLogger, make(chan int), errs)
-	err = conn.Connect()
+	conn, err := NewConnection(localCfg, AliceTestLogger, make(chan int))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +73,7 @@ func TestNewProp(t *testing.T) {
 	defer close(stop)
 	w := NewWriter(conn, AliceTestLogger, errs, stop, decimals)
 
-	exists, err := w.conn.queryStorage(config.BridgeCommon, "Votes", srcId, propBz, &voteRes)
+	exists, err := w.conn.QueryStorage(config.BridgeCommon, "Votes", srcId, propBz, &voteRes)
 	assert.NoError(t, err)
 
 	fmt.Println("exists:", exists)
@@ -99,28 +84,6 @@ func TestNewProp(t *testing.T) {
 	fmt.Println(hexutil.Encode(acId[:]))
 	cmp := containsVote(voteRes.Voted, acId)
 	fmt.Println(cmp)
-}
-
-func TestConnection_NewExtrinsic(t *testing.T) {
-	//the password which used to encrypt keystore file, remove it after this test pass
-	password := "123456"
-	os.Setenv(keystore.EnvPassword, password)
-
-	kp, err := keystore.KeypairFromAddress(From, keystore.SubChain, KeystorePath, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	krp := kp.(*sr25519.Keypair).AsKeyringPair()
-	errs := make(chan error)
-	conn := NewConnection(TestEndpoint, "Alice", krp, nil, AliceTestLogger, make(chan int), errs)
-	err = conn.Connect()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-
-	conn.NewUnsignedExtrinsic("Balances.transfer", "")
 }
 
 func TestEncode(t *testing.T) {

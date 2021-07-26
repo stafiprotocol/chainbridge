@@ -104,8 +104,8 @@ func (w *writer) processMessage(m msg.Message) bool {
 		}
 
 		w.log.Info("Acknowledging proposal on chain")
-		ext, err := w.conn.NewUnsignedExtrinsic(config.AcknowledgeProposal, prop.DepositNonce, prop.SourceId, prop.ResourceId, prop.Call)
-		err = w.conn.SignAndSubmitTx(ext)
+		ext, err := w.conn.gc.NewUnsignedExtrinsic(config.AcknowledgeProposal, prop.DepositNonce, prop.SourceId, prop.ResourceId, prop.Call)
+		err = w.conn.gc.SignAndSubmitTx(ext)
 		if err != nil {
 			if err.Error() == TerminatedError.Error() {
 				w.log.Error("Acknowledging proposal met TerminatedError")
@@ -139,7 +139,7 @@ func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 		return nil, err
 	}
 
-	meta, err := w.conn.GetLatestMetadata()
+	meta, err := w.conn.gc.GetLatestMetadata()
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 
 func (w *writer) resolveResourceId(id [32]byte) (string, error) {
 	var res []byte
-	exist, err := w.conn.queryStorage(config.BridgeCommon, "Resources", id[:], nil, &res)
+	exist, err := w.conn.QueryStorage(config.BridgeCommon, "Resources", id[:], nil, &res)
 	if err != nil {
 		return "", err
 	}
@@ -190,7 +190,7 @@ func (w *writer) proposalValid(prop *proposal) (bool, string, error) {
 		return false, "", err
 	}
 
-	exists, err := w.conn.queryStorage(config.BridgeCommon, "Votes", srcId, propBz, &voteRes)
+	exists, err := w.conn.QueryStorage(config.BridgeCommon, "Votes", srcId, propBz, &voteRes)
 	if err != nil {
 		return false, "", err
 	}

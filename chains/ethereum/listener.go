@@ -84,6 +84,9 @@ func (l *listener) pollBlocks() error {
 	l.log.Info("Polling Blocks...")
 	var currentBlock = l.cfg.startBlock
 	var retry = BlockRetryLimit
+	if l.cfg.id == 3 {
+		logInterval = 200
+	}
 	for {
 		select {
 		case <-l.stop:
@@ -104,11 +107,7 @@ func (l *listener) pollBlocks() error {
 				continue
 			}
 
-			if l.cfg.id == 3 {
-				logInterval = 200
-			}
-
-			if latestBlock.Uint64()%logInterval == 0 {
+			if currentBlock.Uint64()%logInterval == 0 {
 				l.log.Debug("pollBlocks", "target", currentBlock, "latest", latestBlock)
 			}
 
@@ -141,9 +140,6 @@ func (l *listener) pollBlocks() error {
 
 // getDepositEventsForBlock looks for the deposit event in the latest block
 func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
-	if latestBlock.Uint64()%100 == 0 {
-		l.log.Debug("Querying block for deposit events", "block", latestBlock)
-	}
 	query := buildQuery(l.cfg.bridgeContract, utils.Deposit, latestBlock, latestBlock)
 
 	// querying for logs

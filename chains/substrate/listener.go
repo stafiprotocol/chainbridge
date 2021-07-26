@@ -6,14 +6,11 @@ package substrate
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"github.com/stafiprotocol/chainbridge/config"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/ChainSafe/log15"
-	"github.com/itering/scale.go/source"
-	"github.com/itering/scale.go/types"
 	"github.com/itering/substrate-api-rpc/websocket"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
@@ -35,11 +32,14 @@ type listener struct {
 	decimals      map[string]*big.Int
 }
 
-// Frequency of polling for a new block
-var BlockRetryInterval = time.Second * 5
-var BlockRetryLimit = 5
+var (
+	// Frequency of polling for a new block
+	BlockRetryInterval = 15 * time.Second
+	BlockRetryLimit    = 10
 
-const DefaultTypeFilePath = "./network/stafi.json"
+	EventRetryLimit    = 20
+	EventRetryInterval = 100 * time.Millisecond
+)
 
 func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]*big.Int) *listener {
 	return &listener{
@@ -63,12 +63,13 @@ func (l *listener) setRouter(r chains.Router) {
 // Start creates the initial subscription for all events
 func (l *listener) start() error {
 	// Check whether latest is less than starting block
-	header, err := l.conn.api.RPC.Chain.GetHeaderLatest()
+	latest, err := l.conn.LatestBlockNumber()
 	if err != nil {
 		return err
 	}
-	if uint64(header.Number) < l.startBlock {
-		return fmt.Errorf("starting block (%d) is greater than latest known block (%d)", l.startBlock, header.Number)
+
+	if latest < l.startBlock {
+		return fmt.Errorf("starting block (%d) is greater than latest known block (%d)", l.startBlock, latest)
 	}
 
 	for _, sub := range Subscriptions {
@@ -79,27 +80,6 @@ func (l *listener) start() error {
 	}
 
 	go func() {
-		websocket.SetEndpoint(l.conn.url)
-		types.RuntimeType{}.Reg()
-		path := DefaultTypeFilePath
-		if file, ok := l.conn.opts["typeRegister"]; ok {
-			path = file
-		}
-		content, err := ioutil.ReadFile(path)
-		if err != nil {
-			panic(err)
-		}
-		types.RegCustomTypes(source.LoadTypeRegistry(content))
-
-		var pool *websocket.PoolConn
-		if pool, err = websocket.Init(); err == nil {
-			defer pool.Close()
-			l.wsconn = pool.Conn
-		} else {
-			l.log.Error("listener", "websocket init", err)
-			return
-		}
-
 		err = l.pollBlocks()
 		if err != nil {
 			l.log.Error("Polling blocks failed", "err", err)
@@ -135,28 +115,15 @@ func (l *listener) pollBlocks() error {
 				return nil
 			}
 
-			// Get finalized block hash
-			finalizedHash, err := l.conn.api.RPC.Chain.GetFinalizedHead()
+			finalized, err := l.conn.FinalizedBlockNumber()
 			if err != nil {
-				l.log.Error("Failed to fetch finalized hash", "err", err)
-				retry--
-				time.Sleep(BlockRetryInterval)
-				continue
-			}
-
-			// Get finalized block header
-			finalizedHeader, err := l.conn.api.RPC.Chain.GetHeader(finalizedHash)
-			if err != nil {
-				l.log.Error("Failed to fetch finalized header", "err", err)
-				retry--
-				time.Sleep(BlockRetryInterval)
-				continue
+				return err
 			}
 
 			// Sleep if the block we want comes after the most recently finalized block
-			if currentBlock > uint64(finalizedHeader.Number) {
+			if currentBlock > finalized {
 				if currentBlock%100 == 0 {
-					l.log.Trace("Block not yet finalized", "target", currentBlock, "latest", finalizedHeader.Number)
+					l.log.Trace("Block not yet finalized", "target", currentBlock, "finalized", finalized)
 				}
 				time.Sleep(BlockRetryInterval)
 				continue
@@ -165,12 +132,6 @@ func (l *listener) pollBlocks() error {
 			err = l.processEvents(currentBlock)
 			if err != nil {
 				l.log.Error("Failed to process events in block", "block", currentBlock, "err", err)
-				if strings.Contains(err.Error(), "close 1006") || strings.Contains(err.Error(), "websocket: not connected") {
-					l.log.Info("listener", "is webscoket connected", l.wsconn.IsConnected())
-					if _, _, err := l.wsconn.ReadMessage(); err != nil {
-						l.log.Error("listener", "websocket reconnect error", err)
-					}
-				}
 				retry--
 				continue
 			}
@@ -193,14 +154,33 @@ func (l *listener) processEvents(blockNum uint64) error {
 		l.log.Debug("processEvents", "blockNum", blockNum)
 	}
 
-	evts, err := l.GetEventsAt(blockNum)
+	evts, err := l.conn.GetEvents(blockNum)
 	if err != nil {
-		return err
+		l.log.Warn("processEvents GetEvents error, will retry", "err", err)
+		for i := 0; i < EventRetryLimit; i++ {
+			time.Sleep(EventRetryInterval)
+			evts, err = l.conn.GetEvents(blockNum)
+			if err == nil {
+				break
+			}
+		}
+		if err != nil {
+			return err
+		}
 	}
 
-	if l.subscriptions[FungibleTransfer] != nil {
-		for _, evt := range evts {
-			l.submitMessage(l.subscriptions[FungibleTransfer](evt, l.log))
+	for _, evt := range evts {
+		if evt.ModuleId != config.BridgeCommon || evt.EventId != config.FungibleTransferEventId {
+			continue
+		}
+
+		data, err := FungibleTransferEventData(evt, l.decimals)
+		if err != nil {
+			return err
+		}
+
+		if l.subscriptions[FungibleTransfer] != nil {
+			l.submitMessage(l.subscriptions[FungibleTransfer](data, l.log))
 		}
 	}
 
