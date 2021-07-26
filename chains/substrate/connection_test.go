@@ -4,6 +4,7 @@
 package substrate
 
 import (
+	"os"
 	"testing"
 
 	"github.com/ChainSafe/log15"
@@ -52,6 +53,9 @@ var (
 )
 
 func TestConnect_CheckChainId(t *testing.T) {
+	password := "123456"
+	os.Setenv(keystore.EnvPassword, password)
+
 	// Create connection with Alice key
 	conn, err := NewConnection(seiyaCfg, AliceTestLogger, make(chan int))
 	if err != nil {

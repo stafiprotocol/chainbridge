@@ -36,7 +36,7 @@ func NewGsrpcClient(endpoint, addressType string, key *signature.KeyringPair, lo
 		return nil, err
 	}
 
-	gsrpcConfig.SetSubscribeTimeout(15 * time.Second)
+	gsrpcConfig.SetSubscribeTimeout(2 * time.Minute)
 
 	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
 	if err != nil {
