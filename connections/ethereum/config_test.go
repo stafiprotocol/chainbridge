@@ -31,7 +31,7 @@ func TestParseChainConfig(t *testing.T) {
 		},
 	}
 
-	out, err := parseChainConfig(&input)
+	out, err := ParseChainConfig(&input)
 
 	if err != nil {
 		t.Fatal(err)
@@ -76,7 +76,7 @@ func TestChainConfigOneContract(t *testing.T) {
 		},
 	}
 
-	out, err := parseChainConfig(&input)
+	out, err := ParseChainConfig(&input)
 
 	if err != nil {
 		t.Fatal(err)
@@ -112,7 +112,7 @@ func TestRequiredOpts(t *testing.T) {
 		Opts:         map[string]string{},
 	}
 
-	_, err := parseChainConfig(&input)
+	_, err := ParseChainConfig(&input)
 
 	if err == nil {
 		t.Error("config missing chainId field but no error reported")
@@ -128,7 +128,7 @@ func TestRequiredOpts(t *testing.T) {
 		Opts:         map[string]string{"bridge": ""},
 	}
 
-	_, err2 := parseChainConfig(&input)
+	_, err2 := ParseChainConfig(&input)
 
 	if err2 == nil {
 		t.Error("config missing chainId field but no error reported")
@@ -153,7 +153,7 @@ func TestExtraOpts(t *testing.T) {
 		},
 	}
 
-	_, err := parseChainConfig(&input)
+	_, err := ParseChainConfig(&input)
 
 	if err == nil {
 		t.Error("Config should not accept incorrect opts.")

@@ -35,7 +35,7 @@ type listener struct {
 var (
 	// Frequency of polling for a new block
 	BlockRetryInterval = 15 * time.Second
-	BlockRetryLimit    = 10
+	BlockRetryLimit    = 35
 
 	EventRetryLimit    = 20
 	EventRetryInterval = 100 * time.Millisecond

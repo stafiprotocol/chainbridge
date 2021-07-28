@@ -13,8 +13,13 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
-const DefaultGasLimit = 1000000
-const DefaultGasPrice = 300000000000
+const (
+	DefaultGasLimit = 1000000
+	DefaultGasPrice = 300000000000
+
+	EthChainId = msg.ChainId(2)
+	//BscChainId = msg.ChainId(3)
+)
 
 var ZeroAddress = common.HexToAddress("0x0000000000000000000000000000000000000000")
 
@@ -37,7 +42,7 @@ type Config struct {
 }
 
 // parseChainConfig uses a core.ChainConfig to construct a corresponding Config
-func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
+func ParseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 	config := &Config{
 		name:                 chainCfg.Name,
 		id:                   chainCfg.Id,
@@ -105,16 +110,49 @@ func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 		}
 	}
 
-	// if etherScanUrl, ok := chainCfg.Opts["etherscanUrl"]; ok && etherScanUrl != "" {
-	// 	config.etherscanUrl = etherScanUrl
-	// 	delete(chainCfg.Opts, "etherscanUrl")
-	// } else {
-	// 	return nil, errors.New("etherscan url is nil")
-	// }
-
 	if len(chainCfg.Opts) != 0 {
 		return nil, fmt.Errorf("unknown Opts Encountered: %#v", chainCfg.Opts)
 	}
 
 	return config, nil
 }
+
+func (c *Config) From() string {
+	return c.from
+}
+
+func (c *Config) KeystorePath() string {
+	return c.keystorePath
+}
+
+func (c *Config) BlockstorePath() string {
+	return c.blockstorePath
+}
+
+func (c *Config) BridgeContract() common.Address {
+	return c.bridgeContract
+}
+
+func (c *Config) Erc20HandlerContract() common.Address {
+	return c.erc20HandlerContract
+}
+
+func (c *Config) StartBlock() *big.Int {
+	return c.startBlock
+}
+
+func (c *Config) SetStartBlock(blk *big.Int) {
+	c.startBlock = blk
+}
+
+func (c *Config) ChainId() msg.ChainId {
+	return c.id
+}
+
+func (c *Config) FreshStart() bool {
+	return c.freshStart
+}
+
+
+
+

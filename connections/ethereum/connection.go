@@ -18,13 +18,17 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
+	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
-var BlockRetryInterval = time.Second * 5
-var ExtraGasPrice = big.NewInt(10000000000)
+var (
+	BlockRetryInterval = time.Second * 5
+	ExtraGasPrice = big.NewInt(10000000000)
+)
 
 type Connection struct {
 	endpoint    string
+	chainId     msg.ChainId
 	http        bool
 	kp          *secp256k1.Keypair
 	gasLimit    *big.Int
@@ -40,14 +44,14 @@ type Connection struct {
 }
 
 // NewConnection returns an uninitialized connection, must call Connection.Connect() before using.
-func NewConnection(endpoint string, http bool, kp *secp256k1.Keypair, log log15.Logger, gasLimit,
-	gasPrice *big.Int) *Connection {
+func NewConnection(cfg *Config, kp *secp256k1.Keypair, log log15.Logger) *Connection {
 	return &Connection{
-		endpoint:    endpoint,
-		http:        http,
+		endpoint:    cfg.endpoint,
+		chainId:     cfg.id,
+		http:        cfg.http,
 		kp:          kp,
-		gasLimit:    gasLimit,
-		maxGasPrice: gasPrice,
+		gasLimit:    cfg.gasLimit,
+		maxGasPrice: cfg.maxGasPrice,
 		log:         log,
 		stop:        make(chan int),
 	}
@@ -122,7 +126,9 @@ func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
 		return nil, err
 	}
 
-	gasPrice = gasPrice.Add(gasPrice, ExtraGasPrice)
+	if c.chainId == EthChainId {
+		gasPrice = gasPrice.Add(gasPrice, ExtraGasPrice)
+	}
 
 	if gasPrice.Cmp(c.maxGasPrice) > 0 {
 		gasPrice = c.maxGasPrice

@@ -3,12 +3,12 @@
 /*
 The ethereum package contains the logic for interacting with ethereum chains.
 
-There are 3 major components: the connection, the listener, and the writer.
+There are 3 major components: the ethconn, the listener, and the writer.
 The currently supported transfer types are Fungible (ERC20).
 
 Connection
 
-The connection contains the ethereum RPC client and can be accessed by both the writer and listener.
+The ethconn contains the ethereum RPC client and can be accessed by both the writer and listener.
 
 Listener
 
@@ -30,7 +30,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	bridge "github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
-	connection "github.com/stafiprotocol/chainbridge/connections/ethereum"
+	ethconn "github.com/stafiprotocol/chainbridge/connections/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/secp256k1"
@@ -54,19 +54,19 @@ type Connection interface {
 
 type Chain struct {
 	cfg      *core.ChainConfig // The config of the chain
-	conn     Connection        // THe chains connection
+	conn     Connection        // THe chains ethconn
 	listener *listener         // The listener of this chain
 	writer   *writer           // The writer of the chain
 	stop     chan<- int
 }
 
 func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error) (*Chain, error) {
-	cfg, err := parseChainConfig(chainCfg)
+	cfg, err := ethconn.ParseChainConfig(chainCfg)
 	if err != nil {
 		return nil, err
 	}
 
-	kpI, err := keystore.KeypairFromAddress(cfg.from, keystore.EthChain, cfg.keystorePath, chainCfg.Insecure)
+	kpI, err := keystore.KeypairFromAddress(cfg.From(), keystore.EthChain, cfg.KeystorePath(), chainCfg.Insecure)
 	if err != nil {
 		return nil, err
 	}
@@ -78,13 +78,13 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 	}
 
 	stop := make(chan int)
-	conn := connection.NewConnection(cfg.endpoint, cfg.http, kp, logger, cfg.gasLimit, cfg.maxGasPrice)
+	conn := ethconn.NewConnection(cfg, kp, logger)
 	err = conn.Connect()
 	if err != nil {
 		return nil, err
 	}
 
-	bridgeContract, err := bridge.NewBridge(cfg.bridgeContract, conn.Client())
+	bridgeContract, err := bridge.NewBridge(cfg.BridgeContract(), conn.Client())
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 		return nil, fmt.Errorf("chainId (%d) and configuration chainId (%d) do not match", chainId, chainCfg.Id)
 	}
 
-	erc20HandlerContract, err := ERC20Handler.NewERC20Handler(cfg.erc20HandlerContract, conn.Client())
+	erc20HandlerContract, err := ERC20Handler.NewERC20Handler(cfg.Erc20HandlerContract(), conn.Client())
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 		if err != nil {
 			return nil, err
 		}
-		cfg.startBlock = curr
+		cfg.SetStartBlock(curr)
 	}
 
 	listener := NewListener(conn, cfg, logger, bs, stop, sysErr)
@@ -164,20 +164,20 @@ func (c *Chain) Stop() {
 
 // checkBlockstore queries the blockstore for the latest known block. If the latest block is
 // greater than cfg.startBlock, then cfg.startBlock is replaced with the latest known block.
-func setupBlockstore(cfg *Config, kp *secp256k1.Keypair) (*blockstore.Blockstore, error) {
-	bs, err := blockstore.NewBlockstore(cfg.blockstorePath, cfg.id, kp.Address())
+func setupBlockstore(cfg *ethconn.Config, kp *secp256k1.Keypair) (*blockstore.Blockstore, error) {
+	bs, err := blockstore.NewBlockstore(cfg.BlockstorePath(), cfg.ChainId(), kp.Address())
 	if err != nil {
 		return nil, err
 	}
 
-	if !cfg.freshStart {
+	if !cfg.FreshStart() {
 		latestBlock, err := bs.TryLoadLatestBlock()
 		if err != nil {
 			return nil, err
 		}
 
-		if latestBlock.Cmp(cfg.startBlock) == 1 {
-			cfg.startBlock = latestBlock
+		if latestBlock.Cmp(cfg.StartBlock()) == 1 {
+			cfg.SetStartBlock(latestBlock)
 		}
 	}
 

@@ -68,7 +68,7 @@ func (w *writer) createErc20Proposal(m msg.Message, propResult chan<- bool) {
 	w.log.Info("Creating erc20 proposal", "src", m.Source, "nonce", m.DepositNonce)
 
 	data := ConstructErc20ProposalData(m.Payload[0].([]byte), m.Payload[1].([]byte))
-	dataHash := utils.Hash(append(w.cfg.erc20HandlerContract.Bytes(), data...))
+	dataHash := utils.Hash(append(w.cfg.Erc20HandlerContract().Bytes(), data...))
 
 	if !w.shouldVote(m, dataHash) {
 		propResult <- true

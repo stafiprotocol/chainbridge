@@ -1,7 +1,7 @@
 // Copyright 2020 Stafi Protocol
 // SPDX-License-Identifier: LGPL-3.0-only
 
-package ethereum_test
+package ethereum
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"github.com/ChainSafe/log15"
 	ethcmn "github.com/ethereum/go-ethereum/common"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
-	"github.com/stafiprotocol/chainbridge/connections/ethereum"
 	ethutils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/keystore"
 )
@@ -25,7 +24,15 @@ var (
 )
 
 func TestConnect(t *testing.T) {
-	conn := ethereum.NewConnection(TestEndpoint, true, AliceKp, log15.Root(), GasLimit, MaxGasPrice)
+	cfg := &Config{
+		id: 2,
+		endpoint: TestEndpoint,
+		http: true,
+		gasLimit: GasLimit,
+		maxGasPrice: MaxGasPrice,
+	}
+
+	conn := NewConnection(cfg, AliceKp, log15.Root())
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -34,7 +41,14 @@ func TestConnect(t *testing.T) {
 }
 
 func TestBscConnect(t *testing.T) {
-	conn := ethereum.NewConnection(BscTestEndpoint, true, AliceKp, log15.Root(), GasLimit, MaxGasPrice)
+	cfg := &Config{
+		endpoint: BscTestEndpoint,
+		http: true,
+		gasLimit: GasLimit,
+		maxGasPrice: MaxGasPrice,
+	}
+
+	conn := NewConnection(cfg, AliceKp, log15.Root())
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -82,9 +96,15 @@ func TestBscConnect(t *testing.T) {
 }
 
 func TestConnection_SafeEstimateGas(t *testing.T) {
+	cfg := &Config{
+		endpoint: TestEndpoint,
+		http: true,
+		gasLimit: GasLimit,
+		maxGasPrice: MaxGasPrice,
+	}
+
 	// MaxGasPrice is the constant price on the dev network, so we increase it here by 1 to ensure it adjusts
-	conn := ethereum.NewConnection(TestEndpoint, false, AliceKp, log15.Root(), GasLimit,
-		MaxGasPrice.Add(MaxGasPrice, big.NewInt(1)))
+	conn := NewConnection(cfg, AliceKp, log15.Root())
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -96,14 +116,22 @@ func TestConnection_SafeEstimateGas(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if price.Cmp(MaxGasPrice) == 0 {
-		t.Fatalf("Gas price should be less than max. Suggested: %s Max: %s", price.String(), MaxGasPrice.String())
+	if price.Cmp(MaxGasPrice) == 1 {
+		t.Fatalf("Gas price should be less or equal than max. Suggested: %s Max: %s", price.String(), MaxGasPrice.String())
 	}
 }
 
 func TestConnection_SafeEstimateGasMax(t *testing.T) {
-	maxPrice := big.NewInt(300e9)
-	conn := ethereum.NewConnection(TestEndpoint, true, AliceKp, log15.Root(), GasLimit, maxPrice)
+	maxPrice := big.NewInt(300e7)
+	cfg := &Config{
+		id: 2,
+		endpoint: TestEndpoint,
+		http: true,
+		gasLimit: GasLimit,
+		maxGasPrice: maxPrice,
+	}
+
+	conn := NewConnection(cfg, AliceKp, log15.Root())
 	err := conn.Connect()
 	if err != nil {
 		t.Fatal(err)

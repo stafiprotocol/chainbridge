@@ -15,7 +15,7 @@ func (l *listener) handleErc20DepositedEvent(destId msg.ChainId, nonce msg.Nonce
 	}
 
 	return msg.NewFungibleTransfer(
-		l.cfg.id,
+		l.cfg.ChainId(),
 		destId,
 		nonce,
 		record.Amount,

@@ -16,20 +16,21 @@ import (
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	"github.com/stafiprotocol/chainbridge/bindings/ERC20Handler"
 	"github.com/stafiprotocol/chainbridge/chains"
+	ethconn "github.com/stafiprotocol/chainbridge/connections/ethereum"
 	utils "github.com/stafiprotocol/chainbridge/shared/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 )
 
 var (
 	BlockDelay         = big.NewInt(10)
-	BlockRetryInterval = time.Second * 10
-	BlockRetryLimit    = 5
+	BlockRetryInterval = time.Second * 15
+	BlockRetryLimit    = 20
 	ErrFatalPolling    = errors.New("listener block polling failed")
 	logInterval        = uint64(100)
 )
 
 type listener struct {
-	cfg                  Config
+	cfg                  *ethconn.Config
 	conn                 Connection
 	router               chains.Router
 	bridgeContract       *Bridge.Bridge // instance of bound bridge contract
@@ -41,9 +42,9 @@ type listener struct {
 }
 
 // NewListener creates and returns a listener
-func NewListener(conn Connection, cfg *Config, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error) *listener {
+func NewListener(conn Connection, cfg *ethconn.Config, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error) *listener {
 	return &listener{
-		cfg:        *cfg,
+		cfg:        cfg,
 		conn:       conn,
 		log:        log,
 		blockstore: bs,
@@ -82,9 +83,9 @@ func (l *listener) start() error {
 // a block will be retried up to BlockRetryLimit times before continuing to the next block.
 func (l *listener) pollBlocks() error {
 	l.log.Info("Polling Blocks...")
-	var currentBlock = l.cfg.startBlock
+	var currentBlock = l.cfg.StartBlock()
 	var retry = BlockRetryLimit
-	if l.cfg.id == 3 {
+	if l.cfg.ChainId() == 3 {
 		logInterval = 200
 	}
 	for {
@@ -140,7 +141,7 @@ func (l *listener) pollBlocks() error {
 
 // getDepositEventsForBlock looks for the deposit event in the latest block
 func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
-	query := buildQuery(l.cfg.bridgeContract, utils.Deposit, latestBlock, latestBlock)
+	query := buildQuery(l.cfg.BridgeContract(), utils.Deposit, latestBlock, latestBlock)
 
 	// querying for logs
 	logs, err := l.conn.Client().FilterLogs(context.Background(), query)
@@ -160,7 +161,7 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 			return fmt.Errorf("failed to get handler from resource ID %x", rId)
 		}
 
-		if addr == l.cfg.erc20HandlerContract {
+		if addr == l.cfg.Erc20HandlerContract() {
 			m, err = l.handleErc20DepositedEvent(destId, nonce)
 		} else {
 			l.log.Error("event has unrecognized handler", "handler", addr.Hex())

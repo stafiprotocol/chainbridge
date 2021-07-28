@@ -6,6 +6,7 @@ package ethereum
 import (
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
+	ethconn "github.com/stafiprotocol/chainbridge/connections/ethereum"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -17,7 +18,7 @@ const (
 )
 
 type writer struct {
-	cfg            Config
+	cfg            *ethconn.Config
 	conn           Connection
 	bridgeContract *Bridge.Bridge // instance of bound receiver bridgeContract
 	log            log15.Logger
@@ -27,9 +28,9 @@ type writer struct {
 }
 
 // NewWriter creates and returns writer
-func NewWriter(conn Connection, cfg *Config, log log15.Logger, stop <-chan int, sysErr chan<- error) *writer {
+func NewWriter(conn Connection, cfg *ethconn.Config, log log15.Logger, stop <-chan int, sysErr chan<- error) *writer {
 	return &writer{
-		cfg:     *cfg,
+		cfg:     cfg,
 		conn:    conn,
 		log:     log,
 		msgChan: make(chan msg.Message, msgLimit),
