@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	DefaultGasLimit = 1000000
-	DefaultGasPrice = 300000000000
+	DefaultGasLimit = 10e5
+	DefaultGasPrice = 300e9
 
 	EthChainId = msg.ChainId(2)
 	//BscChainId = msg.ChainId(3)

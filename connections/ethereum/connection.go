@@ -23,7 +23,9 @@ import (
 
 var (
 	BlockRetryInterval = time.Second * 5
-	ExtraGasPrice      = big.NewInt(10000000000)
+	lowExtraGasPrice   = big.NewInt(5e9)
+	highExtraGasPrice  = big.NewInt(10e9)
+	standGasPrice = big.NewInt(20e9)
 )
 
 type Connection struct {
@@ -127,7 +129,11 @@ func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
 	}
 
 	if c.chainId == EthChainId {
-		gasPrice = gasPrice.Add(gasPrice, ExtraGasPrice)
+		if gasPrice.Cmp(standGasPrice) == 1 {
+			gasPrice = gasPrice.Add(gasPrice, highExtraGasPrice)
+		} else {
+			gasPrice = gasPrice.Add(gasPrice, lowExtraGasPrice)
+		}
 	}
 
 	if gasPrice.Cmp(c.maxGasPrice) > 0 {
