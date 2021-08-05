@@ -23,7 +23,7 @@ import (
 
 var (
 	BlockRetryInterval = time.Second * 5
-	ExtraGasPrice = big.NewInt(10000000000)
+	ExtraGasPrice      = big.NewInt(10000000000)
 )
 
 type Connection struct {

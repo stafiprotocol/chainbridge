@@ -22,7 +22,7 @@ type Connection struct {
 	gc   *substrate.GsrpcClient
 	stop <-chan int // Signals system shutdown, should be observed in all selects and loops
 	log  log15.Logger
-	key *signature.KeyringPair
+	key  *signature.KeyringPair
 }
 
 const (
@@ -58,7 +58,7 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 		gc:   gc,
 		stop: stop,
 		log:  log,
-		key: krp,
+		key:  krp,
 	}, nil
 }
 

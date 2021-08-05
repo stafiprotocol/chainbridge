@@ -25,30 +25,30 @@ var (
 	KeystorePath                = "/Users/fwj/Go/stafi/chainbridge/keys"
 
 	seiyaCfg = &core.ChainConfig{
-		Name: "Stafi",
-		Id: 1,
-		Endpoint: SeiyaEndpoint,
-		From: From,
+		Name:         "Stafi",
+		Id:           1,
+		Endpoint:     SeiyaEndpoint,
+		From:         From,
 		KeystorePath: KeystorePath,
-		Insecure: false,
+		Insecure:     false,
 	}
 
 	localCfg = &core.ChainConfig{
-		Name: "Stafi",
-		Id: 1,
-		Endpoint: TestEndpoint,
-		From: From,
+		Name:         "Stafi",
+		Id:           1,
+		Endpoint:     TestEndpoint,
+		From:         From,
 		KeystorePath: KeystorePath,
-		Insecure: false,
+		Insecure:     false,
 	}
 
 	mainCfg = &core.ChainConfig{
-		Name: "Stafi",
-		Id: 1,
-		Endpoint: StafiMainetEndpoint,
-		From: From,
+		Name:         "Stafi",
+		Id:           1,
+		Endpoint:     StafiMainetEndpoint,
+		From:         From,
 		KeystorePath: KeystorePath,
-		Insecure: false,
+		Insecure:     false,
 	}
 )
 

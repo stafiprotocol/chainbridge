@@ -25,10 +25,10 @@ var (
 
 func TestConnect(t *testing.T) {
 	cfg := &Config{
-		id: 2,
-		endpoint: TestEndpoint,
-		http: true,
-		gasLimit: GasLimit,
+		id:          2,
+		endpoint:    TestEndpoint,
+		http:        true,
+		gasLimit:    GasLimit,
 		maxGasPrice: MaxGasPrice,
 	}
 
@@ -42,9 +42,9 @@ func TestConnect(t *testing.T) {
 
 func TestBscConnect(t *testing.T) {
 	cfg := &Config{
-		endpoint: BscTestEndpoint,
-		http: true,
-		gasLimit: GasLimit,
+		endpoint:    BscTestEndpoint,
+		http:        true,
+		gasLimit:    GasLimit,
 		maxGasPrice: MaxGasPrice,
 	}
 
@@ -97,9 +97,9 @@ func TestBscConnect(t *testing.T) {
 
 func TestConnection_SafeEstimateGas(t *testing.T) {
 	cfg := &Config{
-		endpoint: TestEndpoint,
-		http: true,
-		gasLimit: GasLimit,
+		endpoint:    TestEndpoint,
+		http:        true,
+		gasLimit:    GasLimit,
 		maxGasPrice: MaxGasPrice,
 	}
 
@@ -124,10 +124,10 @@ func TestConnection_SafeEstimateGas(t *testing.T) {
 func TestConnection_SafeEstimateGasMax(t *testing.T) {
 	maxPrice := big.NewInt(300e7)
 	cfg := &Config{
-		id: 2,
-		endpoint: TestEndpoint,
-		http: true,
-		gasLimit: GasLimit,
+		id:          2,
+		endpoint:    TestEndpoint,
+		http:        true,
+		gasLimit:    GasLimit,
 		maxGasPrice: maxPrice,
 	}
 

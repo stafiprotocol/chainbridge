@@ -13,8 +13,6 @@ import (
 const (
 	StafiMainetEndpoint = "wss://mainnet-rpc.stafi.io"
 	SeiyaEndpoint       = "wss://stafi-seiya.stafi.io"
-
-
 )
 
 func TestListener_start(t *testing.T) {

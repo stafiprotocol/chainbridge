@@ -152,7 +152,3 @@ func (c *Config) ChainId() msg.ChainId {
 func (c *Config) FreshStart() bool {
 	return c.freshStart
 }
-
-
-
-
