@@ -64,7 +64,8 @@
       "RKSM",
       "RATOM",
       "RSOL",
-      "RMATIC"
+      "RMATIC",
+      "RBNB"
     ]
   },
   "AccountRData": {
@@ -304,6 +305,124 @@
       "InvalidPubkey",
       "Fail",
       "Pass"
+    ]
+  },
+  "BondAction": {
+    "type": "enum",
+    "value_list": [
+      "BondOnly",
+      "UnbondOnly",
+      "BothBondUnbond",
+      "EitherBondUnbond",
+      "InterDeduct"
+    ]
+  },
+  "SwapTransactionInfo": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "account",
+        "AccountId"
+      ],
+      [
+        "receiver",
+        "Vec<u8>"
+      ],
+      [
+        "value",
+        "u128"
+      ],
+      [
+        "is_deal",
+        "bool"
+      ]
+    ]
+  },
+  "SwapRate": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "lock_number",
+        "u64"
+      ],
+      [
+        "rate",
+        "u128"
+      ]
+    ]
+  },
+  "ClaimInfo": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "mint_amount",
+        "u128"
+      ],
+      [
+        "native_token_amount",
+        "u128"
+      ],
+      [
+        "total_reward",
+        "Balance"
+      ],
+      [
+        "total_claimed",
+        "Balance"
+      ],
+      [
+        "latest_claimed_block",
+        "BlockNumber"
+      ],
+      [
+        "mint_block",
+        "BlockNumber"
+      ]
+    ]
+  },
+  "MintRewardAct": {
+    "type": "struct",
+    "type_mapping": [
+      [
+        "begin",
+        "BlockNumber"
+      ],
+      [
+        "end",
+        "BlockNumber"
+      ],
+      [
+        "cycle",
+        "u32"
+      ],
+      [
+        "reward_rate",
+        "u128"
+      ],
+      [
+        "total_reward",
+        "Balance"
+      ],
+      [
+        "left_amount",
+        "Balance"
+      ],
+      [
+        "user_limit",
+        "Balance"
+      ],
+      [
+        "locked_blocks",
+        "u32"
+      ],
+      [
+        "total_rtoken_amount",
+        "u128"
+      ],
+      [
+        "total_native_token_amount",
+        "u128"
+      ]
     ]
   }
 }
