@@ -40,6 +40,7 @@ lint-fix:
 build:
 	@echo "  >  \033[32mBuilding binary...\033[0m "
 	cd cmd/chainbridge && env GOARCH=amd64 go build -o ../../build/chainbridge
+	cd cmd/solvault && env GOARCH=amd64 go build -o ../../build/solvault
 
 install:
 	@echo "  >  \033[32mInstalling bridge...\033[0m "

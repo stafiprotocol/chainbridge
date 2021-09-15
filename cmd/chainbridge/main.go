@@ -10,6 +10,7 @@ import (
 
 	log "github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/chains/ethereum"
+	"github.com/stafiprotocol/chainbridge/chains/solana"
 	"github.com/stafiprotocol/chainbridge/chains/substrate"
 	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/stafiprotocol/chainbridge/utils/core"
@@ -150,11 +151,14 @@ func run(ctx *cli.Context) error {
 
 		logger := log.Root().New("chain", chainConfig.Name)
 
-		if chain.Type == "ethereum" {
+		switch chain.Type {
+		case "ethereum":
 			newChain, err = ethereum.InitializeChain(chainConfig, logger, sysErr)
-		} else if chain.Type == "substrate" {
+		case "substrate":
 			newChain, err = substrate.InitializeChain(chainConfig, logger, sysErr)
-		} else {
+		case "solana":
+			newChain, err = solana.InitializeChain(chainConfig, logger, sysErr)
+		default:
 			return errors.New("unrecognized Chain Type")
 		}
 
