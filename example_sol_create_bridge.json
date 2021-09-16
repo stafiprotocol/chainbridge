@@ -1,0 +1,20 @@
+{
+    "keystorePath": "/Users/tpkeeper/gowork/stafi/chainbridge/keys/solana-vault.json",
+    "feeAccount": "GhLfnAFjm4LCEwSQHdivLGNtMPHVHV2uwz2F8d6aiYwF",
+    "bridgeAccount": "9GHKVeDANEwjD82ufdCQTZC94MSxSwULed3qeVcS6TAm",
+    "adminAccountPubkey": "E2vGiCdfKJ3DfgwepcCpuCo5tNSqHpFCdUvfqEqibW5m",
+    "bridgeProgramId": "FRzXkJ4p1knQkFdBCtLCt8Zuvykr7Wd5yKTrryQV3K51",
+    "endpoint": "https://api.devnet.solana.com",
+    "otherFeeAccountPubkey": [
+        "9FZDAdUHEUisd6Yd21K6RhGi98hL45vd7U2AievV7MZ8",
+        "5LAbtVdVwpBSXocBgUcNNgwsmKXMJJFzVEhrGFx1MAwh"
+    ],
+    "threshold": 2,
+    "supportChainIds": [
+        1,
+        2
+    ],
+    "resourceIdToMint": {
+        "0x01": "9qab2RkbcDbkKjbSAfaN6CCLPgZ7h39npsksVmWPbW6e"
+    }
+}

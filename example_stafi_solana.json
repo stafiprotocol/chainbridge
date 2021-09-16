@@ -29,16 +29,15 @@
       }
     },
     {
-      "name": "Eth-Relayer1",
-      "type": "ethereum",
-      "id": "2",
-      "endpoint": "https://ropsten.infura.io/v3/a325d28f7dda49ec9190c8cb4b7f90b2",
-      "from": "0xBd39f5936969828eD9315220659cD11129071814",
+      "name": "solana relay",
+      "type": "solana",
+      "id": "4",
+      "endpoint": "https://api.devnet.solana.com",
       "opts": {
         "accounts": {
-          "feeAccount": "",
-          "proposalBaseAccount": "",
-          "bridgeAccountPubkey": "",
+          "feeAccount": "8tC37L5xh2tPH8PSfFj2vVvBMk5CLMyttPCLjk5H5fQC",
+          "proposalBaseAccount": "H5Esra3rbu8dyytUaPxknw9uyf2ALw6GfJtYtS3cyfWJ",
+          "bridgeAccountPubkey": "6WjDgvjd3DzQ73FdgitpLM7W94Gfegv539SCABeQj6gF",
           "bridgePdaPubkey": "",
           "bridgeProgramId": "",
           "TokenProgramId": ""

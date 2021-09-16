@@ -40,3 +40,4 @@ centrifuge-chain/
 config*.json
 bridge_log*.json
 blockstore/
+/sol_create_bridge.json
