@@ -133,6 +133,7 @@ func (l *listener) getDepositEventsForBlock(blockNumber uint64) error {
 	}
 
 	for _, tx := range block.Transactions {
+		tx.Transaction.Message.AccountKeys
 		for _, logMessage := range tx.Meta.LogMessages {
 			if strings.HasPrefix(logMessage, bridgeprog.EventTransferOutPrefix) {
 				use_log := strings.TrimPrefix(logMessage, bridgeprog.ProgramLogPrefix)

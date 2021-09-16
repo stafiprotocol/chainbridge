@@ -41,3 +41,5 @@ config*.json
 bridge_log*.json
 blockstore/
 /sol_create_bridge.json
+/stafi_solana1.json
+/stafi_solana2.json

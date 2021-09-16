@@ -1,8 +1,8 @@
 package solana
 
 import (
-	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/shared/solana"
@@ -31,19 +31,19 @@ type PoolAccounts struct {
 }
 
 func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*Connection, error) {
-
-	paBts, err := json.Marshal(cfg.Opts["accounts"])
-	if err != nil {
-		return nil, err
+	log.Info("NewConnection", "name", cfg.Name, "KeystorePath", cfg.KeystorePath, "Endpoint", cfg.Endpoint)
+	pAccounts := PoolAccounts{
+		FeeAccount:          cfg.Opts["feeAccount"],
+		ProposalBaseAccount: cfg.Opts["proposalBaseAccount"],
+		BridgeAccountPubkey: cfg.Opts["bridgeAccountPubkey"],
+		BridgePdaPubkey:     cfg.Opts["bridgePdaPubkey"],
+		BridgeProgramId:     cfg.Opts["bridgeProgramId"],
+		TokenProgramId:      cfg.Opts["TokenProgramId"],
 	}
-	accounts := PoolAccounts{}
-	err = json.Unmarshal(paBts, &accounts)
-	if err != nil {
-		return nil, fmt.Errorf("account %s unmarshal poolAccounts err %s", string(paBts), err)
+	if !strings.HasSuffix(cfg.KeystorePath, "/") {
+		cfg.KeystorePath += "/"
 	}
-	pAccounts := accounts
-
-	v, err := vault.NewVaultFromWalletFile(cfg.KeystorePath)
+	v, err := vault.NewVaultFromWalletFile(cfg.KeystorePath + cfg.From)
 	if err != nil {
 		return nil, err
 	}
