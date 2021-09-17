@@ -95,7 +95,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 				seed,
 				m.ResourceId,
 				bigAmt.Uint64(),
-				"create pjroposal account",
+				"create proposal account",
 			)
 			if !sendOk {
 				return false

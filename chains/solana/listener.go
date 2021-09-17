@@ -23,7 +23,7 @@ var (
 	BlockRetryLimit     = 50
 	ErrFatalPolling     = errors.New("listener block polling failed")
 	logInterval         = uint64(100)
-	eventTickerInterval = time.Second * 3
+	eventTickerInterval = time.Second * 8
 )
 
 //listen event or block update from solana
@@ -113,6 +113,7 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 		}
 		for _, logMessage := range tx.Meta.LogMessages {
 			if strings.HasPrefix(logMessage, bridgeprog.EventTransferOutPrefix) {
+				l.log.Info("find log", "log", logMessage, "signature", usesig)
 				use_log := strings.TrimPrefix(logMessage, bridgeprog.ProgramLogPrefix)
 				logBts, err := base64.StdEncoding.DecodeString(use_log)
 				if err != nil {
@@ -135,6 +136,7 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 					eventTransferOut.ResourceId,
 					eventTransferOut.Receiver,
 				)
+				l.log.Info("send fungibletransfer msg", "msg", m)
 				err = l.router.Send(m)
 				if err != nil {
 					l.log.Error("subscription error: failed to route message", "err", err)
