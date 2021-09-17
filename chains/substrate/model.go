@@ -9,6 +9,8 @@ import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
+var decimalDefault = "Default"
+
 type EventFungibleTransfer struct {
 	Destination  uint8
 	DepositNonce uint64

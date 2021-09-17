@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"strings"
 
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
@@ -148,7 +149,7 @@ func parseStartBlock(cfg *core.ChainConfig) uint64 {
 
 func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
 	symbols := cfg.Symbols
-	if symbols == nil || len(symbols) == 0 {
+	if len(symbols) == 0 {
 		return nil, fmt.Errorf("config does not contains symbols")
 	}
 
@@ -162,6 +163,15 @@ func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
 		rId, ok := info["resourceId"].(string)
 		if !ok {
 			return nil, fmt.Errorf("unable to get symbol resourceId")
+		}
+		if rId != decimalDefault {
+			rId = strings.ToLower(rId)
+		}
+		if strings.Contains(rId, "0x") {
+			return nil, fmt.Errorf("resourceId should not with prefix 0x")
+		}
+		if rId != decimalDefault && len(rId) != 64 {
+			return nil, fmt.Errorf("resourceId length must be 64")
 		}
 
 		df, ok := info["decimalFactor"].(string)

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ChainSafe/log15"
@@ -123,9 +124,15 @@ func (w *writer) processMessage(m msg.Message) bool {
 
 func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 	bigAmt := big.NewInt(0).SetBytes(m.Payload[0].([]byte))
-	decimal, ok := w.decimals[m.ResourceId.Hex()]
+	//should not have 0x prefix and length must 64
+	resourceIdStr := strings.ToLower(m.ResourceId.Hex())
+	if len(resourceIdStr) != 64 {
+		return nil, fmt.Errorf("resourceId  length  must be 64")
+	}
+
+	decimal, ok := w.decimals[resourceIdStr]
 	if !ok {
-		decimal, ok = w.decimals["Default"]
+		decimal, ok = w.decimals[decimalDefault]
 		if !ok {
 			return nil, fmt.Errorf("failed to get decimal")
 		}

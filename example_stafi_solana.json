@@ -5,7 +5,7 @@
       "type": "substrate",
       "id": "1",
       "endpoint": "ws://127.0.0.1:9944",
-      "from": "33RQ73d9XfPTaE2SV7dzdhQQ17YaeMQ4yzhzAQhhFVenxMuJ",
+      "from": "35arN8keEJhSeSnpyH9Cu6CBsmGchGgJi577CxHyPUuobUhg",
       "symbols": [
         {
           "symbol": "Default",
@@ -19,13 +19,18 @@
         },
         {
           "symbol": "RATOM",
-          "resourceId": "0x0000000000000000000000000000006e15faef60f5e197166fe64110456a8601",
+          "resourceId": "0000000000000000000000000000006e15faef60f5e197166fe64110456a8601",
           "decimalFactor": "1000000000000"
+        },
+        {
+          "symbol": "RSOL",
+          "resourceId": "0100000000000000000000000000000000000000000000000000000000000000",
+          "decimalFactor": "1"
         }
       ],
       "opts": {
-        "startBlock": "1",
-        "typeRegister": "/Users/fwj/Go/stafi/chainbridge/network/stafi.json"
+        "startBlock": "11780",
+        "typeRegister": "/Users/tpkeeper/gowork/stafi/chainbridge/network/stafi.json"
       }
     },
     {
@@ -33,19 +38,18 @@
       "type": "solana",
       "id": "4",
       "endpoint": "https://api.devnet.solana.com",
+      "from": "solana-vault.json",
       "opts": {
-        "accounts": {
-          "feeAccount": "8tC37L5xh2tPH8PSfFj2vVvBMk5CLMyttPCLjk5H5fQC",
-          "proposalBaseAccount": "H5Esra3rbu8dyytUaPxknw9uyf2ALw6GfJtYtS3cyfWJ",
-          "bridgeAccountPubkey": "6WjDgvjd3DzQ73FdgitpLM7W94Gfegv539SCABeQj6gF",
-          "bridgePdaPubkey": "",
-          "bridgeProgramId": "",
-          "TokenProgramId": ""
-        },
-        "startBlock": "10220287"
+        "feeAccount": "9Riwnxn53S4wmy5h5nbQN1gxTCm1EvgqB4Gc5aKDAPyc",
+        "proposalBaseAccount": "2hNMLYb3DPqTKPi1s2KuSCYNMzoJBP524JUyEiS1dTA6",
+        "bridgeAccountPubkey": "ByorhXUES7EQHxx5epzgD7PM5fyorqE7L4XmAY2Qz6Vm",
+        "bridgePdaPubkey": "H3RAyJKVSavfxTmQAoSKhbYcBxJu1RBq9xbRqm2Ezhom",
+        "bridgeProgramId": "FRzXkJ4p1knQkFdBCtLCt8Zuvykr7Wd5yKTrryQV3K51",
+        "TokenProgramId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "startSignature": ""
       }
     }
   ],
-  "keystorePath": "keystorePath",
-  "blockstorePath": "blockstorePath"
+  "keystorePath": "/Users/tpkeeper/gowork/stafi/chainbridge/keys",
+  "blockstorePath": "/Users/tpkeeper/gowork/stafi/chainbridge/blockstore"
 }

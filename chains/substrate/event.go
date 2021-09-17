@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/stafiprotocol/chainbridge/shared/substrate"
 	"math/big"
+	"strings"
+
+	"github.com/stafiprotocol/chainbridge/shared/substrate"
 
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -86,10 +88,15 @@ func FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]*b
 		Amount:       amount,
 		Recipient:    rec,
 	}
+	//should not have 0x prefix and length must 64
+	resourceIdStr := strings.ToLower(eft.ResourceId.Hex())
+	if len(resourceIdStr) != 64 {
+		return nil, fmt.Errorf("resourceId  length  must be 64")
+	}
 
-	decimal, ok := decimals[eft.ResourceId.Hex()]
+	decimal, ok := decimals[resourceIdStr]
 	if !ok {
-		decimal, ok = decimals["Default"]
+		decimal, ok = decimals[decimalDefault]
 		if !ok {
 			return nil, fmt.Errorf("failed to get decimal")
 		}
