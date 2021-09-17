@@ -17,6 +17,7 @@ const PathPostfix = ".chainbridge/blockstore"
 
 type Blockstorer interface {
 	StoreBlock(*big.Int) error
+	StoreSignature(string) error
 }
 
 var _ Blockstorer = &EmptyStore{}
@@ -25,7 +26,8 @@ var _ Blockstorer = &Blockstore{}
 // Dummy store for testing only
 type EmptyStore struct{}
 
-func (s *EmptyStore) StoreBlock(_ *big.Int) error { return nil }
+func (s *EmptyStore) StoreBlock(_ *big.Int) error   { return nil }
+func (s *EmptyStore) StoreSignature(_ string) error { return nil }
 
 // Blockstore implements Blockstorer.
 type Blockstore struct {
@@ -70,6 +72,45 @@ func (b *Blockstore) StoreBlock(block *big.Int) error {
 		return err
 	}
 	return nil
+}
+
+// StoreBlock writes the signature  to disk.
+func (b *Blockstore) StoreSignature(sig string) error {
+	// Create dir if it does not exist
+	if _, err := os.Stat(b.path); os.IsNotExist(err) {
+		errr := os.MkdirAll(b.path, os.ModePerm)
+		if errr != nil {
+			return errr
+		}
+	}
+
+	// Write bytes to file
+	data := []byte(sig)
+	err := ioutil.WriteFile(b.fullPath, data, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TryLoadLatestBlock will attempt to load the latest block for the chain/relayer pair, returning 0 if not found.
+// Passing an empty string for path will cause it to use the home directory.
+func (b *Blockstore) TryLoadLatestSignature() (string, error) {
+	// If it exists, load and return
+	exists, err := fileExists(b.fullPath)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		dat, err := ioutil.ReadFile(b.fullPath)
+		if err != nil {
+			return "", err
+		}
+
+		return string(dat), nil
+	}
+	// Otherwise just return 0
+	return "", nil
 }
 
 // TryLoadLatestBlock will attempt to load the latest block for the chain/relayer pair, returning 0 if not found.

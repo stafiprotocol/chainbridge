@@ -9,7 +9,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
-	"github.com/stafiprotocol/solana-go-sdk/client"
 )
 
 var TerminatedError = errors.New("terminated")
@@ -34,24 +33,36 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	if err != nil {
 		return nil, err
 	}
-	startBlock := parseStartBlock(cfg)
-	if !cfg.FreshStart {
-		startBlock, err = checkBlockstore(bs, startBlock)
-		if err != nil {
-			return nil, err
-		}
-	}
 
-	if cfg.LatestBlock {
-		curr, err := conn.GetQueryClient().GetBlockHeight(context.Background(), client.GetBlockHeightConfig{client.CommitmentFinalized})
+	startSignature := cfg.Opts["startSignature"]
+	startSignatureBlock := 0
+	bsStartSignature, err := bs.TryLoadLatestSignature()
+	if err != nil {
+		return nil, err
+	}
+	bsStartSignatureBlock := 0
+
+	if len(startSignature) != 0 {
+		tx, err := conn.GetQueryClient().GetConfirmedTransaction(context.Background(), startSignature)
 		if err != nil {
 			return nil, err
 		}
-		startBlock = curr
+		startSignatureBlock = int(tx.Slot)
+	}
+	if len(bsStartSignature) != 0 {
+		tx, err := conn.GetQueryClient().GetConfirmedTransaction(context.Background(), bsStartSignature)
+		if err != nil {
+			return nil, err
+		}
+		bsStartSignatureBlock = int(tx.Slot)
+	}
+	useStartSignature := startSignature
+	if startSignatureBlock < bsStartSignatureBlock {
+		useStartSignature = bsStartSignature
 	}
 
 	// Setup listener & writer
-	l := NewListener(cfg.Name, conn, cfg.Id, startBlock, bs, logger, stop, sysErr)
+	l := NewListener(cfg.Name, conn, cfg.Id, useStartSignature, bs, logger, stop, sysErr)
 	w := NewWriter(conn, logger, stop, sysErr)
 	return &Chain{cfg: cfg, conn: conn, listener: l, writer: w, stop: stop}, nil
 }

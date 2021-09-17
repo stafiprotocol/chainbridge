@@ -19,35 +19,36 @@ import (
 )
 
 var (
-	BlockRetryInterval = time.Second * 3
-	BlockRetryLimit    = 50
-	ErrFatalPolling    = errors.New("listener block polling failed")
-	logInterval        = uint64(100)
+	BlockRetryInterval  = time.Second * 3
+	BlockRetryLimit     = 50
+	ErrFatalPolling     = errors.New("listener block polling failed")
+	logInterval         = uint64(100)
+	eventTickerInterval = time.Second * 3
 )
 
 //listen event or block update from solana
 type listener struct {
-	name       string
-	chainId    msg.ChainId
-	conn       *Connection
-	router     chains.Router
-	startBlock uint64
-	blockstore blockstore.Blockstorer
-	log        log15.Logger
-	stop       <-chan int
-	sysErr     chan<- error
+	name           string
+	chainId        msg.ChainId
+	conn           *Connection
+	router         chains.Router
+	startSignature string
+	blockstore     blockstore.Blockstorer
+	log            log15.Logger
+	stop           <-chan int
+	sysErr         chan<- error
 }
 
-func NewListener(name string, conn *Connection, chainId msg.ChainId, startBlock uint64, bs blockstore.Blockstorer, log log15.Logger, stop <-chan int, sysErr chan<- error) *listener {
+func NewListener(name string, conn *Connection, chainId msg.ChainId, startSignature string, bs blockstore.Blockstorer, log log15.Logger, stop <-chan int, sysErr chan<- error) *listener {
 	return &listener{
-		name:       name,
-		chainId:    chainId,
-		conn:       conn,
-		log:        log,
-		stop:       stop,
-		startBlock: startBlock,
-		blockstore: bs,
-		sysErr:     sysErr,
+		name:           name,
+		chainId:        chainId,
+		conn:           conn,
+		log:            log,
+		stop:           stop,
+		startSignature: startSignature,
+		blockstore:     bs,
+		sysErr:         sysErr,
 	}
 }
 
@@ -70,70 +71,46 @@ func (l *listener) start() error {
 
 func (l *listener) pollBlocks() error {
 	l.log.Info("Polling Blocks...")
-	var currentBlock = l.startBlock
-	var retry = BlockRetryLimit
+	eventTicker := time.NewTicker(eventTickerInterval)
+	defer eventTicker.Stop()
 
 	for {
 		select {
 		case <-l.stop:
 			return errors.New("polling terminated")
-		default:
-			// No more retries, goto next block
-			if retry == 0 {
-				l.log.Error("Polling failed, retries exceeded")
-				l.sysErr <- ErrFatalPolling
-				return nil
-			}
-			rpcClient := l.conn.GetQueryClient()
-
-			latestBlock, err := rpcClient.GetBlockHeight(context.Background(), solClient.GetBlockHeightConfig{solClient.CommitmentFinalized})
-			if err != nil {
-				l.log.Error("Unable to get latest block", "block", currentBlock, "err", err)
-				retry--
-				time.Sleep(BlockRetryInterval)
-				continue
-			}
-
-			if currentBlock%logInterval == 0 {
-				l.log.Debug("pollBlocks", "target", currentBlock, "latest", latestBlock)
-			}
-
-			// Sleep if the latestFinishBlcok is less than currentBlock
-			if currentBlock > latestBlock {
-				time.Sleep(BlockRetryInterval)
-				continue
-			}
-
+		case <-eventTicker.C:
 			// Parse out events
-			err = l.getDepositEventsForBlock(currentBlock)
+			err := l.getDepositEventsForBlock(l.startSignature)
 			if err != nil {
-				l.log.Error("Failed to get events for block", "block", currentBlock, "err", err)
-				retry--
-				continue
+				l.log.Error("Failed to getDepositEventsForBlock", "sig", l.startSignature, "err", err)
+				l.sysErr <- ErrFatalPolling
+				return err
 			}
 
-			// Write to block store. Not a critical operation, no need to retry
-			err = l.blockstore.StoreBlock(big.NewInt(int64(currentBlock)))
-			if err != nil {
-				l.log.Error("Failed to write latest block to blockstore", "block", currentBlock, "err", err)
-			}
-
-			// Goto next block and reset retry counter
-			currentBlock++
-			retry = BlockRetryLimit
 		}
 	}
 }
 
-func (l *listener) getDepositEventsForBlock(blockNumber uint64) error {
+func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	rpcClient := l.conn.queryClient
-	block, err := rpcClient.GetConfirmedBlock(context.Background(), blockNumber)
+	bridgeProgramId := l.conn.poolClient.BridgeProgramId.ToBase58()
+
+	signatures, err := rpcClient.GetConfirmedSignaturesForAddress(
+		context.Background(),
+		bridgeProgramId,
+		solClient.GetConfirmedSignaturesForAddressConfig{
+			Until: untilSignature,
+		})
 	if err != nil {
 		return err
 	}
 
-	for _, tx := range block.Transactions {
-		tx.Transaction.Message.AccountKeys
+	for i := len(signatures) - 1; i >= 0; i-- {
+		usesig := signatures[i].Signature
+		tx, err := rpcClient.GetConfirmedTransaction(context.Background(), usesig)
+		if err != nil {
+			return err
+		}
 		for _, logMessage := range tx.Meta.LogMessages {
 			if strings.HasPrefix(logMessage, bridgeprog.EventTransferOutPrefix) {
 				use_log := strings.TrimPrefix(logMessage, bridgeprog.ProgramLogPrefix)
@@ -162,10 +139,17 @@ func (l *listener) getDepositEventsForBlock(blockNumber uint64) error {
 				if err != nil {
 					l.log.Error("subscription error: failed to route message", "err", err)
 				}
-
 			}
-		}
-	}
 
+		}
+		// save new signature to storage
+		// Write to block store. Not a critical operation, no need to retry
+		err = l.blockstore.StoreSignature(usesig)
+		if err != nil {
+			l.log.Error("Failed to write latest signature to blockstore", "sig", usesig, "err", err)
+			return err
+		}
+		l.startSignature = usesig
+	}
 	return nil
 }
