@@ -91,6 +91,11 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 		return err
 	}
 
+	fmt.Printf("resourceIdToMint %+v\n", resourceIdToMint)
+	fmt.Printf("bridgeAccount %s\n", BridgeAccount.PublicKey.ToBase58())
+	fmt.Printf("owners %+v\n", owners)
+	fmt.Printf("supportChainIds %+v\n", pc.SupportChainIds)
+
 	//create bridge account
 	rawTx, err := solTypes.CreateRawTransaction(solTypes.CreateRawTransactionParam{
 		Instructions: []solTypes.Instruction{
