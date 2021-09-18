@@ -65,6 +65,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 			poolClient.ProposalBaseAccount.PublicKey,
 			poolClient.BridgeProgramId,
 			uint8(m.Source),
+			uint8(m.Destination),
 			uint64(m.DepositNonce),
 		)
 		bridgeAccount, err := rpcClient.GetBridgeAccountInfo(context.Background(), poolClient.BridgeAccountPubkey.ToBase58())

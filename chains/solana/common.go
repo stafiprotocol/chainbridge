@@ -28,7 +28,6 @@ type EventTransferOut struct {
 	DepositNonce uint64
 }
 
-
 func (w *writer) printContentError(m msg.Message, err error) {
 	w.log.Error("msg resolve failed", "source", m.Source, "dest", m.Destination, "type", m.Type, "err", err)
 }
@@ -44,8 +43,8 @@ func (w *writer) submitMessage(m msg.Message) bool {
 	return true
 }
 
-func GetProposalAccountPubkey(baseAccount, programID solCommon.PublicKey, srcChainId uint8, depositCount uint64) (solCommon.PublicKey, string) {
-	seed := fmt.Sprintf("stafi mint proposal: %d/%d", srcChainId, depositCount)
+func GetProposalAccountPubkey(baseAccount, programID solCommon.PublicKey, srcChainId, destChainId uint8, depositCount uint64) (solCommon.PublicKey, string) {
+	seed := fmt.Sprintf("stafi mint proposal: %d/%d/%d", srcChainId, destChainId, depositCount)
 	return solCommon.CreateWithSeed(baseAccount, seed, programID), seed
 }
 
