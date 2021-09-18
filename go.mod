@@ -15,9 +15,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
 	github.com/stafiprotocol/go-substrate-rpc-client v1.0.9
-	github.com/stafiprotocol/solana-go-sdk v0.3.2
+	github.com/stafiprotocol/solana-go-sdk v0.3.4
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
+
+replace github.com/near/borsh-go => github.com/tpkeeper/borsh-go v0.3.1-0.20210918134133-8433ab32a70c
