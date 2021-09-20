@@ -154,13 +154,13 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 }
 
 func (w *writer) start() error {
-	w.log.Debug("Starting ethereum writer...")
+	w.log.Debug("Starting solana writer...")
 	go func() {
 		for {
 			select {
 			case <-w.stop:
 				close(w.msgChan)
-				w.log.Info("writer stopped")
+				w.log.Info("solana writer stopped")
 				return
 			case msg := <-w.msgChan:
 				result := w.processMessage(msg)

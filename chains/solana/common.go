@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stafiprotocol/chainbridge/shared/solana"
-	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/solana-go-sdk/bridgeprog"
 	solClient "github.com/stafiprotocol/solana-go-sdk/client"
 	solCommon "github.com/stafiprotocol/solana-go-sdk/common"
@@ -17,7 +16,6 @@ import (
 
 var retryLimit = 50
 var waitTime = time.Second * 5
-var backCheckLen = 10
 
 type EventTransferOut struct {
 	Transfer     solCommon.PublicKey
@@ -28,32 +26,9 @@ type EventTransferOut struct {
 	DepositNonce uint64
 }
 
-func (w *writer) printContentError(m msg.Message, err error) {
-	w.log.Error("msg resolve failed", "source", m.Source, "dest", m.Destination, "type", m.Type, "err", err)
-}
-
-// submitMessage inserts the chainId into the msg and sends it to the router
-func (w *writer) submitMessage(m msg.Message) bool {
-	err := w.router.Send(m)
-	if err != nil {
-		w.log.Error("failed to process event", "err", err)
-		return false
-	}
-
-	return true
-}
-
 func GetProposalAccountPubkey(baseAccount, programID solCommon.PublicKey, srcChainId, destChainId uint8, depositCount uint64) (solCommon.PublicKey, string) {
 	seed := fmt.Sprintf("stafi mint proposal: %d/%d/%d", srcChainId, destChainId, depositCount)
 	return solCommon.CreateWithSeed(baseAccount, seed, programID), seed
-}
-
-func mapToString(accountsMap map[solCommon.PublicKey]solClient.GetStakeActivationResponse) string {
-	ret := ""
-	for account, active := range accountsMap {
-		ret = ret + account.ToBase58() + fmt.Sprintf(" : %+v", active) + "\n"
-	}
-	return ret
 }
 
 func (w *writer) waitingForProposalExe(rpcClient *solClient.Client, proposalAccountAddress, processName string) bool {

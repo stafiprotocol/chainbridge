@@ -16,7 +16,7 @@ import (
 type Connection struct {
 	endpoint    string
 	queryClient *solClient.Client
-	poolClient  *solana.PoolClient //map[poolAddressHexStr]poolClient
+	poolClient  *solana.PoolClient
 	log         log15.Logger
 	stop        <-chan int
 }
