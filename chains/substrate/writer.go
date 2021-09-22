@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ChainSafe/log15"
+	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/chainbridge/config"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
@@ -29,10 +30,10 @@ type writer struct {
 	sysErr   chan<- error
 	msgChan  chan msg.Message
 	stop     <-chan int
-	decimals map[string]*big.Int
+	decimals map[string]decimal.Decimal
 }
 
-func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int, decimals map[string]*big.Int) *writer {
+func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int, decimals map[string]decimal.Decimal) *writer {
 	return &writer{
 		conn:     conn,
 		log:      log,
@@ -106,6 +107,10 @@ func (w *writer) processMessage(m msg.Message) bool {
 
 		w.log.Info("Acknowledging proposal on chain")
 		ext, err := w.conn.gc.NewUnsignedExtrinsic(config.AcknowledgeProposal, prop.DepositNonce, prop.SourceId, prop.ResourceId, prop.Call)
+		if err != nil {
+			w.log.Error("Acknowledging NewUnsignedExtrinsic met err")
+			return false
+		}
 		err = w.conn.gc.SignAndSubmitTx(ext)
 		if err != nil {
 			if err.Error() == TerminatedError.Error() {
@@ -130,15 +135,15 @@ func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 		return nil, fmt.Errorf("resourceId  length  must be 64")
 	}
 
-	decimal, ok := w.decimals[resourceIdStr]
+	d, ok := w.decimals[resourceIdStr]
 	if !ok {
-		decimal, ok = w.decimals[decimalDefault]
+		d, ok = w.decimals[decimalDefault]
 		if !ok {
 			return nil, fmt.Errorf("failed to get decimal")
 		}
 	}
-	bigAmt.Div(bigAmt, decimal)
-	amount := types.NewU128(*bigAmt)
+
+	amount := types.NewU128(*decimal.NewFromBigInt(bigAmt, 0).Div(d).BigInt())
 	recipient := types.NewAccountID(m.Payload[1].([]byte))
 	depositNonce := types.U64(m.DepositNonce)
 	method, err := w.resolveResourceId(m.ResourceId)

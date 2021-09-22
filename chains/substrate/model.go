@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
@@ -17,7 +18,7 @@ type EventFungibleTransfer struct {
 	ResourceId   msg.ResourceId
 	Amount       *big.Int
 	Recipient    []byte
-	Decimal      *big.Int
+	Decimal      decimal.Decimal
 }
 
 type ChainIdParam struct {

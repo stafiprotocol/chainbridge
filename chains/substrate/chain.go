@@ -25,11 +25,11 @@ package substrate
 
 import (
 	"fmt"
-	"math/big"
 	"strconv"
 	"strings"
 
 	"github.com/ChainSafe/log15"
+	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
@@ -147,13 +147,13 @@ func parseStartBlock(cfg *core.ChainConfig) uint64 {
 	return 0
 }
 
-func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
+func getDecimals(cfg *core.ChainConfig) (map[string]decimal.Decimal, error) {
 	symbols := cfg.Symbols
 	if len(symbols) == 0 {
 		return nil, fmt.Errorf("config does not contains symbols")
 	}
 
-	decimals := make(map[string]*big.Int)
+	decimals := make(map[string]decimal.Decimal)
 	for _, sym := range symbols {
 		info, ok := sym.(map[string]interface{})
 		if !ok {
@@ -179,12 +179,12 @@ func getDecimals(cfg *core.ChainConfig) (map[string]*big.Int, error) {
 			return nil, fmt.Errorf("unable to get symbol decimalFactor")
 		}
 
-		decimal, ok := big.NewInt(0).SetString(df, 10)
-		if !ok {
-			return nil, fmt.Errorf("parse symbol decimalFactor not ok")
+		dDeci, err := decimal.NewFromString(df)
+		if err != nil {
+			return nil, err
 		}
 
-		decimals[rId] = decimal
+		decimals[rId] = dDeci
 	}
 	fmt.Println(decimals)
 

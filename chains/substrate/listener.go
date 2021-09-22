@@ -6,9 +6,11 @@ package substrate
 import (
 	"errors"
 	"fmt"
-	"github.com/stafiprotocol/chainbridge/config"
 	"math/big"
 	"time"
+
+	"github.com/shopspring/decimal"
+	"github.com/stafiprotocol/chainbridge/config"
 
 	"github.com/ChainSafe/log15"
 	"github.com/itering/substrate-api-rpc/websocket"
@@ -29,7 +31,7 @@ type listener struct {
 	stop          <-chan int
 	sysErr        chan<- error
 	wsconn        websocket.WsConn
-	decimals      map[string]*big.Int
+	decimals      map[string]decimal.Decimal
 }
 
 var (
@@ -41,7 +43,7 @@ var (
 	EventRetryInterval = 100 * time.Millisecond
 )
 
-func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]*big.Int) *listener {
+func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]decimal.Decimal) *listener {
 	return &listener{
 		name:          name,
 		chainId:       id,

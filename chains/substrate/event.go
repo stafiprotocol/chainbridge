@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/chainbridge/shared/substrate"
 
 	"github.com/ChainSafe/log15"
@@ -44,14 +45,14 @@ func fungibleTransferHandler(evtI interface{}, log log15.Logger) (msg.Message, e
 		0,
 		msg.ChainId(evt.Destination),
 		msg.Nonce(evt.DepositNonce),
-		evt.Amount.Mul(evt.Amount, evt.Decimal),
+		evt.Decimal.Mul(decimal.NewFromBigInt(evt.Amount, 0)).BigInt(),
 		resourceId,
 		evt.Recipient,
 	), nil
 }
 
 // FungibleTransfer(AccountId, ChainId, DepositNonce, ResourceId, U256, Vec<u8>)
-func FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]*big.Int) (*EventFungibleTransfer, error) {
+func FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]decimal.Decimal) (*EventFungibleTransfer, error) {
 	if len(evt.Params) != 6 {
 		return nil, fmt.Errorf("EventFungibleTransfer params number not right: %d, expected: 6", len(evt.Params))
 	}
