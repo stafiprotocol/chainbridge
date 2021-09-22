@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/chains"
@@ -13,6 +14,7 @@ import (
 )
 
 var msgLimit = 4096
+var errRetryLimitStr = "reach retry limit"
 
 //write to solana
 type writer struct {
@@ -60,6 +62,22 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 		bigAmt := new(big.Int).SetBytes(m.Payload[0].([]byte))
 		recipient := m.Payload[1].([]byte)
 		toAccount := common.PublicKeyFromBytes(recipient)
+		//check toAccount
+		toAccountInfo, err := rpcClient.GetTokenAccountInfo(context.Background(), toAccount.ToBase58())
+		if err != nil {
+			// return false if retry limit
+			if strings.Contains(err.Error(), errRetryLimitStr) {
+				w.log.Error("GetTokenAccountInfo failed",
+					"token account address", toAccount.ToBase58(),
+					"err", err)
+				return false
+			}
+			
+			w.log.Warn("GetTokenAccountInfo failed, will skip this fungibleTransfer",
+				"token account address", toAccount.ToBase58(),
+				"err", err)
+			return true
+		}
 
 		willUseProposalAccount, seed := GetProposalAccountPubkey(
 			poolClient.ProposalBaseAccount.PublicKey,
@@ -68,6 +86,8 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 			uint8(m.Destination),
 			uint64(m.DepositNonce),
 		)
+
+		//get gridgeAccount info
 		bridgeAccount, err := rpcClient.GetBridgeAccountInfo(context.Background(), poolClient.BridgeAccountPubkey.ToBase58())
 		if err != nil {
 			w.log.Error("GetBridgeAccountInfo err",
@@ -85,6 +105,15 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 			willUseMintAccount = mint
 		}
 
+		//toAccount mint should equal willUseMintAccount
+		if toAccountInfo.Mint != willUseMintAccount {
+			w.log.Warn("TokenAccountInfo's mint account not equal, will skip this fungibleTransfer",
+				"token account address", toAccount.ToBase58(),
+				"mintAccount in tokenAccount", toAccountInfo.Mint.ToBase58(),
+				"mintAccount in bridgeAccount", willUseMintAccount.ToBase58())
+			return true
+		}
+
 		//check and create proposal is not exist
 		_, err = rpcClient.GetMintProposalInfo(context.Background(), willUseProposalAccount.ToBase58())
 		if err != nil && err == solClient.ErrAccountNotFound {
@@ -96,7 +125,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 				seed,
 				m.ResourceId,
 				bigAmt.Uint64(),
-				"create proposal account",
+				"FungibleTransfer",
 			)
 			if !sendOk {
 				return false
@@ -134,7 +163,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 			willUseProposalAccount,
 			willUseMintAccount,
 			toAccount,
-			"",
+			"FungibleTransfer",
 		)
 		if !send {
 			return false

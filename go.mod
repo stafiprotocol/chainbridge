@@ -16,7 +16,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
 	github.com/stafiprotocol/go-substrate-rpc-client v1.0.9
-	github.com/stafiprotocol/solana-go-sdk v0.3.4
+	github.com/stafiprotocol/solana-go-sdk v0.3.5
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
