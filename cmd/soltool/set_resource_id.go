@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func setResourceIdAction(ctx *cli.Context) error {
+func mapResourceIdAction(ctx *cli.Context) error {
 	path := ctx.String(configFlag.Name)
 	pc := PoolAccounts{}
 	err := loadConfig(path, &pc)

@@ -33,7 +33,8 @@ func init() {
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
 		&createBridgeCommand,
-		&setResourceIdCommand,
+		&mapResourceIdCommand,
+		&getBridgeInfoCommand,
 	}
 
 }
@@ -57,11 +58,19 @@ var createBridgeCommand = cli.Command{
 	Flags:       cliFlags,
 }
 
-var setResourceIdCommand = cli.Command{
-	Name:        "setResourceId",
-	Usage:       "setResourceId",
-	Description: "The setResourceId command is used to update resourceId to mint account",
-	Action:      setResourceIdAction,
+var mapResourceIdCommand = cli.Command{
+	Name:        "mapResourceId",
+	Usage:       "map resourceId to mint account",
+	Description: "The mapResourceId command is used to update resourceId to mint account",
+	Action:      mapResourceIdAction,
+	Flags:       cliFlags,
+}
+
+var getBridgeInfoCommand = cli.Command{
+	Name:        "getBridgeInfo",
+	Usage:       "get bridge info",
+	Description: "The getBridgeInfo command is used to get bridge account info",
+	Action:      getBridgeInfoAction,
 	Flags:       cliFlags,
 }
 
