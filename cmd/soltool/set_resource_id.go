@@ -10,12 +10,11 @@ import (
 	"github.com/stafiprotocol/solana-go-sdk/bridgeprog"
 	solClient "github.com/stafiprotocol/solana-go-sdk/client"
 	solCommon "github.com/stafiprotocol/solana-go-sdk/common"
-	"github.com/stafiprotocol/solana-go-sdk/sysprog"
 	solTypes "github.com/stafiprotocol/solana-go-sdk/types"
 	"github.com/urfave/cli/v2"
 )
 
-func createBridgeAccountAction(ctx *cli.Context) error {
+func setResourceIdAction(ctx *cli.Context) error {
 	path := ctx.String(configFlag.Name)
 	pc := PoolAccounts{}
 	err := loadConfig(path, &pc)
@@ -46,12 +45,6 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 	AdminAccount := solTypes.AccountFromPrivateKeyBytes(privKeyMap[pc.AdminAccountPubkey])
 	BridgeProgramId := solCommon.PublicKeyFromString(pc.BridgeProgramId)
 
-	PdaPubkey, nonce, err := solCommon.FindProgramAddress([][]byte{BridgeAccount.PublicKey.Bytes()}, BridgeProgramId)
-	if err != nil {
-		return err
-	}
-	fmt.Println("\nbridgePdaPubkey: ", PdaPubkey.ToBase58())
-
 	owners := make([]solCommon.PublicKey, 0)
 	owners = append(owners, FeeAccount.PublicKey)
 	for _, account := range pc.OtherFeeAccountPubkey {
@@ -78,15 +71,11 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 	c := solClient.NewClient(pc.Endpoint)
 	//check if exist
 	bridgeInfo, err := c.GetBridgeAccountInfo(context.Background(), BridgeAccount.PublicKey.ToBase58())
-	if err == nil {
-		return fmt.Errorf("\nbridge account already exist:\n %+v", bridgeInfo)
+	if err != nil {
+		return fmt.Errorf("\nbridge account not exist:\n %+v", bridgeInfo)
 	}
 
 	res, err := c.GetRecentBlockhash(context.Background())
-	if err != nil {
-		return err
-	}
-	bridgeAccountMiniMum, err := c.GetMinimumBalanceForRentExemption(context.Background(), solClient.BridgeAccountLengthDefault)
 	if err != nil {
 		return err
 	}
@@ -96,28 +85,22 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 	fmt.Printf("owners %+v\n", owners)
 	fmt.Printf("supportChainIds %+v\n", pc.SupportChainIds)
 
+	instructions := make([]solTypes.Instruction, 0)
+	for id, m := range resourceIdToMint {
+		instruct := bridgeprog.SetResourceId(
+			BridgeProgramId,
+			BridgeAccount.PublicKey,
+			AdminAccount.PublicKey,
+			id,
+			m,
+		)
+		instructions = append(instructions, instruct)
+	}
+
 	//create bridge account
 	rawTx, err := solTypes.CreateRawTransaction(solTypes.CreateRawTransactionParam{
-		Instructions: []solTypes.Instruction{
-			sysprog.CreateAccount(
-				FeeAccount.PublicKey,
-				BridgeAccount.PublicKey,
-				BridgeProgramId,
-				bridgeAccountMiniMum*2,
-				solClient.BridgeAccountLengthDefault,
-			),
-			bridgeprog.CreateBridge(
-				BridgeProgramId,
-				BridgeAccount.PublicKey,
-				owners,
-				pc.Threshold,
-				uint8(nonce),
-				pc.SupportChainIds,
-				resourceIdToMint,
-				AdminAccount.PublicKey,
-			),
-		},
-		Signers:         []solTypes.Account{FeeAccount, BridgeAccount},
+		Instructions:    instructions,
+		Signers:         []solTypes.Account{FeeAccount, AdminAccount},
 		FeePayer:        FeeAccount.PublicKey,
 		RecentBlockHash: res.Blockhash,
 	})
@@ -128,7 +111,7 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("send tx error, err: %v", err)
 	}
-	fmt.Println("create bridge account txHash:", txHash)
+	fmt.Println("setResourceId txHash:", txHash)
 	time.Sleep(time.Second * 2)
 
 	for i := 0; i < 40; i++ {
@@ -139,10 +122,10 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 			continue
 		}
 
-		fmt.Println("create bridge success")
+		fmt.Println("setResourceId success")
 		fmt.Printf("bridge account:\n %+v", bridgeInfo)
 		return nil
 	}
-	fmt.Println("sorry create bridge failed")
+	fmt.Println("sorry setResourceId failed")
 	return nil
 }

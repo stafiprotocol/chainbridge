@@ -26,13 +26,14 @@ var cliFlags = []cli.Flag{
 func init() {
 	app.Action = run
 	app.Copyright = "Copyright 2020 Stafi Protocol Authors"
-	app.Name = "soltool"
+	app.Name = "solTool"
 	app.Usage = "solTool"
 	app.Authors = []*cli.Author{{Name: "Stafi Protocol 2020"}}
 	app.Version = "0.0.1"
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
 		&createBridgeCommand,
+		&setResourceIdCommand,
 	}
 
 }
@@ -53,6 +54,14 @@ var createBridgeCommand = cli.Command{
 	Usage:       "create bridge account",
 	Description: "The createBridge command is used to create a bridge account",
 	Action:      createBridgeAccountAction,
+	Flags:       cliFlags,
+}
+
+var setResourceIdCommand = cli.Command{
+	Name:        "setResourceId",
+	Usage:       "setResourceId",
+	Description: "The setResourceId command is used to update resourceId to mint account",
+	Action:      setResourceIdAction,
 	Flags:       cliFlags,
 }
 
