@@ -29,12 +29,14 @@ func getBridgeInfoAction(ctx *cli.Context) error {
 
 	fmt.Printf("\nbridgeAccountInfo: \n")
 	fmt.Printf("admin: %s\n", common.PublicKeyFromBytes(bridgeInfo.Admin[:]).ToBase58())
+	fmt.Printf("feeReceiver: %s\n", common.PublicKeyFromBytes(bridgeInfo.FeeReceiver[:]).ToBase58())
 	fmt.Printf("nonce: %d\n", bridgeInfo.Nonce)
 	fmt.Printf("ownerSetSequence: %d\n", bridgeInfo.OwnerSetSeqno)
 	fmt.Printf("threshold: %d\n", bridgeInfo.Threshold)
 	fmt.Printf("owners: %s\n", strOwners(bridgeInfo.Owners))
 	fmt.Printf("supportChainIds: %v\n", bridgeInfo.SupportChainIds)
 	fmt.Printf("depositCount: %s\n", strDepositCount(bridgeInfo.DepositCount))
+	fmt.Printf("feeAmounts: %s\n", strDepositCount(bridgeInfo.FeeAmount))
 	fmt.Printf("resourceIdToMint: %s\n", strResourceToMint(bridgeInfo.ResourceIdToMint))
 
 	return nil

@@ -35,6 +35,7 @@ func init() {
 		&createBridgeCommand,
 		&mapResourceIdCommand,
 		&getBridgeInfoCommand,
+		&setSupportChainIdCommand,
 	}
 
 }
@@ -66,6 +67,14 @@ var mapResourceIdCommand = cli.Command{
 	Flags:       cliFlags,
 }
 
+var setSupportChainIdCommand = cli.Command{
+	Name:        "setChainId",
+	Usage:       "set support chain ids",
+	Description: "The setChainId command is used to set support chain ids",
+	Action:      setSupportChainIdAction,
+	Flags:       cliFlags,
+}
+
 var getBridgeInfoCommand = cli.Command{
 	Name:        "getBridgeInfo",
 	Usage:       "get bridge info",
@@ -76,15 +85,17 @@ var getBridgeInfoCommand = cli.Command{
 
 type PoolAccounts struct {
 	KeystorePath          string            `json:"keystorePath"`
-	FeeAccount            string            `json:"feeAccount"`    //need private key
-	BridgeAccount         string            `json:"bridgeAccount"` //need private key
-	AdminAccountPubkey    string            `json:"adminAccountPubkey"`
+	FeeAccount            string            `json:"feeAccount"`         //need private key
+	BridgeAccount         string            `json:"bridgeAccount"`      //need private key
+	AdminAccountPubkey    string            `json:"adminAccountPubkey"` //need private key
 	BridgeProgramId       string            `json:"bridgeProgramId"`
 	Endpoint              string            `json:"endpoint"`
 	OtherFeeAccountPubkey []string          `json:"otherFeeAccountPubkey"`
 	Threshold             uint64            `json:"threshold"`
 	SupportChainIds       []uint8           `json:"supportChainIds"`
 	ResourceIdToMint      map[string]string `json:"resourceIdToMint"`
+	FeeReceiverAccount    string            `json:"feeReceiverAccount"` //need private key
+	FeeAmounts            map[string]uint64 `json:"feeAmounts"`
 }
 
 func loadConfig(file string, config *PoolAccounts) (err error) {
