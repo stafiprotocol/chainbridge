@@ -16,6 +16,14 @@
         2
     ],
     "resourceIdToMint": {
-        "0x01": "9qab2RkbcDbkKjbSAfaN6CCLPgZ7h39npsksVmWPbW6e"
+        "0x01": "9qab2RkbcDbkKjbSAfaN6CCLPgZ7h39npsksVmWPbW6e",
+        "0x010203": "9qab2RkbcDbkKjbSAfaN6CCLPgZ7h39npsksVmWPbW6e",
+        "0x09": "9qab2RkbcDbkKjbSAfaN6CCLPgZ7h39npsksVmWPbW6e",
+        "0x000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901": "7tFoMBHydGVDcgxUpkPiWca2x7hoy9s7oBAhmay8GQLL",
+        "0x000000000000000000000000000000659b930f8568952cb7b0c8b7eda3060b01": "2FxyeVxhq3rzSPFEkFgmDYprPREwt4fKhqGX84q4m8us"
+    },
+    "feeReceiverAccount": "9Riwnxn53S4wmy5h5nbQN1gxTCm1EvgqB4Gc5aKDAPyc",
+    "feeAmount": {
+        "1": 50000
     }
 }
