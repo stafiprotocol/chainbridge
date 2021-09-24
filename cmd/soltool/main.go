@@ -36,6 +36,8 @@ func init() {
 		&mapResourceIdCommand,
 		&getBridgeInfoCommand,
 		&setSupportChainIdCommand,
+		&setFeeReceiverCommand,
+		&setFeeAmountCommand,
 	}
 
 }
@@ -72,6 +74,22 @@ var setSupportChainIdCommand = cli.Command{
 	Usage:       "set support chain ids",
 	Description: "The setChainId command is used to set support chain ids",
 	Action:      setSupportChainIdAction,
+	Flags:       cliFlags,
+}
+
+var setFeeReceiverCommand = cli.Command{
+	Name:        "setFeeReceiver",
+	Usage:       "set fee receiver",
+	Description: "The setFeeReceiver command is used to set fee receiver",
+	Action:      setFeeReceiverAction,
+	Flags:       cliFlags,
+}
+
+var setFeeAmountCommand = cli.Command{
+	Name:        "setFeeAmount",
+	Usage:       "set fee amount",
+	Description: "The setFeeAmount command is used to set fee amounts",
+	Action:      setFeeAmountAction,
 	Flags:       cliFlags,
 }
 
