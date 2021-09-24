@@ -23,7 +23,7 @@
         "0x000000000000000000000000000000659b930f8568952cb7b0c8b7eda3060b01": "2FxyeVxhq3rzSPFEkFgmDYprPREwt4fKhqGX84q4m8us"
     },
     "feeReceiverAccount": "9Riwnxn53S4wmy5h5nbQN1gxTCm1EvgqB4Gc5aKDAPyc",
-    "feeAmount": {
+    "feeAmounts": {
         "1": 50000
     }
 }
