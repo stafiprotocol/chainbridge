@@ -116,10 +116,18 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 		}
 		//skip failed tx
 		if tx.Meta.Err != nil {
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		//skip zero instruction
 		if len(tx.Transaction.Message.Instructions) == 0 {
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		instruct := tx.Transaction.Message.Instructions[0]
@@ -130,28 +138,52 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 		}
 		//skip if it doesn't call  bridge program
 		if !strings.EqualFold(accountKeys[programIdIndex], bridgeProgramId) {
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 
 		// check instruction data
 		if len(instruct.Data) == 0 {
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		dataBts := base58.Decode(instruct.Data)
 		if len(dataBts) < 8 {
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		// skip if it doesn't call transferOut func
 		if !bytes.Equal(dataBts[:8], bridgeprog.InstructionTransferOut[:]) {
 			l.log.Warn("call func is not transferOut", "tx", tx)
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		// check bridge account
 		if len(instruct.Accounts) == 0 {
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		if !strings.EqualFold(accountKeys[instruct.Accounts[0]], bridgeAccount) {
 			l.log.Warn("bridge account not equal", "tx", tx)
+			err := l.storeDealedSig(usesig)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 
@@ -188,14 +220,22 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 			}
 
 		}
-		// save new signature to storage
-		// Write to block store. Not a critical operation, no need to retry
-		err = l.blockstore.StoreSignature(usesig)
+		err = l.storeDealedSig(usesig)
 		if err != nil {
-			l.log.Error("Failed to write latest signature to blockstore", "sig", usesig, "err", err)
 			return err
 		}
-		l.startSignature = usesig
 	}
+	return nil
+}
+
+// save new signature to storage
+// Write to block store. Not a critical operation, no need to retry
+func (l *listener) storeDealedSig(sig string) error {
+	err := l.blockstore.StoreSignature(sig)
+	if err != nil {
+		l.log.Error("Failed to write latest signature to blockstore", "sig", sig, "err", err)
+		return err
+	}
+	l.startSignature = sig
 	return nil
 }
