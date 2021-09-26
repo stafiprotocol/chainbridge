@@ -4,6 +4,8 @@
 package ethereum
 
 import (
+	"fmt"
+
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/bindings/Bridge"
 	ethconn "github.com/stafiprotocol/chainbridge/connections/ethereum"
@@ -51,6 +53,9 @@ func (w *writer) start() error {
 			case msg := <-w.msgChan:
 				result := w.processMessage(msg)
 				w.log.Info("processMessage", "result", result)
+				if !result {
+					w.sysErr <- fmt.Errorf("processMessage failed")
+				}
 			}
 		}
 	}()

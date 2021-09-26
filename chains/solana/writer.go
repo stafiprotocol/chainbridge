@@ -49,12 +49,6 @@ func (w *writer) ResolveMessage(m msg.Message) bool {
 
 //resolve msg from other chains
 func (w *writer) processMessage(m msg.Message) (processOk bool) {
-	defer func() {
-		if !processOk {
-			panic(fmt.Sprintf("resolveMessage process failed. %+v", m))
-		}
-	}()
-
 	switch m.Type {
 	case msg.FungibleTransfer:
 		poolClient := w.conn.poolClient
@@ -178,7 +172,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 		return true
 	default:
 		w.log.Warn("message type unsupported", "type", m.Type)
-		return true
+		return false
 	}
 }
 
@@ -195,7 +189,7 @@ func (w *writer) start() error {
 				result := w.processMessage(msg)
 				w.log.Info("processMessage", "result", result)
 				if !result {
-					panic(result)
+					w.sysErr <- fmt.Errorf("processMessage failed")
 				}
 			}
 		}

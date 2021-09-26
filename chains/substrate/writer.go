@@ -22,7 +22,7 @@ const (
 	msgLimit = 4096
 )
 
-var TerminatedError = errors.New("terminated")
+var ErrorTerminated = errors.New("terminated")
 
 type writer struct {
 	conn     *Connection
@@ -56,7 +56,7 @@ func (w *writer) start() error {
 				result := w.processMessage(msg)
 				w.log.Info("processMessage", "result", result)
 				if !result {
-					panic(result)
+					w.sysErr <- fmt.Errorf("processMessage failed")
 				}
 			}
 		}
@@ -116,7 +116,7 @@ func (w *writer) processMessage(m msg.Message) bool {
 		}
 		err = w.conn.gc.SignAndSubmitTx(ext)
 		if err != nil {
-			if err.Error() == TerminatedError.Error() {
+			if err.Error() == ErrorTerminated.Error() {
 				w.log.Error("Acknowledging proposal met TerminatedError")
 				return false
 			}
