@@ -1,6 +1,7 @@
 package solana
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ChainSafe/log15"
+	"github.com/decred/base58"
 	borsh "github.com/near/borsh-go"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
@@ -94,6 +96,7 @@ func (l *listener) pollBlocks() error {
 func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	rpcClient := l.conn.queryClient
 	bridgeProgramId := l.conn.poolClient.BridgeProgramId.ToBase58()
+	bridgeAccount := l.conn.poolClient.BridgeAccountPubkey.ToBase58()
 
 	signatures, err := rpcClient.GetConfirmedSignaturesForAddress(
 		context.Background(),
@@ -111,6 +114,47 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 		if err != nil {
 			return err
 		}
+		//skip failed tx
+		if tx.Meta.Err != nil {
+			continue
+		}
+		//skip zero instruction
+		if len(tx.Transaction.Message.Instructions) == 0 {
+			continue
+		}
+		instruct := tx.Transaction.Message.Instructions[0]
+		accountKeys := tx.Transaction.Message.AccountKeys
+		programIdIndex := instruct.ProgramIDIndex
+		if len(accountKeys) <= int(programIdIndex) {
+			return fmt.Errorf("accounts or programIdIndex err, %v", tx)
+		}
+		//skip if it doesn't call  bridge program
+		if !strings.EqualFold(accountKeys[programIdIndex], bridgeProgramId) {
+			continue
+		}
+
+		// check instruction data
+		if len(instruct.Data) == 0 {
+			continue
+		}
+		dataBts := base58.Decode(instruct.Data)
+		if len(dataBts) < 8 {
+			continue
+		}
+		// skip if it doesn't call transferOut func
+		if !bytes.Equal(dataBts[:8], bridgeprog.InstructionTransferOut[:]) {
+			l.log.Warn("call func is not transferOut", "tx", tx)
+			continue
+		}
+		// check bridge account
+		if len(instruct.Accounts) == 0 {
+			continue
+		}
+		if !strings.EqualFold(accountKeys[instruct.Accounts[0]], bridgeAccount) {
+			l.log.Warn("bridge account not equal", "tx", tx)
+			continue
+		}
+
 		for _, logMessage := range tx.Meta.LogMessages {
 			if strings.HasPrefix(logMessage, bridgeprog.EventTransferOutPrefix) {
 				l.log.Info("find log", "log", logMessage, "signature", usesig)
