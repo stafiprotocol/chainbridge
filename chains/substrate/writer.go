@@ -55,6 +55,9 @@ func (w *writer) start() error {
 			case msg := <-w.msgChan:
 				result := w.processMessage(msg)
 				w.log.Info("processMessage", "result", result)
+				if !result {
+					panic(result)
+				}
 			}
 		}
 	}()
@@ -123,8 +126,7 @@ func (w *writer) processMessage(m msg.Message) bool {
 		}
 		return true
 	}
-
-	return true
+	return false
 }
 
 func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {

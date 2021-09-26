@@ -72,7 +72,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 					"err", err)
 				return false
 			}
-			
+
 			w.log.Warn("GetTokenAccountInfo failed, will skip this fungibleTransfer",
 				"token account address", toAccount.ToBase58(),
 				"err", err)
@@ -194,6 +194,9 @@ func (w *writer) start() error {
 			case msg := <-w.msgChan:
 				result := w.processMessage(msg)
 				w.log.Info("processMessage", "result", result)
+				if !result {
+					panic(result)
+				}
 			}
 		}
 	}()
