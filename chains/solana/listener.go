@@ -215,7 +215,8 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 				l.log.Info("send fungibletransfer msg", "msg", m)
 				err = l.router.Send(m)
 				if err != nil {
-					l.log.Error("subscription error: failed to route message", "err", err)
+					l.log.Error("router send error: failed to route message", "err", err)
+					return err
 				}
 			}
 
