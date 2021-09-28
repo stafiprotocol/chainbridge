@@ -98,7 +98,7 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	bridgeProgramId := l.conn.poolClient.BridgeProgramId.ToBase58()
 	bridgeAccount := l.conn.poolClient.BridgeAccountPubkey.ToBase58()
 
-	signatures, err := rpcClient.GetConfirmedSignaturesForAddress(
+	signatures, err := rpcClient.GetSignaturesForAddress(
 		context.Background(),
 		bridgeProgramId,
 		solClient.GetConfirmedSignaturesForAddressConfig{
