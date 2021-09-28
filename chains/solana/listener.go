@@ -14,6 +14,7 @@ import (
 	"github.com/decred/base58"
 	borsh "github.com/near/borsh-go"
 	"github.com/stafiprotocol/chainbridge/chains"
+	"github.com/stafiprotocol/chainbridge/utils"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/solana-go-sdk/bridgeprog"
@@ -24,8 +25,8 @@ var (
 	BlockRetryInterval  = time.Second * 3
 	BlockRetryLimit     = 50
 	ErrFatalPolling     = errors.New("listener block polling failed")
-	logInterval         = uint64(100)
 	eventTickerInterval = time.Second * 8
+	version170          = "1.7.0"
 )
 
 //listen event or block update from solana
@@ -97,13 +98,27 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	rpcClient := l.conn.queryClient
 	bridgeProgramId := l.conn.poolClient.BridgeProgramId.ToBase58()
 	bridgeAccount := l.conn.poolClient.BridgeAccountPubkey.ToBase58()
+	versionRes, err := rpcClient.GetVersion(context.Background())
+	if err != nil {
+		return err
+	}
 
-	signatures, err := rpcClient.GetSignaturesForAddress(
-		context.Background(),
-		bridgeProgramId,
-		solClient.GetConfirmedSignaturesForAddressConfig{
-			Until: untilSignature,
-		})
+	var signatures []solClient.GetConfirmedSignaturesForAddress
+	if utils.VersionCompare(versionRes.SolanaCore, version170) >= 0 {
+		signatures, err = rpcClient.GetSignaturesForAddress(
+			context.Background(),
+			bridgeProgramId,
+			solClient.GetConfirmedSignaturesForAddressConfig{
+				Until: untilSignature,
+			})
+	} else {
+		signatures, err = rpcClient.GetConfirmedSignaturesForAddress(
+			context.Background(),
+			bridgeProgramId,
+			solClient.GetConfirmedSignaturesForAddressConfig{
+				Until: untilSignature,
+			})
+	}
 	if err != nil {
 		return err
 	}
