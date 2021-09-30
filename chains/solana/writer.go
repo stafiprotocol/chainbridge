@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	solClient "github.com/stafiprotocol/solana-go-sdk/client"
 	"github.com/stafiprotocol/solana-go-sdk/common"
+	"github.com/stafiprotocol/solana-go-sdk/tokenprog"
 )
 
 var msgLimit = 4096
@@ -57,20 +57,26 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 		recipient := m.Payload[1].([]byte)
 		toAccount := common.PublicKeyFromBytes(recipient)
 		//check toAccount
-		toAccountInfo, err := rpcClient.GetTokenAccountInfo(context.Background(), toAccount.ToBase58())
-		if err != nil {
-			// return false if retry limit
-			if strings.Contains(err.Error(), errRetryLimitStr) {
+		var toAccountInfo *tokenprog.TokenAccount
+		var err error
+		var retry = 0
+		for {
+			if retry > retryLimit {
 				w.log.Error("GetTokenAccountInfo failed",
 					"token account address", toAccount.ToBase58(),
 					"err", err)
 				return false
 			}
-
-			w.log.Warn("GetTokenAccountInfo failed, will skip this fungibleTransfer",
-				"token account address", toAccount.ToBase58(),
-				"err", err)
-			return true
+			toAccountInfo, err = rpcClient.GetTokenAccountInfo(context.Background(), toAccount.ToBase58())
+			if err != nil {
+				// return false if retry limit
+				w.log.Warn("GetTokenAccountInfo failed, will retry...",
+					"token account address", toAccount.ToBase58(),
+					"err", err)
+				retry++
+				continue
+			}
+			break
 		}
 
 		willUseProposalAccount, seed := GetProposalAccountPubkey(

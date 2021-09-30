@@ -14,8 +14,8 @@ import (
 	solTypes "github.com/stafiprotocol/solana-go-sdk/types"
 )
 
-var retryLimit = 50
-var waitTime = time.Second * 5
+var retryLimit = 100
+var waitTime = time.Second * 6
 
 type EventTransferOut struct {
 	Transfer     solCommon.PublicKey

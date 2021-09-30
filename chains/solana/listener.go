@@ -22,8 +22,6 @@ import (
 )
 
 var (
-	BlockRetryInterval  = time.Second * 3
-	BlockRetryLimit     = 50
 	ErrFatalPolling     = errors.New("listener block polling failed")
 	eventTickerInterval = time.Second * 8
 	version170          = "1.7.0"
@@ -100,7 +98,7 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	bridgeAccount := l.conn.poolClient.BridgeAccountPubkey.ToBase58()
 	versionRes, err := rpcClient.GetVersion(context.Background())
 	if err != nil {
-		return err
+		return fmt.Errorf("rpcClient.GetVersion err: %s", err.Error())
 	}
 
 	var signatures []solClient.GetConfirmedSignaturesForAddress
@@ -120,14 +118,14 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 			})
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("rpcClient.GetConfirmedSignaturesForAddress err: %s", err.Error())
 	}
 
 	for i := len(signatures) - 1; i >= 0; i-- {
 		usesig := signatures[i].Signature
 		tx, err := rpcClient.GetConfirmedTransaction(context.Background(), usesig)
 		if err != nil {
-			return err
+			return fmt.Errorf("rpcClient.GetConfirmedTransaction err: %s", err.Error())
 		}
 		//skip failed tx
 		if tx.Meta.Err != nil {
