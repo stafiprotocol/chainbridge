@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/ChainSafe/log15 v1.0.0
-	github.com/decred/base58 v1.0.3 // indirect
+	github.com/decred/base58 v1.0.3
 	github.com/ethereum/go-ethereum v1.10.6
 	github.com/go-kit/kit v0.9.0 // indirect
 	github.com/gorilla/websocket v1.4.2
@@ -17,7 +17,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
 	github.com/stafiprotocol/go-substrate-rpc-client v1.0.9
-	github.com/stafiprotocol/solana-go-sdk v0.3.6
+	github.com/stafiprotocol/solana-go-sdk v0.3.8
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
