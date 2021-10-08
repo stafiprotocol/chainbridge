@@ -14,7 +14,7 @@ import (
 	solTypes "github.com/stafiprotocol/solana-go-sdk/types"
 )
 
-var retryLimit = 100
+var retryLimit = 250
 var waitTime = time.Second * 6
 
 type EventTransferOut struct {
@@ -72,6 +72,7 @@ func (w *writer) waitingForProposalAccountCreate(rpcClient *solClient.Client, pr
 		} else {
 			break
 		}
+
 	}
 	return true
 }
