@@ -13,7 +13,6 @@ import (
 	"github.com/stafiprotocol/chainbridge/config"
 
 	"github.com/ChainSafe/log15"
-	"github.com/itering/substrate-api-rpc/websocket"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
@@ -30,7 +29,6 @@ type listener struct {
 	log           log15.Logger
 	stop          <-chan int
 	sysErr        chan<- error
-	wsconn        websocket.WsConn
 	decimals      map[string]decimal.Decimal
 }
 
@@ -43,7 +41,8 @@ var (
 	EventRetryInterval = 100 * time.Millisecond
 )
 
-func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger, bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]decimal.Decimal) *listener {
+func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger,
+	bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]decimal.Decimal) *listener {
 	return &listener{
 		name:          name,
 		chainId:       id,
@@ -179,6 +178,10 @@ func (l *listener) processEvents(blockNum uint64) error {
 		data, err := FungibleTransferEventData(evt, l.decimals)
 		if err != nil {
 			return err
+		}
+		//skip event if not support chainId
+		if !l.router.SupportChainId(msg.ChainId(data.Destination)) {
+			continue
 		}
 
 		if l.subscriptions[FungibleTransfer] != nil {

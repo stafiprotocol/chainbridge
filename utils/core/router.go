@@ -46,6 +46,18 @@ func (r *Router) Send(msg msg.Message) error {
 	return nil
 }
 
+func (r *Router) SupportChainId(chainId msg.ChainId) bool {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	w := r.registry[chainId]
+	if w == nil {
+		return false
+	} else {
+		return true
+	}
+}
+
 // Listen registers a Writer with a ChainId which Router.Send can then use to propagate messages
 func (r *Router) Listen(id msg.ChainId, w Writer) {
 	r.lock.Lock()

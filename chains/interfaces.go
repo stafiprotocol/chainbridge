@@ -9,4 +9,5 @@ import (
 
 type Router interface {
 	Send(message msg.Message) error
+	SupportChainId(chainId msg.ChainId) bool
 }
