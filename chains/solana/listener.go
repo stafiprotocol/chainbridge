@@ -23,7 +23,7 @@ import (
 
 var (
 	ErrFatalPolling     = errors.New("listener block polling failed")
-	eventTickerInterval = time.Second * 12
+	eventTickerInterval = time.Second * 15
 	version170          = "1.7.0"
 )
 
