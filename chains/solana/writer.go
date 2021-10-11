@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/chains"
@@ -74,6 +75,7 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 					"token account address", toAccount.ToBase58(),
 					"err", err)
 				retry++
+				time.Sleep(waitTime)
 				continue
 			}
 			break
