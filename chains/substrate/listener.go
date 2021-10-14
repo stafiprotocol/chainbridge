@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -177,6 +178,10 @@ func (l *listener) processEvents(blockNum uint64) error {
 
 		data, err := FungibleTransferEventData(evt, l.decimals)
 		if err != nil {
+			if strings.Contains(err.Error(), "recipient error") {
+				l.log.Error("skip recipient err", "blockNumber", blockNum, "eventId", evt.EventId)
+				continue
+			}
 			return err
 		}
 		//skip event if not support chainId

@@ -15,7 +15,6 @@ import (
 )
 
 var msgLimit = 4096
-var errRetryLimitStr = "reach retry limit"
 
 //write to solana
 type writer struct {
@@ -63,10 +62,10 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 		var retry = 0
 		for {
 			if retry > retryLimit {
-				w.log.Error("GetTokenAccountInfo failed",
+				w.log.Error("GetTokenAccountInfo failed, will skip this recipient",
 					"token account address", toAccount.ToBase58(),
 					"err", err)
-				return false
+				return true
 			}
 			toAccountInfo, err = rpcClient.GetTokenAccountInfo(context.Background(), toAccount.ToBase58())
 			if err != nil {
