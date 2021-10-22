@@ -42,7 +42,10 @@
       "name": "solana relay",
       "type": "solana",
       "id": "4",
-      "endpoint": "https://api.devnet.solana.com",
+      "endpointList": [
+        "https://api.devnet.solana.com",
+        "https://api.devnet.solana.com"
+      ],
       "from": "solana-vault.json",
       "opts": {
         "feeAccount": "9Riwnxn53S4wmy5h5nbQN1gxTCm1EvgqB4Gc5aKDAPyc",

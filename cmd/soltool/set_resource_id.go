@@ -68,7 +68,7 @@ func mapResourceIdAction(ctx *cli.Context) error {
 	}
 
 	//start inter with solana chain
-	c := solClient.NewClient(pc.Endpoint)
+	c := solClient.NewClient([]string{pc.Endpoint})
 	//check if exist
 	bridgeInfo, err := c.GetBridgeAccountInfo(context.Background(), BridgeAccount.PublicKey.ToBase58())
 	if err != nil {

@@ -20,7 +20,7 @@ func getBridgeInfoAction(ctx *cli.Context) error {
 	fmt.Printf("\nconfig info:\n %+v\n", pc)
 
 	//start inter with solana chain
-	c := solClient.NewClient(pc.Endpoint)
+	c := solClient.NewClient([]string{pc.Endpoint})
 	//check if exist
 	bridgeInfo, err := c.GetBridgeAccountInfo(context.Background(), pc.BridgeAccount)
 	if err != nil {

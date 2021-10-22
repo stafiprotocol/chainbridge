@@ -3,6 +3,7 @@ package solana
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/ChainSafe/log15"
@@ -22,6 +23,9 @@ type Chain struct {
 }
 
 func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error) (*Chain, error) {
+	if len(cfg.EndpointList) == 0 {
+		return nil, fmt.Errorf("endpointList empty")
+	}
 	stop := make(chan int)
 	conn, err := NewConnection(cfg, logger, stop)
 	if err != nil {

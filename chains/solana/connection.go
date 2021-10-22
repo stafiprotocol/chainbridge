@@ -69,11 +69,11 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 		BridgeProgramId:     solCommon.PublicKeyFromString(pAccounts.BridgeProgramId),
 		TokenProgramId:      solCommon.PublicKeyFromString(pAccounts.TokenProgramId),
 	}
-	poolClient := solana.NewPoolClient(log, solClient.NewClient(cfg.Endpoint), poolAccounts)
+	poolClient := solana.NewPoolClient(log, solClient.NewClient(cfg.EndpointList), poolAccounts)
 
 	return &Connection{
 		endpoint:    cfg.Endpoint,
-		queryClient: solClient.NewClient(cfg.Endpoint),
+		queryClient: solClient.NewClient(cfg.EndpointList),
 		log:         log,
 		stop:        stop,
 		poolClient:  poolClient,

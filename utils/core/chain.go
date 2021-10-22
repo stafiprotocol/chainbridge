@@ -19,6 +19,7 @@ type ChainConfig struct {
 	Name           string            // Human-readable chain name
 	Id             msg.ChainId       // ChainID
 	Endpoint       string            // url for rpc endpoint
+	EndpointList   []string          // url list for rpc endpoint
 	From           string            // address of key to use
 	KeystorePath   string            // Location of key files
 	Insecure       bool              // Indicated whether the test keyring should be used
