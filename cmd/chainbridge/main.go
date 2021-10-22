@@ -135,15 +135,11 @@ func run(ctx *cli.Context) error {
 			return err
 		}
 
-		useEndpointList := make([]string, 0)
-		if len(chain.EndpointList) > 0 {
-			useEndpointList = chain.EndpointList
-		}
 		chainConfig := &core.ChainConfig{
 			Name:           chain.Name,
 			Id:             msg.ChainId(chainId),
 			Endpoint:       chain.Endpoint,
-			EndpointList:   useEndpointList,
+			EndpointList:   chain.EndpointList,
 			From:           chain.From,
 			KeystorePath:   cfg.KeystorePath,
 			Insecure:       false,
