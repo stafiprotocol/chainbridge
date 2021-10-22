@@ -71,7 +71,7 @@ func (c *Config) validate() error {
 		if chain.Type == "" {
 			return fmt.Errorf("required field chain.Type empty for chain %s", chain.Id)
 		}
-		if chain.Endpoint == "" {
+		if chain.Type != "solana" && chain.Endpoint == "" {
 			return fmt.Errorf("required field chain.Endpoint empty for chain %s", chain.Id)
 		}
 		if chain.Name == "" {
