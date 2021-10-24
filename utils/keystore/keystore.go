@@ -65,3 +65,29 @@ func KeypairFromAddress(addr, chainType, path string, insecure bool) (crypto.Key
 
 	return kp, nil
 }
+
+// KeypairFromAddress attempts to load the encrypted key file for the provided address,
+// prompting the user for the password.
+func KeypairFromAddressV2(addr, chainType, path string, insecure bool) (crypto.Keypair, string, error) {
+	if insecure {
+		keypair, err := insecureKeypairFromAddress(path, chainType)
+		if err != nil {
+			return nil, "", err
+		}
+		return keypair, keypair.Address(), nil
+	}
+	path = fmt.Sprintf("%s/%s.key", path, addr)
+	// Make sure key exists before prompting password
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, "", fmt.Errorf("key file not found: %s", path)
+	}
+
+	var pswd []byte
+	if pswdStr := os.Getenv(EnvPassword); pswdStr != "" {
+		pswd = []byte(pswdStr)
+	} else {
+		pswd = GetPassword(fmt.Sprintf("Enter password for key %s:", path))
+	}
+
+	return ReadFromFileAndDecryptV2(path, pswd, keyMapping[chainType])
+}

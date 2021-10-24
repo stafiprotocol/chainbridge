@@ -88,8 +88,38 @@ func ReadFromFileAndDecrypt(filename string, password []byte, keytype string) (c
 	}
 
 	if keytype != keydata.Type {
-		return nil, fmt.Errorf("Keystore type and Chain type mismatched. Expected Keystore file of type %s, got type %s", keytype, keydata.Type)
+		return nil, fmt.Errorf("keystore type and Chain type mismatched. Expected Keystore file of type %s, got type %s", keytype, keydata.Type)
 	}
 
 	return DecryptKeypair(keydata.PublicKey, keydata.Ciphertext, password, keydata.Type)
+}
+
+// ReadFromFileAndDecrypt reads ciphertext from a file and decrypts it using the password into a `crypto.PrivateKey`
+func ReadFromFileAndDecryptV2(filename string, password []byte, keytype string) (crypto.Keypair, string, error) {
+	fp, err := filepath.Abs(filename)
+	if err != nil {
+		return nil, "", err
+	}
+
+	data, err := ioutil.ReadFile(filepath.Clean(fp))
+	if err != nil {
+		return nil, "", err
+	}
+
+	keydata := new(EncryptedKeystore)
+	err = json.Unmarshal(data, keydata)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if keytype != keydata.Type {
+		return nil, "", fmt.Errorf("keystore type and Chain type mismatched. Expected Keystore file of type %s, got type %s", keytype, keydata.Type)
+	}
+
+	keypair, err := DecryptKeypair(keydata.PublicKey, keydata.Ciphertext, password, keydata.Type)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return keypair, keydata.Address, nil
 }
