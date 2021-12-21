@@ -65,7 +65,8 @@
       "RATOM",
       "RSOL",
       "RMATIC",
-      "RBNB"
+      "RBNB",
+      "RETH"
     ]
   },
   "AccountRData": {
