@@ -96,13 +96,27 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	rpcClient := l.conn.queryClient
 	bridgeProgramId := l.conn.poolClient.BridgeProgramId.ToBase58()
 	bridgeAccount := l.conn.poolClient.BridgeAccountPubkey.ToBase58()
-	versionRes, err := rpcClient.GetVersion(context.Background())
-	if err != nil {
-		return fmt.Errorf("rpcClient.GetVersion err: %s", err.Error())
+
+	var useVersion string
+	retry := 0
+	var err error
+	for {
+		if retry > 50 {
+			return fmt.Errorf("rpcClient.GetVersion err: %s", err)
+
+		}
+		versionRes, err := rpcClient.GetVersion(context.Background())
+		if err != nil || len(versionRes.SolanaCore) == 0 {
+			retry++
+			time.Sleep(waitTime)
+			continue
+		}
+		useVersion = versionRes.SolanaCore
+		break
 	}
 
 	var signatures []solClient.GetConfirmedSignaturesForAddress
-	if utils.VersionCompare(versionRes.SolanaCore, version170) >= 0 {
+	if utils.VersionCompare(useVersion, version170) >= 0 {
 		signatures, err = rpcClient.GetSignaturesForAddress(
 			context.Background(),
 			bridgeProgramId,
