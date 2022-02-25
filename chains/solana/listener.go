@@ -106,7 +106,7 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 
 		}
 		versionRes, err := rpcClient.GetVersion(context.Background())
-		if err != nil || len(versionRes.SolanaCore) == 0 {
+		if err != nil || len(versionRes.SolanaCore) < 3 {
 			retry++
 			time.Sleep(waitTime)
 			continue
