@@ -26,7 +26,7 @@ type Client struct {
 	accountNumber uint64
 }
 
-func NewClient(k keyring.Keyring, chainId, fromName, gasPrice, denom, endPoint string) (*Client, error) {
+func NewClient(k keyring.Keyring, fromName, gasPrice, endPoint string) (*Client, error) {
 	encodingConfig := MakeEncodingConfig()
 	var retClient *Client
 	if len(fromName) != 0 {
@@ -47,7 +47,6 @@ func NewClient(k keyring.Keyring, chainId, fromName, gasPrice, denom, endPoint s
 			WithInput(os.Stdin).
 			WithAccountRetriever(xAuthTypes.AccountRetriever{}).
 			WithBroadcastMode(flags.BroadcastBlock).
-			WithChainID(chainId).
 			WithClient(rpcClient).
 			WithSkipConfirmation(true).         //skip password confirm
 			WithFromName(fromName).             //keyBase need FromName to find key info
@@ -58,6 +57,11 @@ func NewClient(k keyring.Keyring, chainId, fromName, gasPrice, denom, endPoint s
 			clientCtx: initClientCtx,
 			rpcClient: rpcClient,
 		}
+		chaindId, err := retClient.GetChainId()
+		if err != nil {
+			return nil, err
+		}
+		retClient.clientCtx = retClient.clientCtx.WithChainID(chaindId)
 
 		account, err := retClient.GetAccount()
 		if err != nil {
@@ -66,7 +70,12 @@ func NewClient(k keyring.Keyring, chainId, fromName, gasPrice, denom, endPoint s
 
 		retClient.accountNumber = account.GetAccountNumber()
 
-		retClient.setDenom(denom)
+		bondedDenom, err := retClient.QueryBondedDenom()
+		if err != nil {
+			return nil, err
+		}
+
+		retClient.setDenom(bondedDenom.Params.BondDenom)
 		err = retClient.setGasPrice(gasPrice)
 		if err != nil {
 			return nil, err
@@ -85,7 +94,6 @@ func NewClient(k keyring.Keyring, chainId, fromName, gasPrice, denom, endPoint s
 			WithInput(os.Stdin).
 			WithAccountRetriever(xAuthTypes.AccountRetriever{}).
 			WithBroadcastMode(flags.BroadcastBlock).
-			WithChainID(chainId).
 			WithClient(rpcClient).
 			WithSkipConfirmation(true) //skip password confirm
 
@@ -93,7 +101,12 @@ func NewClient(k keyring.Keyring, chainId, fromName, gasPrice, denom, endPoint s
 			clientCtx: initClientCtx,
 			rpcClient: rpcClient,
 		}
-		retClient.setDenom(denom)
+		bondedDenom, err := retClient.QueryBondedDenom()
+		if err != nil {
+			return nil, err
+		}
+
+		retClient.setDenom(bondedDenom.Params.BondDenom)
 	}
 	return retClient, nil
 }

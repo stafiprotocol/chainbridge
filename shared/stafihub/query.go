@@ -235,6 +235,31 @@ func (c *Client) GetBlockTxs(height int64) ([]*types.TxResponse, error) {
 	return searchTxs.GetTxs(), nil
 }
 
+func (c *Client) GetChainId() (string, error) {
+	done := core.UseSdkConfigContext(AccountPrefix)
+	defer done()
+	status, err := c.getStatus()
+	if err != nil {
+		return "", nil
+	}
+	return status.NodeInfo.Network, nil
+}
+
+func (c *Client) QueryBondedDenom() (*xStakeTypes.QueryParamsResponse, error) {
+	done := core.UseSdkConfigContext(AccountPrefix)
+	defer done()
+	client := c.clientCtx
+	queryClient := xStakeTypes.NewQueryClient(client)
+	params := xStakeTypes.QueryParamsRequest{}
+	cc, err := retry(func() (interface{}, error) {
+		return queryClient.Params(context.Background(), &params)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return cc.(*xStakeTypes.QueryParamsResponse), nil
+}
+
 func Retry(f func() (interface{}, error)) (interface{}, error) {
 	return retry(f)
 }

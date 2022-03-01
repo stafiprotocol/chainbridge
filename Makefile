@@ -42,6 +42,7 @@ build:
 	cd cmd/chainbridge && env GOARCH=amd64 go build -o ../../build/chainbridge
 	cd cmd/solvault && env GOARCH=amd64 go build -o ../../build/solvault
 	cd cmd/soltool && env GOARCH=amd64 go build -o ../../build/soltool
+	cd cmd/keytool && env GOARCH=amd64 go build -o ../../build/keytool
 
 install:
 	@echo "  >  \033[32mInstalling bridge...\033[0m "

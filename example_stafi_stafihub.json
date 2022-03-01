@@ -1,0 +1,45 @@
+{
+  "chains": [
+    {
+      "name": "Stafi",
+      "type": "substrate",
+      "id": "1",
+      "endpoint": "ws://127.0.0.1:9944",
+      "from": "35arN8keEJhSeSnpyH9Cu6CBsmGchGgJi577CxHyPUuobUhg",
+      "symbols": [
+        {
+          "symbol": "Default",
+          "resourceId": "Default",
+          "decimalFactor": "1000000"
+        },
+        {
+          "symbol": "RDOT",
+          "resourceId": "000000000000000000000000000000bada4d69537ffd62dbcde10ddda21b2001",
+          "decimalFactor": "100000000"
+        },
+        {
+          "symbol": "RETH",
+          "resourceId": "0000000000000000000000000000006e15faef60f5e197166fe64110456a8601",
+          "decimalFactor": "1"
+        }
+      ],
+      "opts": {
+        "startBlock": "1",
+        "typeRegister": "/Users/tpkeeper/gowork/stafi/chainbridge/network/stafi.json"
+      }
+    },
+    {
+      "name": "Eth-Relayer1",
+      "type": "stafihub",
+      "id": "5",
+      "endpoint": "http://127.0.0.1:26657",
+      "opts": {
+        "startBlock": "0",
+        "gasPrice": "0.00001ufis",
+        "account": "relay1"
+      }
+    }
+  ],
+  "keystorePath": "keys",
+  "blockstorePath": "blockstorePath"
+}

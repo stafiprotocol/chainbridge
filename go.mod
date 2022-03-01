@@ -20,7 +20,7 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/stafihub/rtoken-relay-core/common v0.0.0-20220221025731-3b187c6383df
 	github.com/stafihub/stafi-hub-relay-sdk v0.0.0-20220219145827-6d86b3c3f14d
-	github.com/stafihub/stafihub v0.0.0-20220221084756-56e63ffcd31f
+	github.com/stafihub/stafihub v0.0.0-20220228002309-a886d78a3572
 	github.com/stafiprotocol/go-substrate-rpc-client v1.1.3
 	github.com/stafiprotocol/solana-go-sdk v1.0.3
 	github.com/stretchr/testify v1.7.0
