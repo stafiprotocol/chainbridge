@@ -14,7 +14,6 @@ import (
 
 	"github.com/ChainSafe/log15"
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/shopspring/decimal"
 	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
@@ -26,22 +25,20 @@ const (
 var ErrorTerminated = errors.New("terminated")
 
 type writer struct {
-	conn     *Connection
-	log      log15.Logger
-	sysErr   chan<- error
-	msgChan  chan msg.Message
-	stop     <-chan int
-	decimals map[string]decimal.Decimal
+	conn    *Connection
+	log     log15.Logger
+	sysErr  chan<- error
+	msgChan chan msg.Message
+	stop    <-chan int
 }
 
-func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int, decimals map[string]decimal.Decimal) *writer {
+func NewWriter(conn *Connection, log log15.Logger, sysErr chan<- error, stop <-chan int) *writer {
 	return &writer{
-		conn:     conn,
-		log:      log,
-		sysErr:   sysErr,
-		msgChan:  make(chan msg.Message, msgLimit),
-		stop:     stop,
-		decimals: decimals,
+		conn:    conn,
+		log:     log,
+		sysErr:  sysErr,
+		msgChan: make(chan msg.Message, msgLimit),
+		stop:    stop,
 	}
 }
 
@@ -76,39 +73,62 @@ func (w *writer) processMessage(m msg.Message) bool {
 	switch m.Type {
 	case msg.FungibleTransfer:
 		bigAmt := big.NewInt(0).SetBytes(m.Payload[0].([]byte))
+		w.log.Debug("amount info", "amount", bigAmt.String())
 		//should not have 0x prefix and length must 64
 		resourceIdStr := strings.ToLower(m.ResourceId.Hex())
 		if len(resourceIdStr) != 64 {
-			fmt.Errorf("resourceId  length  must be 64")
+			w.log.Error("resourceId  length  must be 64")
 			return false
 		}
 
-		d, ok := w.decimals[resourceIdStr]
-		if !ok {
-			d, ok = w.decimals[decimalDefault]
-			if !ok {
-				fmt.Errorf("failed to get decimal")
-				return false
-			}
-		}
-		amount := *decimal.NewFromBigInt(bigAmt, 0).Div(d).BigInt()
 		depositNonce := m.DepositNonce.Big().Uint64()
 		recipient := m.Payload[1].([]byte)
-		reciver, err := types.AccAddressFromHex(hex.EncodeToString(recipient))
+		recipientHexStr := hex.EncodeToString(recipient)
+		receiver, err := types.AccAddressFromHex(recipientHexStr)
 		if err != nil {
+			w.log.Error("accAddressFromHex failed", "err", err)
 			return false
 		}
 
-		voteMsg := stafiHubXBridgeTypes.NewMsgVoteProposal(w.conn.Address(), uint32(m.Source), depositNonce, resourceIdStr, types.NewIntFromBigInt(&amount), reciver.String())
+		w.log.Info("ResolveMessage", "nonce", depositNonce, "source",
+			m.Source, "resource", resourceIdStr, "receiver", receiver.String(), "amount", bigAmt.String())
+
+		proposalDetail, err := w.conn.client.QueryBridgeProposalDetail(uint32(m.Source), depositNonce, resourceIdStr, bigAmt.String(), receiver.String())
+		if err != nil {
+			if !strings.Contains(err.Error(), "NotFound") {
+				w.log.Error("QueryBridgeProposalDetail failed", "err", err)
+				return false
+			}
+		} else {
+			if proposalDetail.Proposal.Executed {
+				return true
+			}
+			for _, voter := range proposalDetail.Proposal.Voters {
+				if strings.EqualFold(voter, w.conn.Address()) {
+					return true
+				}
+			}
+		}
+
+		voteMsg := stafiHubXBridgeTypes.NewMsgVoteProposal(w.conn.Address(), uint32(m.Source), depositNonce, resourceIdStr, types.NewIntFromBigInt(bigAmt), receiver.String())
 		txBts, err := w.conn.client.ConstructAndSignTx(voteMsg)
 		if err != nil {
+			if strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()) {
+				return true
+			}
+			if strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyVoted.Error()) {
+				return true
+			}
+			w.log.Error("ConstructAndSignTx failed", "err", err)
 			return false
 		}
 		txHash, err := w.conn.client.BroadcastTx(txBts)
 		err = w.checkAndReSend(txHash, txBts, "voteproposal", err)
 		if err != nil {
+			w.log.Error("checkAndReSend failed", "err", err)
 			return false
 		}
+		w.log.Info("checkAndResend ok", "recipient", receiver.String())
 		return true
 
 	default:

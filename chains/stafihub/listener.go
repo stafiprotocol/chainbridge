@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/shopspring/decimal"
-
 	"github.com/ChainSafe/log15"
 	"github.com/cosmos/cosmos-sdk/types"
 	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
@@ -35,7 +33,6 @@ type listener struct {
 	log        log15.Logger
 	stop       <-chan int
 	sysErr     chan<- error
-	decimals   map[string]decimal.Decimal
 }
 
 var (
@@ -48,7 +45,7 @@ var (
 )
 
 func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint64, log log15.Logger,
-	bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error, decimals map[string]decimal.Decimal) *listener {
+	bs blockstore.Blockstorer, stop <-chan int, sysErr chan<- error) *listener {
 	return &listener{
 		name:       name,
 		chainId:    id,
@@ -58,7 +55,6 @@ func NewListener(conn *Connection, name string, id msg.ChainId, startBlock uint6
 		log:        log,
 		stop:       stop,
 		sysErr:     sysErr,
-		decimals:   decimals,
 	}
 }
 
@@ -214,7 +210,7 @@ func (l *listener) processStringEvents(event types.StringEvent, blockNumber int6
 			return fmt.Errorf("amount format err")
 		}
 
-		receiver, err := types.AccAddressFromBech32(event.Attributes[4].Value)
+		receiver, err := hex.DecodeString(event.Attributes[4].Value)
 		if err != nil {
 			return err
 		}

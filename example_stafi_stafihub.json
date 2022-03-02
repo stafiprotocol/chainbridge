@@ -13,30 +13,25 @@
           "decimalFactor": "1000000"
         },
         {
-          "symbol": "RDOT",
-          "resourceId": "000000000000000000000000000000bada4d69537ffd62dbcde10ddda21b2001",
-          "decimalFactor": "100000000"
-        },
-        {
-          "symbol": "RETH",
-          "resourceId": "0000000000000000000000000000006e15faef60f5e197166fe64110456a8601",
-          "decimalFactor": "1"
+          "symbol": "RFIS",
+          "resourceId": "000000000000000000000000000000a9e0095b8965c01e6a09c97938f3860901",
+          "decimalFactor": "0.000001"
         }
       ],
       "opts": {
-        "startBlock": "1",
+        "startBlock": "0",
         "typeRegister": "/Users/tpkeeper/gowork/stafi/chainbridge/network/stafi.json"
       }
     },
     {
-      "name": "Eth-Relayer1",
+      "name": "stafi hub relayer",
       "type": "stafihub",
       "id": "5",
+      "from": "relay1",
       "endpoint": "http://127.0.0.1:26657",
       "opts": {
         "startBlock": "0",
-        "gasPrice": "0.00001ufis",
-        "account": "relay1"
+        "gasPrice": "0.00001ufis"
       }
     }
   ],

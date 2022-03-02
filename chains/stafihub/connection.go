@@ -29,7 +29,7 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 	if err != nil {
 		return nil, err
 	}
-	account := cfg.Opts["account"]
+	account := cfg.From
 	gasPrice := cfg.Opts["gasPrice"]
 	client, err := stafihub.NewClient(key, account, gasPrice, cfg.Endpoint)
 	if err != nil {

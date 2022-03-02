@@ -16,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/ibc-go/modules/apps/transfer"
+	stafiHubXBridge "github.com/stafihub/stafihub/x/bridge"
 	stafiHubXLedger "github.com/stafihub/stafihub/x/ledger"
 	stafiHubXRelayer "github.com/stafihub/stafihub/x/relayers"
 	stafiHubXRvote "github.com/stafihub/stafihub/x/rvote"
@@ -51,6 +52,7 @@ func MakeEncodingConfig() EncodingConfig {
 		stafiHubXSudo.AppModuleBasic{},
 		stafiHubXRvote.AppModuleBasic{},
 		stafiHubXRelayer.AppModuleBasic{},
+		stafiHubXBridge.AppModuleBasic{},
 	)
 	moduleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	moduleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)

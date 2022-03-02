@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stafihub/rtoken-relay-core/common/core"
+	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
 	stafiHubXLedgerTypes "github.com/stafihub/stafihub/x/ledger/types"
 )
 
@@ -196,4 +197,25 @@ func (c *Client) QueryBondRecord(denom, txHash string) (*stafiHubXLedgerTypes.Qu
 		return nil, err
 	}
 	return cc.(*stafiHubXLedgerTypes.QueryGetBondRecordResponse), nil
+}
+
+func (c *Client) QueryBridgeProposalDetail(chainId uint32, depositNonce uint64, resourceId, amount, receiver string) (*stafiHubXBridgeTypes.QueryProposalDetailResponse, error) {
+	done := core.UseSdkConfigContext(AccountPrefix)
+	defer done()
+
+	queryClient := stafiHubXBridgeTypes.NewQueryClient(c.Ctx())
+	params := &stafiHubXBridgeTypes.QueryProposalDetailRequest{
+		ChainId:      chainId,
+		DepositNonce: depositNonce,
+		ResourceId:   resourceId,
+		Amount:       amount,
+		Receiver:     receiver,
+	}
+	cc, err := Retry(func() (interface{}, error) {
+		return queryClient.ProposalDetail(context.Background(), params)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return cc.(*stafiHubXBridgeTypes.QueryProposalDetailResponse), nil
 }

@@ -24,12 +24,9 @@ As the writer receives messages from the router, nothing happened.
 package stafihub
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/ChainSafe/log15"
-	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
@@ -44,11 +41,6 @@ type Chain struct {
 }
 
 func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- error) (*Chain, error) {
-	decimals, err := getDecimals(cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	stop := make(chan int)
 	conn, err := NewConnection(cfg, logger, stop)
 	if err != nil {
@@ -68,7 +60,6 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 		}
 	}
 
-
 	if cfg.LatestBlock {
 		curr, err := conn.LatestBlockNumber()
 		if err != nil {
@@ -78,8 +69,8 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	}
 
 	// Setup listener & writer
-	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr, decimals)
-	w := NewWriter(conn, logger, sysErr, stop, decimals)
+	l := NewListener(conn, cfg.Name, cfg.Id, startBlock, logger, bs, stop, sysErr)
+	w := NewWriter(conn, logger, sysErr, stop)
 	return &Chain{cfg: cfg, conn: conn, listener: l, writer: w, stop: stop}, nil
 }
 
@@ -139,48 +130,4 @@ func parseStartBlock(cfg *core.ChainConfig) uint64 {
 		return res
 	}
 	return 0
-}
-
-func getDecimals(cfg *core.ChainConfig) (map[string]decimal.Decimal, error) {
-	symbols := cfg.Symbols
-	if len(symbols) == 0 {
-		return nil, fmt.Errorf("config does not contains symbols")
-	}
-
-	decimals := make(map[string]decimal.Decimal)
-	for _, sym := range symbols {
-		info, ok := sym.(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("symbol not a string map")
-		}
-
-		rId, ok := info["resourceId"].(string)
-		if !ok {
-			return nil, fmt.Errorf("unable to get symbol resourceId")
-		}
-		if rId != decimalDefault {
-			rId = strings.ToLower(rId)
-		}
-		if strings.Contains(rId, "0x") {
-			return nil, fmt.Errorf("resourceId should not with prefix 0x")
-		}
-		if rId != decimalDefault && len(rId) != 64 {
-			return nil, fmt.Errorf("resourceId length must be 64")
-		}
-
-		df, ok := info["decimalFactor"].(string)
-		if !ok {
-			return nil, fmt.Errorf("unable to get symbol decimalFactor")
-		}
-
-		dDeci, err := decimal.NewFromString(df)
-		if err != nil {
-			return nil, err
-		}
-
-		decimals[rId] = dDeci
-	}
-	fmt.Println(decimals)
-
-	return decimals, nil
 }
