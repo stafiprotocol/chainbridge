@@ -21,7 +21,7 @@ require (
 	github.com/stafihub/rtoken-relay-core/common v0.0.0-20220221025731-3b187c6383df
 	github.com/stafihub/stafihub v0.0.0-20220302002328-f830f7d061a2
 	github.com/stafiprotocol/go-substrate-rpc-client v1.1.3
-	github.com/stafiprotocol/solana-go-sdk v1.0.3
+	github.com/stafiprotocol/solana-go-sdk v1.2.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/tendermint v0.34.14
 	github.com/urfave/cli/v2 v2.3.0

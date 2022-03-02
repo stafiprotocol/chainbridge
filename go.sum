@@ -274,7 +274,6 @@ github.com/cosmos/iavl v0.17.1/go.mod h1:7aisPZK8yCpQdy3PMvKeO+bhq1NwDjUwjzxwwRO
 github.com/cosmos/iavl v0.17.3 h1:s2N819a2olOmiauVa0WAhoIJq9EhSXE9HDBAoR9k+8Y=
 github.com/cosmos/iavl v0.17.3/go.mod h1:prJoErZFABYZGDHka1R6Oay4z9PrNeFFiMKHDAMOi4w=
 github.com/cosmos/ibc-go v1.2.2/go.mod h1:XmYjsRFOs6Q9Cz+CSsX21icNoH27vQKb3squgnCOCbs=
-github.com/cosmos/ibc-go v1.2.5/go.mod h1:wkGkkX8Ou6yXgE8lO2xP9NOwo+Tl5x1dJaTTE6jBDpg=
 github.com/cosmos/ibc-go v1.2.6 h1:v2OFFtbELIjQN3hhcG4B0zYCTeI+NOBqOANX0AhqhEI=
 github.com/cosmos/ibc-go v1.2.6/go.mod h1:wkGkkX8Ou6yXgE8lO2xP9NOwo+Tl5x1dJaTTE6jBDpg=
 github.com/cosmos/keyring v1.1.6 h1:AXKMQB29ribVBqoJL9TRgWEa7zzawB8xl3wKNZmXrdo=
@@ -1165,18 +1164,9 @@ github.com/spf13/viper v1.7.1/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5q
 github.com/spf13/viper v1.8.1 h1:Kq1fyeebqsBfbjZj4EL7gj2IO0mMaiyjYUWcUsl2O44=
 github.com/spf13/viper v1.8.1/go.mod h1:o0Pch8wJ9BVSWGQMbra6iw0oQ5oktSIBaujf1rJH9Ns=
 github.com/ssgreg/nlreturn/v2 v2.1.0/go.mod h1:E/iiPB78hV7Szg2YfRgyIrk1AD6JVMTRkkxBiELzh2I=
-github.com/stafihub/rtoken-relay-core/common v0.0.0-20220219031646-b875374d84f2/go.mod h1:yTuUlCWpZndefs48NARXXgqyQNnMuiHLAZusRec578A=
 github.com/stafihub/rtoken-relay-core/common v0.0.0-20220221025731-3b187c6383df h1:koFMhkZUhJDOpuCpZZyXh+HSBRYZIBnZmSGtr5/WOtU=
 github.com/stafihub/rtoken-relay-core/common v0.0.0-20220221025731-3b187c6383df/go.mod h1:yTuUlCWpZndefs48NARXXgqyQNnMuiHLAZusRec578A=
-github.com/stafihub/stafi-hub-relay-sdk v0.0.0-20220219145827-6d86b3c3f14d h1:K9cZ3dnSeh9J6FSJ9fqohm7h0Ph9i69BuCwYGGAwux4=
-github.com/stafihub/stafi-hub-relay-sdk v0.0.0-20220219145827-6d86b3c3f14d/go.mod h1:JJDLNi4cJk3efCi1fzJV/sosY327AgJsdqCV6YxNnwI=
 github.com/stafihub/stafihub v0.0.0-20220219015456-58f745d1747a/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
-github.com/stafihub/stafihub v0.0.0-20220228002309-a886d78a3572 h1:pYz8HAkzbolMHNrT0p/W5Ip7gJpRqS8B5DriUR3wQCE=
-github.com/stafihub/stafihub v0.0.0-20220228002309-a886d78a3572/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
-github.com/stafihub/stafihub v0.0.0-20220301070116-b13bd60fefa5 h1:Rm6Zj2IMhCy0cBQseLA7Upg5GZ7tUhc+9NwlBfWB1BY=
-github.com/stafihub/stafihub v0.0.0-20220301070116-b13bd60fefa5/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
-github.com/stafihub/stafihub v0.0.0-20220301075341-575daee18d69 h1:OY23E096BcLlwt0DrrwWKD0nvvYnTrIsi5KpblcUDjA=
-github.com/stafihub/stafihub v0.0.0-20220301075341-575daee18d69/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
 github.com/stafihub/stafihub v0.0.0-20220302002328-f830f7d061a2 h1:G/uGcRDR2ub3a9FRjkqu5xDpk8FsnWwEf5USb1ZdcoY=
 github.com/stafihub/stafihub v0.0.0-20220302002328-f830f7d061a2/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
 github.com/stafiprotocol/chainbridge v1.0.0/go.mod h1:yJs9Zg9VbF6QtDO5a+CsfwQCcL9PojKWnCd040JRWlE=
@@ -1184,8 +1174,8 @@ github.com/stafiprotocol/go-substrate-rpc-client v1.0.9/go.mod h1:P3xucNyw6UjKvC
 github.com/stafiprotocol/go-substrate-rpc-client v1.1.3 h1:wtRc1AKjdgvAuy6Uxl/yXxd4bhoEfZonpttligceYyY=
 github.com/stafiprotocol/go-substrate-rpc-client v1.1.3/go.mod h1:P3xucNyw6UjKvCvGg0eiQJhcRyZsUv5a9akxDTLMHFk=
 github.com/stafiprotocol/solana-go-sdk v1.0.0/go.mod h1:l17jYuPW1VS1hL5qjlayYsMTrla9wEJHLyGtzFGhmHE=
-github.com/stafiprotocol/solana-go-sdk v1.0.3 h1:QVXGNaqwD00OMlRHCaJEUJWb5IG2jEbe0zHFfUWS5oQ=
-github.com/stafiprotocol/solana-go-sdk v1.0.3/go.mod h1:l17jYuPW1VS1hL5qjlayYsMTrla9wEJHLyGtzFGhmHE=
+github.com/stafiprotocol/solana-go-sdk v1.2.0 h1:p04P2/Y+ElY1RzGtQgUtOU91r4RA4t27oUEQt5D+6Zc=
+github.com/stafiprotocol/solana-go-sdk v1.2.0/go.mod h1:l17jYuPW1VS1hL5qjlayYsMTrla9wEJHLyGtzFGhmHE=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4 h1:Gb2Tyox57NRNuZ2d3rmvB3pcmbu7O1RS3m8WRx7ilrg=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4/go.mod h1:RZLeN1LMWmRsyYjvAu+I6Dm9QmlDaIIt+Y+4Kd7Tp+Q=
 github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570/go.mod h1:8OR4w3TdeIHIh1g6EMY5p0gVNOovcWC+1vpc7naMuAw=
