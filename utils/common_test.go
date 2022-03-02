@@ -13,6 +13,8 @@ func TestCompareVersion(t *testing.T) {
 		"1.6.09": "1.7.2",
 		"1.16.9": "1.7.0",
 		"1.06.9": "1.7.0",
+		"1.9.9":  "1.7.0",
+		"1.8.14": "1.7.0",
 	}
 
 	for k, v := range testCase {
