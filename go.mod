@@ -19,7 +19,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
 	github.com/stafihub/rtoken-relay-core/common v0.0.0-20220221025731-3b187c6383df
-	github.com/stafihub/stafihub v0.0.0-20220301075341-575daee18d69
+	github.com/stafihub/stafihub v0.0.0-20220302002328-f830f7d061a2
 	github.com/stafiprotocol/go-substrate-rpc-client v1.1.3
 	github.com/stafiprotocol/solana-go-sdk v1.0.3
 	github.com/stretchr/testify v1.7.0
@@ -33,5 +33,4 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
 	github.com/near/borsh-go => github.com/tpkeeper/borsh-go v0.3.1-0.20210918134133-8433ab32a70c
-	github.com/stafihub/stafihub => /Users/tpkeeper/gowork/stafi/stafi-hub
 )

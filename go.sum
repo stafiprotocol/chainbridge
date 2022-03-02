@@ -1177,6 +1177,8 @@ github.com/stafihub/stafihub v0.0.0-20220301070116-b13bd60fefa5 h1:Rm6Zj2IMhCy0c
 github.com/stafihub/stafihub v0.0.0-20220301070116-b13bd60fefa5/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
 github.com/stafihub/stafihub v0.0.0-20220301075341-575daee18d69 h1:OY23E096BcLlwt0DrrwWKD0nvvYnTrIsi5KpblcUDjA=
 github.com/stafihub/stafihub v0.0.0-20220301075341-575daee18d69/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
+github.com/stafihub/stafihub v0.0.0-20220302002328-f830f7d061a2 h1:G/uGcRDR2ub3a9FRjkqu5xDpk8FsnWwEf5USb1ZdcoY=
+github.com/stafihub/stafihub v0.0.0-20220302002328-f830f7d061a2/go.mod h1:XRZTjAkYJfBH8TJwklvHvKXOHZPimnAm4OsnsUR3Zws=
 github.com/stafiprotocol/chainbridge v1.0.0/go.mod h1:yJs9Zg9VbF6QtDO5a+CsfwQCcL9PojKWnCd040JRWlE=
 github.com/stafiprotocol/go-substrate-rpc-client v1.0.9/go.mod h1:P3xucNyw6UjKvCvGg0eiQJhcRyZsUv5a9akxDTLMHFk=
 github.com/stafiprotocol/go-substrate-rpc-client v1.1.3 h1:wtRc1AKjdgvAuy6Uxl/yXxd4bhoEfZonpttligceYyY=
