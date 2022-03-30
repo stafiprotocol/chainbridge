@@ -10,7 +10,7 @@ import (
 	"github.com/ChainSafe/log15"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/stafiprotocol/chainbridge/shared/stafihub"
+	stafihub "github.com/stafihub/stafi-hub-relay-sdk/client"
 	"github.com/stafiprotocol/chainbridge/utils/core"
 )
 

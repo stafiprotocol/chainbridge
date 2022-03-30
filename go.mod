@@ -4,9 +4,7 @@ go 1.15
 
 require (
 	github.com/ChainSafe/log15 v1.0.0
-	github.com/JFJun/go-substrate-crypto v1.0.1
 	github.com/cosmos/cosmos-sdk v0.45.1
-	github.com/cosmos/ibc-go v1.2.6
 	github.com/decred/base58 v1.0.3
 	github.com/ethereum/go-ethereum v1.10.15
 	github.com/gorilla/websocket v1.4.2
@@ -15,15 +13,14 @@ require (
 	github.com/mr-tron/base58 v1.2.0
 	github.com/near/borsh-go v0.3.0
 	github.com/shopspring/decimal v1.2.0
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.8.1
-	github.com/stafihub/rtoken-relay-core/common v0.0.0-20220221025731-3b187c6383df
-	github.com/stafihub/stafihub v0.0.0-20220302113354-8b540594d0e3
+	github.com/spf13/viper v1.10.1
+	github.com/stafihub/stafi-hub-relay-sdk v0.0.0-20220330125120-9c1db6ea48fc
+	github.com/stafihub/stafihub v0.0.0-20220329070817-9ddbe40be6ad
 	github.com/stafiprotocol/go-substrate-rpc-client v1.1.3
 	github.com/stafiprotocol/solana-go-sdk v1.2.0
 	github.com/stretchr/testify v1.7.0
-	github.com/tendermint/tendermint v0.34.14
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
 )
