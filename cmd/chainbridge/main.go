@@ -75,7 +75,7 @@ func init() {
 	app.Name = "chainbridge"
 	app.Usage = "ChainBridge"
 	app.Authors = []*cli.Author{{Name: "Stafi Protocol 2020"}}
-	app.Version = "0.0.1"
+	app.Version = "0.1.1"
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
 		&accountCommand,

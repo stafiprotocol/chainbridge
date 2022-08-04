@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
 )
 
 // Vault represents a `solana-go` wallet.  It contains the encrypted

@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"io"
 
-	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/argon2"
+	"golang.org/x/crypto/nacl/secretbox"
 )
 
 const (
@@ -37,7 +37,6 @@ func deriveKey(passphrase string, salt []byte) [keyLength]byte {
 	copy(secretKey[:], secretKeyBytes)
 	return secretKey
 }
-
 
 type PassphraseBoxer struct {
 	passphrase string

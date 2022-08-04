@@ -24,7 +24,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-
 const defaultRPCURL = "http://api.mainnet-beta.solana.com/rpc"
 
 func GetPassword(input string) (string, error) {
@@ -34,7 +33,6 @@ func GetPassword(input string) (string, error) {
 	fmt.Println("")
 	return string(pass), err
 }
-
 
 func errorCheck(prefix string, err error) {
 	if err != nil {

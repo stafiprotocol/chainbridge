@@ -57,7 +57,6 @@ func NewRandomPrivateKey() (PublicKey, PrivateKey, error) {
 	return publicKey, PrivateKey(priv), nil
 }
 
-
 func (k PrivateKey) PublicKey() PublicKey {
 	p := ed25519.PrivateKey(k)
 	pub := p.Public().(ed25519.PublicKey)

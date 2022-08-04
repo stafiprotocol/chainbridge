@@ -15,8 +15,8 @@ import (
 )
 
 type Connection struct {
-	url    string // API endpoint
-	name   string // Chain name
+	url    []string // API endpoint
+	name   string   // Chain name
 	client *stafihub.Client
 	stop   <-chan int // Signals system shutdown, should be observed in all selects and loops
 	log    log15.Logger
@@ -31,13 +31,13 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 	}
 	account := cfg.From
 	gasPrice := cfg.Opts["gasPrice"]
-	client, err := stafihub.NewClient(key, account, gasPrice, cfg.Endpoint)
+	client, err := stafihub.NewClient(key, account, gasPrice, cfg.EndpointList)
 	if err != nil {
 		return nil, fmt.Errorf("hubClient.NewClient err: %s", err)
 	}
 
 	return &Connection{
-		url:    cfg.Endpoint,
+		url:    cfg.EndpointList,
 		name:   cfg.Name,
 		client: client,
 		stop:   stop,

@@ -28,7 +28,9 @@
       "type": "stafihub",
       "id": "5",
       "from": "relay1",
-      "endpoint": "http://127.0.0.1:26657",
+      "endpointList": [
+        "http://127.0.0.1:26657"
+      ],
       "opts": {
         "startBlock": "0",
         "gasPrice": "0.00001ufis"

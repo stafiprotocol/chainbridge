@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 var RootCmd = &cobra.Command{
 	Use:   "cmd",
 	Short: "tool to manage sol keys",
