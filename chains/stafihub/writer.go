@@ -7,13 +7,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	errType "github.com/cosmos/cosmos-sdk/types/errors"
 	"math/big"
 	"strings"
 	"time"
 
+	errType "github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/ChainSafe/log15"
 	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/stafihub/rtoken-relay-core/common/core"
+	stafihubClient "github.com/stafihub/stafi-hub-relay-sdk/client"
 	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
@@ -89,11 +92,14 @@ func (w *writer) processMessage(m msg.Message) bool {
 			w.log.Error("accAddressFromHex failed", "err", err)
 			return false
 		}
+		done := core.UseSdkConfigContext(stafihubClient.GetAccountPrefix())
+		receiverStr := receiver.String()
+		done()
 
 		w.log.Info("ResolveMessage", "nonce", depositNonce, "source",
-			m.Source, "resource", resourceIdStr, "receiver", receiver.String(), "amount", bigAmt.String())
+			m.Source, "resource", resourceIdStr, "receiver", receiverStr, "amount", bigAmt.String())
 
-		proposalDetail, err := w.conn.client.QueryBridgeProposalDetail(uint32(m.Source), depositNonce, resourceIdStr, bigAmt.String(), receiver.String())
+		proposalDetail, err := w.conn.client.QueryBridgeProposalDetail(uint32(m.Source), depositNonce, resourceIdStr, bigAmt.String(), receiverStr)
 		if err != nil {
 			if !strings.Contains(err.Error(), "NotFound") {
 				w.log.Error("QueryBridgeProposalDetail failed", "err", err)
@@ -110,7 +116,7 @@ func (w *writer) processMessage(m msg.Message) bool {
 			}
 		}
 
-		voteMsg := stafiHubXBridgeTypes.NewMsgVoteProposal(w.conn.Address(), uint32(m.Source), depositNonce, resourceIdStr, types.NewIntFromBigInt(bigAmt), receiver.String())
+		voteMsg := stafiHubXBridgeTypes.NewMsgVoteProposal(w.conn.Address(), uint32(m.Source), depositNonce, resourceIdStr, types.NewIntFromBigInt(bigAmt), receiverStr)
 		txBts, err := w.conn.client.ConstructAndSignTx(voteMsg)
 		if err != nil {
 			if strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()) {
@@ -128,7 +134,7 @@ func (w *writer) processMessage(m msg.Message) bool {
 			w.log.Error("checkAndReSend failed", "err", err)
 			return false
 		}
-		w.log.Info("checkAndResend ok", "recipient", receiver.String())
+		w.log.Info("checkAndResend ok", "recipient", receiverStr)
 		return true
 
 	default:
