@@ -139,10 +139,10 @@ func (w *writer) createFungibleProposal(m msg.Message) (*proposal, error) {
 
 	d, ok := w.decimals[resourceIdStr]
 	if !ok {
-		d, ok = w.decimals[decimalDefault]
-		if !ok {
-			return nil, fmt.Errorf("failed to get decimal")
-		}
+		// d, ok = w.decimals[decimalDefault]
+		// if !ok {
+		return nil, fmt.Errorf("failed to get decimal")
+		// }
 	}
 
 	amount := types.NewU128(*decimal.NewFromBigInt(bigAmt, 0).Div(d).BigInt())

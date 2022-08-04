@@ -97,10 +97,10 @@ func FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]de
 
 	decimal, ok := decimals[resourceIdStr]
 	if !ok {
-		decimal, ok = decimals[decimalDefault]
-		if !ok {
-			return nil, fmt.Errorf("failed to get decimal")
-		}
+		// decimal, ok = decimals[decimalDefault]
+		// if !ok {
+		return nil, fmt.Errorf("failed to get decimal")
+		// }
 	}
 	eft.Decimal = decimal
 	return eft, nil
