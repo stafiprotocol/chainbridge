@@ -60,7 +60,7 @@ func (c *Connection) FinalizedBlockNumber() (uint64, error) {
 }
 
 func (c *Connection) GetEvents(blockNum uint64) ([]*types.TxResponse, error) {
-	return c.client.GetBlockTxs(int64(blockNum))
+	return c.client.GetBlockTxsWithParseErrSkip(int64(blockNum))
 }
 
 func (c *Connection) Close() {
