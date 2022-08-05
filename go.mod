@@ -17,8 +17,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.11.0
 	github.com/stafihub/rtoken-relay-core/common v0.0.0-20220802000335-3df19a5ca75a
-	github.com/stafihub/stafi-hub-relay-sdk v1.6.1
-	github.com/stafihub/stafihub v0.0.0-20220801021056-1080f0037668
+	github.com/stafihub/stafi-hub-relay-sdk v1.6.2
+	github.com/stafihub/stafihub v0.0.0-20220805082732-1f0dbdbfe992
 	github.com/stafiprotocol/go-substrate-rpc-client v1.1.3
 	github.com/stafiprotocol/solana-go-sdk v1.2.0
 	github.com/stretchr/testify v1.7.1
@@ -46,7 +46,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.17.3 // indirect
-	github.com/cosmos/ibc-go/v3 v3.1.0 // indirect
+	github.com/cosmos/ibc-go/v3 v3.1.1 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.11.1 // indirect
 	github.com/cosmos/ledger-go v0.9.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
