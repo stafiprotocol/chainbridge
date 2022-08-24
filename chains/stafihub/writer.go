@@ -117,19 +117,8 @@ func (w *writer) processMessage(m msg.Message) bool {
 		}
 
 		voteMsg := stafiHubXBridgeTypes.NewMsgVoteProposal(w.conn.Address(), uint32(m.Source), depositNonce, resourceIdStr, types.NewIntFromBigInt(bigAmt), receiverStr)
-		txBts, err := w.conn.client.ConstructAndSignTx(voteMsg)
-		if err != nil {
-			if strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()) {
-				return true
-			}
-			if strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyVoted.Error()) {
-				return true
-			}
-			w.log.Error("ConstructAndSignTx failed", "err", err)
-			return false
-		}
-		txHash, err := w.conn.client.BroadcastTx(txBts)
-		err = w.checkAndReSend(txHash, txBts, "voteproposal", err)
+
+		err = w.checkAndReSendWithProposal("voteproposal", voteMsg)
 		if err != nil {
 			w.log.Error("checkAndReSend failed", "err", err)
 			return false
@@ -143,41 +132,80 @@ func (w *writer) processMessage(m msg.Message) bool {
 	}
 }
 
-func (h *writer) checkAndReSend(txHashStr string, txBts []byte, typeStr string, err error) error {
+func (h *writer) checkAndReSendWithProposal(typeStr string, content *stafiHubXBridgeTypes.MsgVoteProposal) error {
+	txHashStr, _, err := h.conn.client.SubmitBridgeProposal(content)
 	if err != nil {
 		switch {
-		case strings.Contains(err.Error(), "signature repeated"):
-			h.log.Info("no need send, already submit signature", "txHash", txHashStr, "type", typeStr)
+		case strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()):
+			h.log.Info("no need send, already executed", "txHash", txHashStr, "type", typeStr)
 			return nil
+
+		case strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyVoted.Error()):
+			h.log.Info("no need send, already voted", "txHash", txHashStr, "type", typeStr)
+			return nil
+
+		// resend case:
+		case strings.Contains(err.Error(), errType.ErrWrongSequence.Error()):
+			return h.checkAndReSendWithProposal(txHashStr, content)
 		}
+
 		return err
-	} else {
-		retry := BlockRetryLimit
-		for {
-			if retry <= 0 {
-				return fmt.Errorf("checkAndSend broadcast tx reach retry limit, tx hash: %s", txHashStr)
-			}
-			//check on chain
-			res, err := h.conn.client.QueryTxByHash(txHashStr)
-			if err != nil || res.Empty() || res.Code != 0 {
-				h.log.Warn(fmt.Sprintf(
-					"checkAndSend QueryTxByHash failed. will rebroadcast after %f second",
+	}
+
+	retry := BlockRetryLimit
+	var res *types.TxResponse
+	for {
+		if retry <= 0 {
+			h.log.Error("checkAndReSendWithProposal QueryTxByHash, reach retry limit.",
+				"tx hash", txHashStr,
+				"err", err)
+			return fmt.Errorf("checkAndReSendWithProposal QueryTxByHash reach retry limit, tx hash: %s,err: %s", txHashStr, err)
+		}
+
+		//check on chain
+		res, err = h.conn.client.QueryTxByHash(txHashStr)
+		if err != nil || res.Empty() || res.Height == 0 {
+			if res != nil {
+				h.log.Debug(fmt.Sprintf(
+					"checkAndReSendWithProposal QueryTxByHash, tx failed. will query after %f second",
 					BlockRetryInterval.Seconds()),
 					"tx hash", txHashStr,
-					"err or res.empty", err)
-
-				//broadcast if not on chain
-				_, err = h.conn.client.BroadcastTx(txBts)
-				if err != nil && err != errType.ErrTxInMempoolCache {
-					h.log.Warn("checkAndSend BroadcastTx failed  will retry", "failed info", err)
-				}
-				time.Sleep(BlockRetryInterval)
-				retry--
-				continue
+					"res.log", res.RawLog,
+					"res.code", res.Code)
+			} else {
+				h.log.Debug(fmt.Sprintf(
+					"checkAndReSendWithProposal QueryTxByHash failed. will query after %f second",
+					BlockRetryInterval.Seconds()),
+					"tx hash", txHashStr,
+					"err", err)
 			}
-			break
+
+			time.Sleep(BlockRetryInterval)
+			retry--
+			continue
 		}
+
+		if res.Code != 0 {
+			switch {
+			case strings.Contains(res.RawLog, stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()):
+				h.log.Info("no need send, already executed", "txHash", txHashStr, "type", typeStr)
+				return nil
+
+			case strings.Contains(res.RawLog, stafiHubXBridgeTypes.ErrAlreadyVoted.Error()):
+				h.log.Info("no need send, already voted", "txHash", txHashStr, "type", typeStr)
+				return nil
+
+			// resend case
+			case strings.Contains(res.RawLog, errType.ErrOutOfGas.Error()):
+				return h.checkAndReSendWithProposal(txHashStr, content)
+			default:
+				return fmt.Errorf("tx failed, txHash: %s, rawlog: %s", txHashStr, res.RawLog)
+			}
+		}
+
+		break
 	}
-	h.log.Info("checkAndSend success", "txHash", txHashStr, "type", typeStr)
+
+	h.log.Info("checkAndReSendWithProposal success", "txHash", txHashStr, "type", typeStr)
 	return nil
 }

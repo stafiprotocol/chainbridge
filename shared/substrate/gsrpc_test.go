@@ -4,16 +4,19 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/utils/keystore"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	AliceKey     = keystore.TestKeyRing.SubstrateKeys[keystore.AliceKey].AsKeyringPair()
-	From         = "31yavGB5CVb8EwpqKQaS9XY7JZcfbK6QpWPn5kkweHVpqcov"
-	From1        = "31d96Cq9idWQqPq3Ch5BFY84zrThVE3r98M7vG4xYaSWHwsX"
-	KeystorePath = "/Users/fwj/Go/stafi/chainbridge/keys"
+	AliceKey       = keystore.TestKeyRing.SubstrateKeys[keystore.AliceKey].AsKeyringPair()
+	From           = "31yavGB5CVb8EwpqKQaS9XY7JZcfbK6QpWPn5kkweHVpqcov"
+	From1          = "31d96Cq9idWQqPq3Ch5BFY84zrThVE3r98M7vG4xYaSWHwsX"
+	KeystorePath   = "/Users/fwj/Go/stafi/chainbridge/keys"
+	tlog           = log15.Root()
+	stafiTypesFile = "/Users/tpkeeper/gowork/stafi/rtoken-relay/network/stafi.json"
 )
 
 func TestBatchTransfer(t *testing.T) {
@@ -51,4 +54,40 @@ func TestBatchTransfer(t *testing.T) {
 
 	err = gc.SignAndSubmitTx(ext)
 	assert.NoError(t, err)
+}
+
+func TestSarpcClient_GetChainEvents(t *testing.T) {
+	//sc, err := NewSarpcClient(ChainTypeStafi, "wss://stafi-seiya.stafi.io", stafiTypesFile, tlog)
+	sc, err := NewSarpcClient("wss://mainnet-rpc.stafi.io", stafiTypesFile, tlog)
+	//sc, err := NewSarpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
+	//sc, err := NewSarpcClient(ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, tlog)
+	// stop := make(chan int)
+	// sc, err := NewSarpcClient(ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, AddressTypeMultiAddress, AliceKey, tlog, stop)
+	if err != nil {
+		t.Fatal(err)
+	}
+	evt, err := sc.GetEvents(10105347)
+	assert.NoError(t, err)
+	for _, e := range evt {
+		t.Log(e.EventId)
+		t.Log(e.ModuleId, e.Params)
+	}
+
+	// for i := 10105347; i <= 10105347; i++ {
+	// 	if i%10 == 0 {
+	// 		t.Log("i", i)
+	// 	}
+
+	// 	_, err := sc.GetEvents(uint64(i))
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+
+	// 	//assert.NoError(t, err)
+	// 	//for _, evt := range evts {
+	// 	//	fmt.Println(evt.ModuleId)
+	// 	//	fmt.Println(evt.EventId)
+	// 	//	fmt.Println(evt.Params)
+	// 	//}
+	// }
 }
