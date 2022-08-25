@@ -20,6 +20,7 @@ import (
 
 var (
 	ValueNotStringError = errors.New("value not string")
+	SkipError           = errors.New("should skip")
 )
 
 type eventName string
@@ -52,7 +53,7 @@ func fungibleTransferHandler(evtI interface{}, log log15.Logger) (msg.Message, e
 }
 
 // FungibleTransfer(AccountId, ChainId, DepositNonce, ResourceId, U256, Vec<u8>)
-func FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]decimal.Decimal) (*EventFungibleTransfer, error) {
+func (l *listener) FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]decimal.Decimal) (*EventFungibleTransfer, error) {
 	if len(evt.Params) != 6 {
 		return nil, fmt.Errorf("EventFungibleTransfer params number not right: %d, expected: 6", len(evt.Params))
 	}
@@ -60,6 +61,10 @@ func FungibleTransferEventData(evt *substrate.ChainEvent, decimals map[string]de
 	chainId, err := parseChainId(evt.Params[1])
 	if err != nil {
 		return nil, fmt.Errorf("EventFungibleTransfer params[1] -> chainId error: %s", err)
+	}
+
+	if !l.router.SupportChainId(msg.ChainId(chainId)) {
+		return nil, SkipError
 	}
 
 	nonce, err := parseDepositNonce(evt.Params[2])

@@ -176,12 +176,16 @@ func (l *listener) processEvents(blockNum uint64) error {
 			continue
 		}
 
-		data, err := FungibleTransferEventData(evt, l.decimals)
+		data, err := l.FungibleTransferEventData(evt, l.decimals)
 		if err != nil {
-			if strings.Contains(err.Error(), "recipient error") {
+			switch {
+			case strings.Contains(err.Error(), "recipient error"):
 				l.log.Error("skip recipient err", "blockNumber", blockNum, "eventId", evt.EventId)
 				continue
+			case err == SkipError:
+				continue
 			}
+
 			return err
 		}
 		//skip event if not support chainId
