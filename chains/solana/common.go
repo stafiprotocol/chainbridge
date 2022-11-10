@@ -87,7 +87,9 @@ func (w *writer) createProposalAccount(
 	amount uint64,
 	processName string,
 ) bool {
-	res, err := rpcClient.GetRecentBlockhash(context.Background())
+	res, err := rpcClient.GetLatestBlockhash(context.Background(), solClient.GetLatestBlockhashConfig{
+		Commitment: solClient.CommitmentConfirmed,
+	})
 	if err != nil {
 		w.log.Error(fmt.Sprintf("[%s] GetRecentBlockhash failed", processName),
 			"err", err)
@@ -153,7 +155,9 @@ func (w *writer) approveProposal(
 	mintAccount,
 	toAccount solCommon.PublicKey,
 	processName string) bool {
-	res, err := rpcClient.GetRecentBlockhash(context.Background())
+	res, err := rpcClient.GetLatestBlockhash(context.Background(), solClient.GetLatestBlockhashConfig{
+		Commitment: solClient.CommitmentConfirmed,
+	})
 	if err != nil {
 		w.log.Error(fmt.Sprintf("[%s] GetRecentBlockhash failed", processName),
 			"err", err)

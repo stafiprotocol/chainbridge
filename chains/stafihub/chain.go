@@ -7,19 +7,18 @@ The current supported transfer types are Fungible.
 
 There are 3 major components: the connection, the listener, and the writer.
 
-Connection
+# Connection
 
 The Connection handles connecting to the substrate client, and submitting transactions to the client.
 It also handles state queries. The connection is shared by the writer and listener.
 
-Listener
+# Listener
 
 The substrate listener polls blocks and parses the associated events for the three transfer types. It then forwards these into the router.
 
-Writer
+# Writer
 
 As the writer receives messages from the router, nothing happened.
-
 */
 package stafihub
 

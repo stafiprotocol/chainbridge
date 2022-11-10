@@ -18,7 +18,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-//dataHandler is a struct which wraps any extra data our CMD functions need that cannot be passed through parameters
+// dataHandler is a struct which wraps any extra data our CMD functions need that cannot be passed through parameters
 type dataHandler struct {
 	datadir string
 }

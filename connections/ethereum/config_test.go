@@ -12,7 +12,7 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/core"
 )
 
-//TestParseChainConfig tests parseChainConfig with all handlerContracts provided
+// TestParseChainConfig tests parseChainConfig with all handlerContracts provided
 func TestParseChainConfig(t *testing.T) {
 	input := core.ChainConfig{
 		Name:         "chain",
@@ -56,7 +56,7 @@ func TestParseChainConfig(t *testing.T) {
 	}
 }
 
-//TestChainConfigOneContract Tests chain config providing only one contract
+// TestChainConfigOneContract Tests chain config providing only one contract
 func TestChainConfigOneContract(t *testing.T) {
 
 	input := core.ChainConfig{

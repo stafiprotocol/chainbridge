@@ -65,6 +65,9 @@ license:
 	GO111MODULE=off go get -u github.com/google/addlicense
 	addlicense -c "Stafi Protocol" -f ./scripts/header.txt -y 2020 .
 
+fmt:
+	go fmt ./...
+
 ## license-check: Checks for missing license headers
 license-check:
 	@echo "  >  \033[Checking for license headers...\033[0m "

@@ -65,7 +65,9 @@ func setFeeReceiverAction(ctx *cli.Context) error {
 		return fmt.Errorf("\nbridge account not exist:\n %+v", bridgeInfo)
 	}
 
-	res, err := c.GetRecentBlockhash(context.Background())
+	res, err := c.GetLatestBlockhash(context.Background(), solClient.GetLatestBlockhashConfig{
+		Commitment: solClient.CommitmentConfirmed,
+	})
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,6 @@ import (
 	"github.com/decred/base58"
 	borsh "github.com/near/borsh-go"
 	"github.com/stafiprotocol/chainbridge/chains"
-	"github.com/stafiprotocol/chainbridge/utils"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/solana-go-sdk/bridgeprog"
@@ -24,10 +23,9 @@ import (
 var (
 	ErrFatalPolling     = errors.New("listener block polling failed")
 	eventTickerInterval = time.Second * 15
-	version170          = "1.7.0"
 )
 
-//listen event or block update from solana
+// listen event or block update from solana
 type listener struct {
 	name           string
 	chainId        msg.ChainId
@@ -97,47 +95,24 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 	bridgeProgramId := l.conn.poolClient.BridgeProgramId.ToBase58()
 	bridgeAccount := l.conn.poolClient.BridgeAccountPubkey.ToBase58()
 
-	var useVersion string
-	retry := 0
-	var err error
-	for {
-		if retry > 50 {
-			return fmt.Errorf("rpcClient.GetVersion err: %s", err)
+	signatures, err := rpcClient.GetSignaturesForAddress(
+		context.Background(),
+		bridgeProgramId,
+		solClient.GetSignaturesForAddressConfig{
+			Until:      untilSignature,
+			Commitment: solClient.CommitmentFinalized,
+		})
 
-		}
-		versionRes, err := rpcClient.GetVersion(context.Background())
-		if err != nil || len(versionRes.SolanaCore) < 3 {
-			retry++
-			time.Sleep(waitTime)
-			continue
-		}
-		useVersion = versionRes.SolanaCore
-		break
-	}
-
-	var signatures []solClient.GetConfirmedSignaturesForAddress
-	if utils.VersionCompare(useVersion, version170) >= 0 {
-		signatures, err = rpcClient.GetSignaturesForAddress(
-			context.Background(),
-			bridgeProgramId,
-			solClient.GetConfirmedSignaturesForAddressConfig{
-				Until: untilSignature,
-			})
-	} else {
-		signatures, err = rpcClient.GetConfirmedSignaturesForAddress(
-			context.Background(),
-			bridgeProgramId,
-			solClient.GetConfirmedSignaturesForAddressConfig{
-				Until: untilSignature,
-			})
-	}
 	if err != nil {
 		return fmt.Errorf("rpcClient.GetConfirmedSignaturesForAddress err: %s", err.Error())
 	}
 
 	for i := len(signatures) - 1; i >= 0; i-- {
 		usesig := signatures[i].Signature
-		tx, err := rpcClient.GetConfirmedTransaction(context.Background(), usesig)
+		tx, err := rpcClient.GetTransaction(context.Background(), usesig, solClient.GetTransactionWithLimitConfig{
+			Commitment:                     solClient.CommitmentFinalized,
+			MaxSupportedTransactionVersion: &solClient.DefaultMaxSupportedTransactionVersion,
+		})
 		if err != nil {
 			return fmt.Errorf("rpcClient.GetConfirmedTransaction err: %s", err.Error())
 		}

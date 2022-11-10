@@ -7,7 +7,7 @@ import (
 	solTypes "github.com/stafiprotocol/solana-go-sdk/types"
 )
 
-//one pool address with one poolClient
+// one pool address with one poolClient
 type PoolClient struct {
 	log       log15.Logger
 	rpcClient *solClient.Client

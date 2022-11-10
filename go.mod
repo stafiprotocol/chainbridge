@@ -1,6 +1,6 @@
 module github.com/stafiprotocol/chainbridge
 
-go 1.18
+go 1.19
 
 require (
 	github.com/ChainSafe/log15 v1.0.0
@@ -20,7 +20,7 @@ require (
 	github.com/stafihub/stafi-hub-relay-sdk v1.7.0
 	github.com/stafihub/stafihub v0.1.0
 	github.com/stafiprotocol/go-substrate-rpc-client v1.1.3
-	github.com/stafiprotocol/solana-go-sdk v1.2.3
+	github.com/stafiprotocol/solana-go-sdk v1.3.0
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.5.0
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e

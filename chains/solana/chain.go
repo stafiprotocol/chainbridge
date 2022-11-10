@@ -10,6 +10,7 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
+	"github.com/stafiprotocol/solana-go-sdk/client"
 )
 
 var TerminatedError = errors.New("terminated")
@@ -47,14 +48,20 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	bsStartSignatureBlock := 0
 
 	if len(startSignature) != 0 {
-		tx, err := conn.GetQueryClient().GetConfirmedTransaction(context.Background(), startSignature)
+		tx, err := conn.GetQueryClient().GetTransaction(context.Background(), startSignature, client.GetTransactionWithLimitConfig{
+			Commitment:                     client.CommitmentFinalized,
+			MaxSupportedTransactionVersion: &client.DefaultMaxSupportedTransactionVersion,
+		})
 		if err != nil {
 			return nil, err
 		}
 		startSignatureBlock = int(tx.Slot)
 	}
 	if len(bsStartSignature) != 0 {
-		tx, err := conn.GetQueryClient().GetConfirmedTransaction(context.Background(), bsStartSignature)
+		tx, err := conn.GetQueryClient().GetTransaction(context.Background(), bsStartSignature, client.GetTransactionWithLimitConfig{
+			Commitment:                     client.CommitmentFinalized,
+			MaxSupportedTransactionVersion: &client.DefaultMaxSupportedTransactionVersion,
+		})
 		if err != nil {
 			return nil, err
 		}

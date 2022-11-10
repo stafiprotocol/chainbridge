@@ -16,7 +16,7 @@ import (
 
 var msgLimit = 4096
 
-//write to solana
+// write to solana
 type writer struct {
 	conn    *Connection
 	router  chains.Router
@@ -47,7 +47,7 @@ func (w *writer) ResolveMessage(m msg.Message) bool {
 	return true
 }
 
-//resolve msg from other chains
+// resolve msg from other chains
 func (w *writer) processMessage(m msg.Message) (processOk bool) {
 	switch m.Type {
 	case msg.FungibleTransfer:
