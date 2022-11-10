@@ -1063,6 +1063,8 @@ github.com/nats-io/nkeys v0.2.0/go.mod h1:XdZpAbhgyyODYqjTawOnIOI7VlbKSarI9Gfy1t
 github.com/nats-io/nkeys v0.3.0/go.mod h1:gvUNGjVcM2IPr5rCsRsC6Wb3Hr2CQAm08dsxtV6A5y4=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354/go.mod h1:KSVJerMDfblTH7p5MZaTt+8zaT2iEk3AkVb9PQdZuE8=
+github.com/near/borsh-go v0.3.2-0.20220516180422-1ff87d108454 h1:lFN7TVecCMbCHVNfEofDqqaVsuAlkFyDmmO7EF4nXj4=
+github.com/near/borsh-go v0.3.2-0.20220516180422-1ff87d108454/go.mod h1:NeMochZp7jN/pYFuxLkrZtmLqbADmnp/y1+/dL+AsyQ=
 github.com/neilotoole/errgroup v0.1.5/go.mod h1:Q2nLGf+594h0CLBs/Mbg6qOr7GtqDK7C2S41udRnToE=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nishanths/exhaustive v0.7.11/go.mod h1:gX+MP7DWMKJmNa1HfMozK+u04hQd3na9i0hyqf3/dOI=
@@ -1371,8 +1373,8 @@ github.com/stafihub/stafihub v0.1.0 h1:3EMn615R8mEg6eskZgok+67wKC11rD0sfIM+iRF8E
 github.com/stafihub/stafihub v0.1.0/go.mod h1:xY155chryZY5plerYGnk/KKdex2LkGlQ93bSEEDOJJY=
 github.com/stafiprotocol/go-substrate-rpc-client v1.1.3 h1:wtRc1AKjdgvAuy6Uxl/yXxd4bhoEfZonpttligceYyY=
 github.com/stafiprotocol/go-substrate-rpc-client v1.1.3/go.mod h1:P3xucNyw6UjKvCvGg0eiQJhcRyZsUv5a9akxDTLMHFk=
-github.com/stafiprotocol/solana-go-sdk v1.2.0 h1:p04P2/Y+ElY1RzGtQgUtOU91r4RA4t27oUEQt5D+6Zc=
-github.com/stafiprotocol/solana-go-sdk v1.2.0/go.mod h1:l17jYuPW1VS1hL5qjlayYsMTrla9wEJHLyGtzFGhmHE=
+github.com/stafiprotocol/solana-go-sdk v1.2.3 h1:/alN7jo4Xf8epTCF/4SpB88f+WSge0kiGfoioN/qC8Y=
+github.com/stafiprotocol/solana-go-sdk v1.2.3/go.mod h1:/0nE9JnF+mhWxwJPhyyTsUHNKC41VsxZ2uKpyEWb+bM=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4 h1:Gb2Tyox57NRNuZ2d3rmvB3pcmbu7O1RS3m8WRx7ilrg=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4/go.mod h1:RZLeN1LMWmRsyYjvAu+I6Dm9QmlDaIIt+Y+4Kd7Tp+Q=
 github.com/stbenjam/no-sprintf-host-port v0.1.1/go.mod h1:TLhvtIvONRzdmkFiio4O8LHsN9N74I+PhRquPsxpL0I=
@@ -1458,8 +1460,6 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20200427203606-3cfed13b9966/go.mod h1
 github.com/tomarrell/wrapcheck/v2 v2.6.1/go.mod h1:Eo+Opt6pyMW1b6cNllOcDSSoHO0aTJ+iF6BfCUbHltA=
 github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce/go.mod h1:o8v6yHRoik09Xen7gje4m9ERNah1d1PPsVq1VEx9vE4=
 github.com/tommy-muehle/go-mnd/v2 v2.5.0/go.mod h1:WsUAkMJMYww6l/ufffCD3m+P7LEvr8TnZn9lwVDlgzw=
-github.com/tpkeeper/borsh-go v0.3.1-0.20210918134133-8433ab32a70c h1:tTpk3zHsnbbCSBwm8rZXVPC/ElQ66dUbCoc8lwe7xZQ=
-github.com/tpkeeper/borsh-go v0.3.1-0.20210918134133-8433ab32a70c/go.mod h1:NeMochZp7jN/pYFuxLkrZtmLqbADmnp/y1+/dL+AsyQ=
 github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31/go.mod h1:onvgF043R+lC5RZ8IT9rBXDaEDnpnw/Cl+HFiw+v/7Q=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/tyler-smith/go-bip39 v1.0.1-0.20181017060643-dbb3b84ba2ef/go.mod h1:sJ5fKU0s6JVwZjjcUEX2zFOnvq0ASQ2K9Zr6cf67kNs=
