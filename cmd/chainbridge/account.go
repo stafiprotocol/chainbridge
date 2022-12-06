@@ -159,7 +159,7 @@ func keystoreDir(keyPath string) (keystorepath string, err error) {
 // keypath example: /Homepath/chainbridge/keys
 func generateKeyFileByRawseed(keypath string) error {
 	key := keystore.GetPassword("Enter mnemonic/rawseed:")
-	kp, err := sr25519.NewKeypairFromSeed(string(key), "stafi")
+	kp, err := sr25519.NewKeypairFromSeed(string(key), 20)
 	if err != nil {
 		return err
 	}
