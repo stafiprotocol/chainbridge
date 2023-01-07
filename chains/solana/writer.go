@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ChainSafe/log15"
@@ -69,6 +70,13 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 			}
 			toAccountInfo, err = rpcClient.GetTokenAccountInfo(context.Background(), toAccount.ToBase58())
 			if err != nil {
+				// should skip if no account data
+				if strings.Contains(err.Error(), "data length not match") {
+					w.log.Warn("GetTokenAccountInfo failed, will skip",
+						"token account address", toAccount.ToBase58(),
+						"err", err)
+					return true
+				}
 				// return false if retry limit
 				w.log.Warn("GetTokenAccountInfo failed, will retry...",
 					"token account address", toAccount.ToBase58(),
