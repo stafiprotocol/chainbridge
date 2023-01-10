@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	ValueNotStringError = errors.New("value not string")
-	SkipError           = errors.New("should skip")
+	ErrorValueNotString = errors.New("value not string")
+	ErrorSkip           = errors.New("should skip")
 )
 
 type eventName string
@@ -64,7 +64,7 @@ func (l *listener) FungibleTransferEventData(evt *substrate.ChainEvent, decimals
 	}
 
 	if !l.router.SupportChainId(msg.ChainId(chainId)) {
-		return nil, SkipError
+		return nil, ErrorSkip
 	}
 
 	nonce, err := parseDepositNonce(evt.Params[2])
@@ -137,7 +137,7 @@ func parseDepositNonce(param scalecodec.EventParam) (uint64, error) {
 func parseBytes(value interface{}) ([]byte, error) {
 	val, ok := value.(string)
 	if !ok {
-		return nil, ValueNotStringError
+		return nil, ErrorValueNotString
 	}
 
 	bz, err := hexutil.Decode(utiles.AddHex(val))
@@ -151,7 +151,7 @@ func parseBytes(value interface{}) ([]byte, error) {
 func parseU256(value interface{}) (*big.Int, error) {
 	val, ok := value.(string)
 	if !ok {
-		return nil, ValueNotStringError
+		return nil, ErrorValueNotString
 	}
 
 	amount := new(big.Int)

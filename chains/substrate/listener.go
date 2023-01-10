@@ -180,9 +180,10 @@ func (l *listener) processEvents(blockNum uint64) error {
 		if err != nil {
 			switch {
 			case strings.Contains(err.Error(), "recipient error"):
-				l.log.Error("skip recipient err", "blockNumber", blockNum, "eventId", evt.EventId)
+				l.log.Warn("recipient err, will skip ", "blockNumber", blockNum, "eventId", evt.EventId)
 				continue
-			case err == SkipError:
+			case err == ErrorSkip:
+				l.log.Warn("will skip", "blockNumber", blockNum, "eventId", evt.EventId, "err", err)
 				continue
 			}
 
