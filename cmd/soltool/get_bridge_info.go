@@ -24,7 +24,7 @@ func getBridgeInfoAction(ctx *cli.Context) error {
 	//check if exist
 	bridgeInfo, err := c.GetBridgeAccountInfo(context.Background(), pc.BridgeAccount)
 	if err != nil {
-		return fmt.Errorf("\nbridge account not exist:\n %+v", bridgeInfo)
+		return fmt.Errorf("bridge account not exist,err %s", err.Error())
 	}
 
 	fmt.Printf("\nbridgeAccountInfo: \n")
