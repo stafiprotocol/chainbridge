@@ -119,7 +119,10 @@ func (l *listener) pollBlocks() error {
 
 			finalized, err := l.conn.FinalizedBlockNumber()
 			if err != nil {
-				return err
+				l.log.Error("Failed to process events in block", "block", currentBlock, "err", err)
+				retry--
+				time.Sleep(BlockRetryInterval)
+				continue
 			}
 
 			// Sleep if the block we want comes after the most recently finalized block
