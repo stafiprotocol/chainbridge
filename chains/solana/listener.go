@@ -132,96 +132,77 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 			}
 			continue
 		}
-		instruct := tx.Transaction.Message.Instructions[0]
-		accountKeys := tx.Transaction.Message.AccountKeys
-		programIdIndex := instruct.ProgramIDIndex
-		if len(accountKeys) <= int(programIdIndex) {
-			return fmt.Errorf("accounts or programIdIndex err, %v", tx)
-		}
-		//skip if it doesn't call  bridge program
-		if !strings.EqualFold(accountKeys[programIdIndex], bridgeProgramId) {
-			err := l.storeDealedSig(usesig)
-			if err != nil {
-				return err
-			}
-			continue
-		}
+		for _, instruct := range tx.Transaction.Message.Instructions {
 
-		// check instruction data
-		if len(instruct.Data) == 0 {
-			err := l.storeDealedSig(usesig)
-			if err != nil {
-				return err
+			accountKeys := tx.Transaction.Message.AccountKeys
+			programIdIndex := instruct.ProgramIDIndex
+			if len(accountKeys) <= int(programIdIndex) {
+				return fmt.Errorf("accounts or programIdIndex err, %v", tx)
 			}
-			continue
-		}
-		dataBts := base58.Decode(instruct.Data)
-		if len(dataBts) < 8 {
-			err := l.storeDealedSig(usesig)
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		// skip if it doesn't call transferOut func
-		if !bytes.Equal(dataBts[:8], bridgeprog.InstructionTransferOut[:]) {
-			l.log.Warn("call func is not transferOut", "tx", tx)
-			err := l.storeDealedSig(usesig)
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		// check bridge account
-		if len(instruct.Accounts) == 0 {
-			err := l.storeDealedSig(usesig)
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		if !strings.EqualFold(accountKeys[instruct.Accounts[0]], bridgeAccount) {
-			l.log.Warn("bridge account not equal", "tx", tx)
-			err := l.storeDealedSig(usesig)
-			if err != nil {
-				return err
-			}
-			continue
-		}
-
-		for _, logMessage := range tx.Meta.LogMessages {
-			if strings.HasPrefix(logMessage, bridgeprog.EventTransferOutPrefix) {
-				l.log.Info("find log", "log", logMessage, "signature", usesig)
-				use_log := strings.TrimPrefix(logMessage, bridgeprog.ProgramLogPrefix)
-				logBts, err := base64.StdEncoding.DecodeString(use_log)
-				if err != nil {
-					return err
-				}
-				if len(logBts) <= 8 {
-					return fmt.Errorf("event pase length err")
-				}
-
-				eventTransferOut := EventTransferOut{}
-				err = borsh.Deserialize(&eventTransferOut, logBts[8:])
-				if err != nil {
-					return err
-				}
-				m := msg.NewFungibleTransfer(
-					l.chainId,
-					msg.ChainId(eventTransferOut.DestChainId),
-					msg.Nonce(eventTransferOut.DepositNonce),
-					new(big.Int).SetUint64(eventTransferOut.Amount),
-					eventTransferOut.ResourceId,
-					eventTransferOut.Receiver,
-				)
-				l.log.Info("send fungibletransfer msg", "msg", m)
-				err = l.router.Send(m)
-				if err != nil {
-					l.log.Error("router send error: failed to route message", "err", err)
-					return err
-				}
+			
+			//skip if it doesn't call  bridge program
+			if !strings.EqualFold(accountKeys[programIdIndex], bridgeProgramId) {
+				continue
 			}
 
+			// check instruction data
+			if len(instruct.Data) == 0 {
+				continue
+			}
+
+			dataBts := base58.Decode(instruct.Data)
+			if len(dataBts) < 8 {
+				continue
+			}
+			// skip if it doesn't call transferOut func
+			if !bytes.Equal(dataBts[:8], bridgeprog.InstructionTransferOut[:]) {
+				l.log.Warn("call func is not transferOut", "tx", tx)
+				continue
+			}
+			// check bridge account
+			if len(instruct.Accounts) == 0 {
+				continue
+			}
+
+			if !strings.EqualFold(accountKeys[instruct.Accounts[0]], bridgeAccount) {
+				l.log.Warn("bridge account not equal", "tx", tx)
+				continue
+			}
+
+			for _, logMessage := range tx.Meta.LogMessages {
+				if strings.HasPrefix(logMessage, bridgeprog.EventTransferOutPrefix) {
+					l.log.Info("find log", "log", logMessage, "signature", usesig)
+					use_log := strings.TrimPrefix(logMessage, bridgeprog.ProgramLogPrefix)
+					logBts, err := base64.StdEncoding.DecodeString(use_log)
+					if err != nil {
+						return err
+					}
+					if len(logBts) <= 8 {
+						return fmt.Errorf("event pase length err")
+					}
+
+					eventTransferOut := EventTransferOut{}
+					err = borsh.Deserialize(&eventTransferOut, logBts[8:])
+					if err != nil {
+						return err
+					}
+					m := msg.NewFungibleTransfer(
+						l.chainId,
+						msg.ChainId(eventTransferOut.DestChainId),
+						msg.Nonce(eventTransferOut.DepositNonce),
+						new(big.Int).SetUint64(eventTransferOut.Amount),
+						eventTransferOut.ResourceId,
+						eventTransferOut.Receiver,
+					)
+					l.log.Info("send fungibletransfer msg", "msg", m)
+					err = l.router.Send(m)
+					if err != nil {
+						l.log.Error("router send error: failed to route message", "err", err)
+						return err
+					}
+				}
+
+			}
 		}
 		err = l.storeDealedSig(usesig)
 		if err != nil {
