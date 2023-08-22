@@ -210,7 +210,7 @@ func (w *writer) proposalValid(prop *proposal) (bool, string, error) {
 		return true, "", nil
 	}
 
-	if voteRes.Status != VoteStatusActive {
+	if voteRes.Status == VoteStatusExecuted || voteRes.Status == VoteStatusExpired {
 		return false, fmt.Sprintf("CurrentVoteStatus: %s", voteRes.Status), nil
 	}
 
