@@ -1,6 +1,6 @@
 module github.com/stafiprotocol/chainbridge
 
-go 1.19
+go 1.21
 
 require (
 	github.com/ChainSafe/log15 v1.0.0

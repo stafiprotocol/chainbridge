@@ -123,13 +123,45 @@ type PoolAccounts struct {
 	ResourceIdToMint      map[string]string `json:"resourceIdToMint"`
 	FeeReceiverAccount    string            `json:"feeReceiverAccount"` //need private key
 	FeeAmounts            map[string]uint64 `json:"feeAmounts"`
+}
 
-	StakePool    string `json:"stakePool"`
-	BridgeSigner string `json:"bridgeSigner"`
-	RSolMint     string `json:"rsolMint"`
+type PoolAccountsForSetMint struct {
+	KeystorePath       string `json:"keystorePath"`
+	FeeAccount         string `json:"feeAccount"`         //need private key
+	BridgeAccount      string `json:"bridgeAccount"`      //need private key
+	AdminAccountPubkey string `json:"adminAccountPubkey"` //need private key
+	BridgeProgramId    string `json:"bridgeProgramId"`
+	Endpoint           string `json:"endpoint"`
+
+	NewMintAuthority string `json:"newMintAuthority"`
+	BridgeSigner     string `json:"bridgeSigner"`
+	RSolMint         string `json:"rsolMint"`
 }
 
 func loadConfig(file string, config *PoolAccounts) (err error) {
+	ext := filepath.Ext(file)
+	fp, err := filepath.Abs(file)
+	if err != nil {
+		return err
+	}
+
+	log.Debug("Loading configuration", "path", filepath.Clean(fp))
+
+	f, err := os.Open(filepath.Clean(fp))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = f.Close()
+	}()
+
+	if ext != ".json" {
+		return fmt.Errorf("unrecognized extention: %s", ext)
+	}
+	return json.NewDecoder(f).Decode(&config)
+}
+
+func loadConfigForMint(file string, config *PoolAccountsForSetMint) (err error) {
 	ext := filepath.Ext(file)
 	fp, err := filepath.Abs(file)
 	if err != nil {

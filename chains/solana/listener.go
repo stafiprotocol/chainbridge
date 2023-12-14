@@ -139,7 +139,7 @@ func (l *listener) getDepositEventsForBlock(untilSignature string) error {
 			if len(accountKeys) <= int(programIdIndex) {
 				return fmt.Errorf("accounts or programIdIndex err, %v", tx)
 			}
-			
+
 			//skip if it doesn't call  bridge program
 			if !strings.EqualFold(accountKeys[programIdIndex], bridgeProgramId) {
 				continue

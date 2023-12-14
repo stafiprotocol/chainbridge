@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/stafiprotocol/chainbridge/shared/solana/vault"
 	"github.com/stafiprotocol/solana-go-sdk/bridgeprog"
@@ -15,13 +14,13 @@ import (
 
 func setMintAuthority(ctx *cli.Context) error {
 	path := ctx.String(configFlag.Name)
-	pc := PoolAccounts{}
-	err := loadConfig(path, &pc)
+	pc := PoolAccountsForSetMint{}
+	err := loadConfigForMint(path, &pc)
 	if err != nil {
 		return err
 	}
-	if len(pc.StakePool) == 0 {
-		return fmt.Errorf("stakepool empty")
+	if len(pc.NewMintAuthority) == 0 {
+		return fmt.Errorf("NewMintAuthority empty")
 	}
 	fmt.Printf("\naccounts info:\n %+v\n", pc)
 	v, err := vault.NewVaultFromWalletFile(pc.KeystorePath)
@@ -47,16 +46,6 @@ func setMintAuthority(ctx *cli.Context) error {
 	AdminAccount := solTypes.AccountFromPrivateKeyBytes(privKeyMap[pc.AdminAccountPubkey])
 	BridgeProgramId := solCommon.PublicKeyFromString(pc.BridgeProgramId)
 
-	owners := make([]solCommon.PublicKey, 0)
-	owners = append(owners, FeeAccount.PublicKey)
-	for _, account := range pc.OtherFeeAccountPubkey {
-		a := solTypes.AccountFromPrivateKeyBytes(privKeyMap[account])
-		owners = append(owners, a.PublicKey)
-	}
-	if len(owners) < int(pc.Threshold) {
-		return fmt.Errorf("owner len < threshold")
-	}
-
 	//start inter with solana chain
 	c := solClient.NewClient([]string{pc.Endpoint})
 	//check if exist
@@ -72,14 +61,17 @@ func setMintAuthority(ctx *cli.Context) error {
 		return err
 	}
 
-	fmt.Printf("bridgeAccount %s\n", BridgeAccount.PublicKey.ToBase58())
-	fmt.Printf("owners %+v\n", owners)
-	fmt.Printf("supportChainIds %+v\n", pc.SupportChainIds)
-	fmt.Printf("feeReceiver %+v\n", pc.FeeReceiverAccount)
-	fmt.Printf("stakePool %+v\n", solCommon.PublicKeyFromString(pc.StakePool).ToBase58())
-	fmt.Printf("bridgeSigner %+v\n", pc.BridgeSigner)
+	newMintAuthority := solCommon.PublicKeyFromString(pc.NewMintAuthority)
+	rsolMint := solCommon.PublicKeyFromString(pc.RSolMint)
+	bridgeSigner := solCommon.PublicKeyFromString(pc.BridgeSigner)
 
-	time.Sleep(3 * time.Second)
+	fmt.Printf("bridgeAccount %s\n", BridgeAccount.PublicKey.ToBase58())
+	fmt.Printf("newMintAuthority %+v\n", newMintAuthority.ToBase58())
+	fmt.Printf("bridgeSigner %+v\n", bridgeSigner.ToBase58())
+
+	fmt.Println("\ncheck newMintAuthority again, then press enter to continue:")
+	var input string
+	fmt.Scanln(&input)
 
 	//create bridge account
 	rawTx, err := solTypes.CreateRawTransaction(solTypes.CreateRawTransactionParam{
@@ -88,9 +80,9 @@ func setMintAuthority(ctx *cli.Context) error {
 				BridgeProgramId,
 				BridgeAccount.PublicKey,
 				AdminAccount.PublicKey,
-				solCommon.PublicKeyFromString(pc.BridgeSigner),
-				solCommon.PublicKeyFromString(pc.RSolMint),
-				solCommon.PublicKeyFromString(pc.StakePool),
+				bridgeSigner,
+				rsolMint,
+				newMintAuthority,
 			),
 		},
 		Signers:         []solTypes.Account{FeeAccount, AdminAccount},

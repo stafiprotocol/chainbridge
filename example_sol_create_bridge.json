@@ -25,8 +25,5 @@
     "feeReceiverAccount": "9Riwnxn53S4wmy5h5nbQN1gxTCm1EvgqB4Gc5aKDAPyc",
     "feeAmounts": {
         "1": 50000
-    },
-    "stakePool": "",
-    "bridgeSigner": "",
-    "rsolMint": ""
+    }
 }
