@@ -38,6 +38,7 @@ func init() {
 		&setSupportChainIdCommand,
 		&setFeeReceiverCommand,
 		&setFeeAmountCommand,
+		&setMintAuthorityCommand,
 	}
 
 }
@@ -85,6 +86,14 @@ var setFeeReceiverCommand = cli.Command{
 	Flags:       cliFlags,
 }
 
+var setMintAuthorityCommand = cli.Command{
+	Name:        "setMintAuthority",
+	Usage:       "set mint authority",
+	Description: "The setMintAuthority command is used to set mint authority",
+	Action:      setMintAuthority,
+	Flags:       cliFlags,
+}
+
 var setFeeAmountCommand = cli.Command{
 	Name:        "setFeeAmount",
 	Usage:       "set fee amount",
@@ -114,6 +123,10 @@ type PoolAccounts struct {
 	ResourceIdToMint      map[string]string `json:"resourceIdToMint"`
 	FeeReceiverAccount    string            `json:"feeReceiverAccount"` //need private key
 	FeeAmounts            map[string]uint64 `json:"feeAmounts"`
+
+	StakePool    string `json:"stakePool"`
+	BridgeSigner string `json:"bridgeSigner"`
+	RSolMint     string `json:"rsolMint"`
 }
 
 func loadConfig(file string, config *PoolAccounts) (err error) {
