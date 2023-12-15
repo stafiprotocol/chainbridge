@@ -11,6 +11,7 @@ import (
 	"github.com/stafiprotocol/chainbridge/utils/core"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 	"github.com/stafiprotocol/solana-go-sdk/client"
+	"github.com/stafiprotocol/solana-go-sdk/common"
 )
 
 var TerminatedError = errors.New("terminated")
@@ -38,6 +39,18 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 	if err != nil {
 		return nil, err
 	}
+
+	minterProgramId := cfg.Opts["minterProgramId"]
+	if len(minterProgramId) == 0 {
+		return nil, fmt.Errorf("minterProgramId is empty")
+	}
+	mintManager := cfg.Opts["mintManager"]
+	if len(mintManager) == 0 {
+		return nil, fmt.Errorf("mintManager is empty")
+	}
+
+	minterProgramIdPubkey := common.PublicKeyFromString(minterProgramId)
+	mintManagerPubkey := common.PublicKeyFromString(mintManager)
 
 	startSignature := cfg.Opts["startSignature"]
 	startSignatureBlock := 0
@@ -74,7 +87,7 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 
 	// Setup listener & writer
 	l := NewListener(cfg.Name, conn, cfg.Id, useStartSignature, bs, logger, stop, sysErr)
-	w := NewWriter(conn, logger, stop, sysErr)
+	w := NewWriter(conn, minterProgramIdPubkey, mintManagerPubkey, logger, stop, sysErr)
 	return &Chain{cfg: cfg, conn: conn, listener: l, writer: w, stop: stop}, nil
 }
 

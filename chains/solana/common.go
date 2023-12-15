@@ -153,13 +153,22 @@ func (w *writer) approveProposal(
 	poolClient *solana.PoolClient,
 	proposalAccountPubkey,
 	mintAccount,
-	toAccount solCommon.PublicKey,
+	toAccount,
+	mintManager,
+	minterProgramId solCommon.PublicKey,
 	processName string) bool {
 	res, err := rpcClient.GetLatestBlockhash(context.Background(), solClient.GetLatestBlockhashConfig{
 		Commitment: solClient.CommitmentConfirmed,
 	})
 	if err != nil {
 		w.log.Error(fmt.Sprintf("[%s] GetRecentBlockhash failed", processName),
+			"err", err)
+		return false
+	}
+
+	mintAuthority, _, err := solCommon.FindProgramAddress([][]byte{mintManager.Bytes(), []byte("mint")}, minterProgramId)
+	if err != nil {
+		w.log.Error(fmt.Sprintf("[%s] FindProgramAddress failed", processName),
 			"err", err)
 		return false
 	}
@@ -173,7 +182,9 @@ func (w *writer) approveProposal(
 				poolClient.FeeAccount.PublicKey,
 				mintAccount,
 				toAccount,
-				poolClient.TokenProgramId,
+				mintManager,
+				mintAuthority,
+				minterProgramId,
 			),
 		},
 		Signers:         []solTypes.Account{poolClient.FeeAccount},

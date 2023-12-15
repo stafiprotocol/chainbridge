@@ -54,7 +54,9 @@
         "bridgePdaPubkey": "H3RAyJKVSavfxTmQAoSKhbYcBxJu1RBq9xbRqm2Ezhom",
         "bridgeProgramId": "FRzXkJ4p1knQkFdBCtLCt8Zuvykr7Wd5yKTrryQV3K51",
         "TokenProgramId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-        "startSignature": ""
+        "startSignature": "",
+        "minterProgramId": "",
+        "mintManager": ""
       }
     }
   ],

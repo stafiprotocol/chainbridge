@@ -22,7 +22,7 @@ func setMintAuthority(ctx *cli.Context) error {
 	if len(pc.NewMintAuthority) == 0 {
 		return fmt.Errorf("NewMintAuthority empty")
 	}
-	fmt.Printf("\naccounts info:\n %+v\n", pc)
+	fmt.Printf("config info:\n %+v\n", pc)
 	v, err := vault.NewVaultFromWalletFile(pc.KeystorePath)
 	if err != nil {
 		return err
@@ -31,7 +31,6 @@ func setMintAuthority(ctx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("secret boxer: %w", err)
 	}
-
 	if err := v.Open(boxer); err != nil {
 		return fmt.Errorf("opening: %w", err)
 	}
@@ -40,7 +39,6 @@ func setMintAuthority(ctx *cli.Context) error {
 	for _, privKey := range v.KeyBag {
 		privKeyMap[privKey.PublicKey().String()] = privKey
 	}
-
 	FeeAccount := solTypes.AccountFromPrivateKeyBytes(privKeyMap[pc.FeeAccount])
 	BridgeAccount := solTypes.AccountFromPrivateKeyBytes(privKeyMap[pc.BridgeAccount])
 	AdminAccount := solTypes.AccountFromPrivateKeyBytes(privKeyMap[pc.AdminAccountPubkey])
@@ -53,7 +51,6 @@ func setMintAuthority(ctx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("\nbridge account not exist:\n %+v", bridgeInfo)
 	}
-
 	res, err := c.GetLatestBlockhash(context.Background(), solClient.GetLatestBlockhashConfig{
 		Commitment: solClient.CommitmentConfirmed,
 	})
@@ -61,17 +58,29 @@ func setMintAuthority(ctx *cli.Context) error {
 		return err
 	}
 
-	newMintAuthority := solCommon.PublicKeyFromString(pc.NewMintAuthority)
 	rsolMint := solCommon.PublicKeyFromString(pc.RSolMint)
 	bridgeSigner := solCommon.PublicKeyFromString(pc.BridgeSigner)
+	newMintAuthority := solCommon.PublicKeyFromString(pc.NewMintAuthority)
 
 	fmt.Printf("bridgeAccount %s\n", BridgeAccount.PublicKey.ToBase58())
-	fmt.Printf("newMintAuthority %+v\n", newMintAuthority.ToBase58())
 	fmt.Printf("bridgeSigner %+v\n", bridgeSigner.ToBase58())
+	fmt.Printf("newMintAuthority %+v\n", newMintAuthority.ToBase58())
 
-	fmt.Println("\ncheck newMintAuthority again, then press enter to continue:")
-	var input string
-	fmt.Scanln(&input)
+Out:
+	for {
+		fmt.Println("\ncheck newMintAuthority again, then press (y/n) to continue:")
+		var input string
+		fmt.Scanln(&input)
+		switch input {
+		case "y":
+			break Out
+		case "n":
+			return nil
+		default:
+			fmt.Println("press `y` or `n`")
+			continue
+		}
+	}
 
 	//create bridge account
 	rawTx, err := solTypes.CreateRawTransaction(solTypes.CreateRawTransactionParam{

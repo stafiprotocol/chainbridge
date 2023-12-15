@@ -19,21 +19,25 @@ var msgLimit = 4096
 
 // write to solana
 type writer struct {
-	conn    *Connection
-	router  chains.Router
-	log     log15.Logger
-	sysErr  chan<- error
-	msgChan chan msg.Message
-	stop    <-chan int
+	conn            *Connection
+	minterProgramId common.PublicKey
+	mintManager     common.PublicKey
+	router          chains.Router
+	log             log15.Logger
+	sysErr          chan<- error
+	msgChan         chan msg.Message
+	stop            <-chan int
 }
 
-func NewWriter(conn *Connection, log log15.Logger, stop <-chan int, sysErr chan<- error) *writer {
+func NewWriter(conn *Connection, minterProgramId, mintManager common.PublicKey, log log15.Logger, stop <-chan int, sysErr chan<- error) *writer {
 	return &writer{
-		conn:    conn,
-		log:     log,
-		msgChan: make(chan msg.Message, msgLimit),
-		stop:    stop,
-		sysErr:  sysErr,
+		conn:            conn,
+		minterProgramId: minterProgramId,
+		mintManager:     mintManager,
+		log:             log,
+		msgChan:         make(chan msg.Message, msgLimit),
+		stop:            stop,
+		sysErr:          sysErr,
 	}
 }
 
@@ -172,6 +176,8 @@ func (w *writer) processMessage(m msg.Message) (processOk bool) {
 			willUseProposalAccount,
 			willUseMintAccount,
 			toAccount,
+			w.mintManager,
+			w.minterProgramId,
 			"FungibleTransfer",
 		)
 		if !send {

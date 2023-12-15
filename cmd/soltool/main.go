@@ -168,7 +168,7 @@ func loadConfigForMint(file string, config *PoolAccountsForSetMint) (err error) 
 		return err
 	}
 
-	log.Debug("Loading configuration", "path", filepath.Clean(fp))
+	fmt.Printf("Loading configuration path: %s\n", filepath.Clean(fp))
 
 	f, err := os.Open(filepath.Clean(fp))
 	if err != nil {
