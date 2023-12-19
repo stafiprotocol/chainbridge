@@ -40,9 +40,9 @@ func InitializeChain(cfg *core.ChainConfig, logger log15.Logger, sysErr chan<- e
 		return nil, err
 	}
 
-	minterProgramId := cfg.Opts["minterProgramId"]
+	minterProgramId := cfg.Opts["mintManagerProgramId"]
 	if len(minterProgramId) == 0 {
-		return nil, fmt.Errorf("minterProgramId is empty")
+		return nil, fmt.Errorf("mintManagerProgramId is empty")
 	}
 	mintManager := cfg.Opts["mintManager"]
 	if len(mintManager) == 0 {

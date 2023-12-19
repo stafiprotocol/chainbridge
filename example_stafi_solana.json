@@ -55,7 +55,7 @@
         "bridgeProgramId": "FRzXkJ4p1knQkFdBCtLCt8Zuvykr7Wd5yKTrryQV3K51",
         "TokenProgramId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
         "startSignature": "",
-        "minterProgramId": "",
+        "mintManagerProgramId": "",
         "mintManager": ""
       }
     }
