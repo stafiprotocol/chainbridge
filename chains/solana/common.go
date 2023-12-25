@@ -19,6 +19,7 @@ var waitTime = time.Second * 6
 
 type EventTransferOut struct {
 	Transfer     solCommon.PublicKey
+	Mint         solCommon.PublicKey
 	Receiver     []byte
 	Amount       uint64
 	DestChainId  uint8
