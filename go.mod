@@ -20,7 +20,7 @@ require (
 	github.com/stafihub/stafi-hub-relay-sdk v1.7.0
 	github.com/stafihub/stafihub v0.1.0
 	github.com/stafiprotocol/go-substrate-rpc-client v1.2.1
-	github.com/stafiprotocol/solana-go-sdk v1.4.5
+	github.com/stafiprotocol/solana-go-sdk v1.4.8
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.10.2
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
