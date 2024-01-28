@@ -10,6 +10,7 @@ import (
 
 	log "github.com/ChainSafe/log15"
 	"github.com/stafiprotocol/chainbridge/chains/ethereum"
+	"github.com/stafiprotocol/chainbridge/chains/neutron"
 	"github.com/stafiprotocol/chainbridge/chains/solana"
 	"github.com/stafiprotocol/chainbridge/chains/stafihub"
 	"github.com/stafiprotocol/chainbridge/chains/substrate"
@@ -163,6 +164,8 @@ func run(ctx *cli.Context) error {
 			newChain, err = solana.InitializeChain(chainConfig, logger, sysErr)
 		case "stafihub":
 			newChain, err = stafihub.InitializeChain(chainConfig, logger, sysErr)
+		case "neutron":
+			newChain, err = neutron.InitializeChain(chainConfig, logger, sysErr)
 
 		default:
 			return errors.New("unrecognized Chain Type")

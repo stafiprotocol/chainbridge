@@ -1,0 +1,32 @@
+{
+  "chains": [
+    {
+      "name": "stafi hub relayer",
+      "type": "stafihub",
+      "id": "5",
+      "from": "relay1",
+      "endpointList": [
+        "http://127.0.0.1:26657"
+      ],
+      "opts": {
+        "startBlock": "0",
+        "gasPrice": "0.00001ufis"
+      }
+    },
+    {
+      "name": "neutron relayer",
+      "type": "neutron",
+      "id": "6",
+      "from": "relay2",
+      "endpointList": [
+        "http://127.0.0.1:26657"
+      ],
+      "opts": {
+        "bridgeAddress": "",
+        "gasPrice": "0.00001untrn"
+      }
+    }
+  ],
+  "keystorePath": "keys",
+  "blockstorePath": "blockstorePath"
+}

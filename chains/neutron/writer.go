@@ -1,7 +1,7 @@
 // Copyright 2020 Stafi Protocol
 // SPDX-License-Identifier: LGPL-3.0-only
 
-package stafihub
+package neutron
 
 import (
 	"encoding/hex"
@@ -11,13 +11,12 @@ import (
 	"strings"
 	"time"
 
-	errType "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/ChainSafe/log15"
 	"github.com/cosmos/cosmos-sdk/types"
+	errType "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stafihub/rtoken-relay-core/common/core"
-	stafihubClient "github.com/stafihub/stafi-hub-relay-sdk/client"
 	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
+	"github.com/stafiprotocol/chainbridge/utils"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
 
@@ -26,6 +25,14 @@ const (
 )
 
 var ErrorTerminated = errors.New("terminated")
+var (
+	// Frequency of polling for a new block
+	BlockRetryInterval = 6 * time.Second
+	BlockRetryLimit    = 100
+
+	EventRetryLimit    = 20
+	EventRetryInterval = 100 * time.Millisecond
+)
 
 type writer struct {
 	conn    *Connection
@@ -92,33 +99,41 @@ func (w *writer) processMessage(m msg.Message) bool {
 			w.log.Error("accAddressFromHex failed", "err", err)
 			return false
 		}
-		done := core.UseSdkConfigContext(stafihubClient.GetAccountPrefix())
+		done := core.UseSdkConfigContext(w.conn.client.GetAccountPrefix())
 		receiverStr := receiver.String()
 		done()
 
 		w.log.Info("ResolveMessage", "nonce", depositNonce, "source",
 			m.Source, "resource", resourceIdStr, "receiver", receiverStr, "amount", bigAmt.String())
 
-		proposalDetail, err := w.conn.client.QueryBridgeProposalDetail(uint32(m.Source), depositNonce, resourceIdStr, bigAmt.String(), receiverStr)
+		proposalDetail, err := utils.QueryProposal(w.conn.client, w.conn.bridgeAddress, utils.Params{
+			ChainId:      uint64(m.Source),
+			DepositNonce: depositNonce,
+			Recipient:    receiverStr,
+			Amount:       bigAmt.String(),
+		})
 		if err != nil {
-			if !strings.Contains(err.Error(), "NotFound") {
+			if !strings.Contains(err.Error(), "not found") {
 				w.log.Error("QueryBridgeProposalDetail failed", "err", err)
 				return false
 			}
 		} else {
-			if proposalDetail.Proposal.Executed {
+			if proposalDetail.Executed {
 				return true
 			}
-			for _, voter := range proposalDetail.Proposal.Voters {
+			for _, voter := range proposalDetail.Voters {
 				if strings.EqualFold(voter, w.conn.Address()) {
 					return true
 				}
 			}
 		}
 
-		voteMsg := stafiHubXBridgeTypes.NewMsgVoteProposal(w.conn.Address(), uint32(m.Source), depositNonce, resourceIdStr, types.NewIntFromBigInt(bigAmt), receiverStr)
-
-		err = w.checkAndReSendWithProposal("voteproposal", voteMsg)
+		err = w.checkAndReSendWithProposal("voteproposal", &utils.VoteProposalParams{
+			ChainId:      uint64(m.Source),
+			DepositNonce: depositNonce,
+			Recipient:    receiverStr,
+			Amount:       bigAmt.String(),
+		})
 		if err != nil {
 			w.log.Error("checkAndReSend failed", "err", err)
 			return false
@@ -132,8 +147,9 @@ func (w *writer) processMessage(m msg.Message) bool {
 	}
 }
 
-func (h *writer) checkAndReSendWithProposal(typeStr string, content *stafiHubXBridgeTypes.MsgVoteProposal) error {
-	txHashStr, _, err := h.conn.client.SubmitBridgeProposal(content)
+func (h *writer) checkAndReSendWithProposal(typeStr string, content *utils.VoteProposalParams) error {
+	msg := utils.VoteProposalMsg(*content)
+	txHashStr, err := h.conn.client.SendContractExecuteMsg(h.conn.bridgeAddress, msg, nil)
 	if err != nil {
 		switch {
 		case strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()):

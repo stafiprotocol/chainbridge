@@ -25,13 +25,13 @@ type Connection struct {
 func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*Connection, error) {
 	log.Info("NewConnection", "name", cfg.Name, "KeystorePath", cfg.KeystorePath, "Endpoint", cfg.EndpointList)
 	fmt.Printf("Will open stafihub wallet from <%s>. \nPlease ", cfg.KeystorePath)
-	key, err := keyring.New(types.KeyringServiceName(), keyring.BackendFile, cfg.KeystorePath, os.Stdin)
+	key, err := keyring.New(types.KeyringServiceName(), keyring.BackendFile, cfg.KeystorePath, os.Stdin, stafihub.MakeEncodingConfig().Marshaler)
 	if err != nil {
 		return nil, err
 	}
 	account := cfg.From
 	gasPrice := cfg.Opts["gasPrice"]
-	client, err := stafihub.NewClient(key, account, gasPrice, cfg.EndpointList)
+	client, err := stafihub.NewClient(key, account, gasPrice, cfg.EndpointList, log)
 	if err != nil {
 		return nil, fmt.Errorf("hubClient.NewClient err: %s", err)
 	}
@@ -60,7 +60,7 @@ func (c *Connection) FinalizedBlockNumber() (uint64, error) {
 }
 
 func (c *Connection) GetEvents(blockNum uint64) ([]*types.TxResponse, error) {
-	return c.client.GetBlockTxsWithParseErrSkip(int64(blockNum))
+	return c.client.GetBlockTxs(int64(blockNum))
 }
 
 func (c *Connection) Close() {
