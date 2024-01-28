@@ -16,7 +16,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0
-	github.com/stafihub/neutron-relay-sdk v0.0.0-20240126035012-d06c78cf77f1
+	github.com/stafihub/neutron-relay-sdk v0.0.0-20240128143847-ca1660062360
 	github.com/stafihub/rtoken-relay-core/common v0.0.0-20221104093123-ca51d55b8f53
 	github.com/stafihub/stafi-hub-relay-sdk v1.10.0-neutron-0.1.0
 	github.com/stafihub/stafihub v0.5.1-cometbft-0.1.0

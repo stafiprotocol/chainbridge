@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	log "github.com/ChainSafe/log15"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stafiprotocol/chainbridge/chains/ethereum"
 	"github.com/stafiprotocol/chainbridge/chains/neutron"
 	"github.com/stafiprotocol/chainbridge/chains/solana"
@@ -71,6 +72,8 @@ var accountCommand = cli.Command{
 
 // init initializes CLI
 func init() {
+	sdk.SetAddrCacheEnabled(false)
+
 	app.Action = run
 	app.Copyright = "Copyright 2020 Stafi Protocol Authors"
 	app.Name = "chainbridge"
@@ -83,6 +86,7 @@ func init() {
 	}
 
 	app.Flags = append(app.Flags, cliFlags...)
+
 }
 
 func main() {
