@@ -89,7 +89,7 @@ type VoteProposalParams struct {
 	DepositNonce uint64 `json:"deposit_nonce"`
 	Recipient    string `json:"recipient"`
 	Amount       string `json:"amount"`
-}	
+}
 
 func VoteProposalMsg(params VoteProposalParams) []byte {
 	msg := struct {

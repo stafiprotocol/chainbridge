@@ -15,7 +15,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	errType "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stafihub/rtoken-relay-core/common/core"
-	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
 	"github.com/stafiprotocol/chainbridge/utils"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
 )
@@ -152,11 +151,11 @@ func (h *writer) checkAndReSendWithProposal(typeStr string, content *utils.VoteP
 	txHashStr, err := h.conn.client.SendContractExecuteMsg(h.conn.bridgeAddress, msg, nil)
 	if err != nil {
 		switch {
-		case strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()):
+		case strings.Contains(err.Error(), "Duplicate"):
 			h.log.Info("no need send, already executed", "txHash", txHashStr, "type", typeStr)
 			return nil
 
-		case strings.Contains(err.Error(), stafiHubXBridgeTypes.ErrAlreadyVoted.Error()):
+		case strings.Contains(err.Error(), "Already executed"):
 			h.log.Info("no need send, already voted", "txHash", txHashStr, "type", typeStr)
 			return nil
 
@@ -203,11 +202,11 @@ func (h *writer) checkAndReSendWithProposal(typeStr string, content *utils.VoteP
 
 		if res.Code != 0 {
 			switch {
-			case strings.Contains(res.RawLog, stafiHubXBridgeTypes.ErrAlreadyExecuted.Error()):
+			case strings.Contains(res.RawLog, "Duplicate"):
 				h.log.Info("no need send, already executed", "txHash", txHashStr, "type", typeStr)
 				return nil
 
-			case strings.Contains(res.RawLog, stafiHubXBridgeTypes.ErrAlreadyVoted.Error()):
+			case strings.Contains(res.RawLog, "Already executed"):
 				h.log.Info("no need send, already voted", "txHash", txHashStr, "type", typeStr)
 				return nil
 

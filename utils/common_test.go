@@ -36,7 +36,7 @@ func TestProposal(t *testing.T) {
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			t.Log(err)
-		}else{
+		} else {
 			t.Log("not found")
 		}
 	} else {
