@@ -4,13 +4,11 @@
       "name": "stafi hub relayer",
       "type": "stafihub",
       "id": "5",
-      "from": "relay1",
       "endpointList": [
         "https://test-rpc1.stafihub.io:443"
       ],
       "opts": {
-        "startBlock": "0",
-        "gasPrice": "0.00001ufis"
+        "startBlock": "0"
       }
     },
     {

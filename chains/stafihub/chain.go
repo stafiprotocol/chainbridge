@@ -79,9 +79,11 @@ func (c *Chain) Start() error {
 		return err
 	}
 
-	err = c.writer.start()
-	if err != nil {
-		return err
+	if len(c.conn.client.GetFromName()) > 0 {
+		err = c.writer.start()
+		if err != nil {
+			return err
+		}
 	}
 
 	c.conn.log.Debug("Successfully started chain", "chainId", c.cfg.Id)

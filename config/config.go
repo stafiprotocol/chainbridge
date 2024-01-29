@@ -80,7 +80,7 @@ func (c *Config) validate() error {
 		if chain.Id == "" {
 			return fmt.Errorf("required field chain.Id empty for chain %s", chain.Id)
 		}
-		if chain.From == "" {
+		if chain.Type != "stafihub" && chain.From == "" {
 			return fmt.Errorf("required field chain.From empty for chain %s", chain.Id)
 		}
 	}

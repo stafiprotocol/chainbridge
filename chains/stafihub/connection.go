@@ -24,16 +24,25 @@ type Connection struct {
 
 func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*Connection, error) {
 	log.Info("NewConnection", "name", cfg.Name, "KeystorePath", cfg.KeystorePath, "Endpoint", cfg.EndpointList)
-	fmt.Printf("Will open stafihub wallet from <%s>. \nPlease ", cfg.KeystorePath)
-	key, err := keyring.New(types.KeyringServiceName(), keyring.BackendFile, cfg.KeystorePath, os.Stdin, stafihub.MakeEncodingConfig().Marshaler)
-	if err != nil {
-		return nil, err
-	}
-	account := cfg.From
-	gasPrice := cfg.Opts["gasPrice"]
-	client, err := stafihub.NewClient(key, account, gasPrice, cfg.EndpointList, log)
-	if err != nil {
-		return nil, fmt.Errorf("hubClient.NewClient err: %s", err)
+	var client *stafihub.Client
+	if len(cfg.From) == 0 {
+		var err error
+		client, err = stafihub.NewClient(nil, "", "", cfg.EndpointList, log)
+		if err != nil {
+			return nil, fmt.Errorf("hubClient.NewClient err: %s", err)
+		}
+	} else {
+		fmt.Printf("Will open stafihub wallet from <%s>. \nPlease ", cfg.KeystorePath)
+		key, err := keyring.New(types.KeyringServiceName(), keyring.BackendFile, cfg.KeystorePath, os.Stdin, stafihub.MakeEncodingConfig().Marshaler)
+		if err != nil {
+			return nil, err
+		}
+		account := cfg.From
+		gasPrice := cfg.Opts["gasPrice"]
+		client, err = stafihub.NewClient(key, account, gasPrice, cfg.EndpointList, log)
+		if err != nil {
+			return nil, fmt.Errorf("hubClient.NewClient err: %s", err)
+		}
 	}
 
 	return &Connection{
@@ -46,6 +55,9 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 }
 
 func (c *Connection) Address() string {
+	if len(c.client.GetFromName()) == 0 {
+		return "stafihub"
+	}
 	return c.client.GetFromAddress().String()
 }
 
