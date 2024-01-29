@@ -6,7 +6,7 @@
       "id": "5",
       "from": "relay1",
       "endpointList": [
-        "http://127.0.0.1:26657"
+        "https://test-rpc1.stafihub.io:443"
       ],
       "opts": {
         "startBlock": "0",
@@ -17,12 +17,12 @@
       "name": "neutron relayer",
       "type": "neutron",
       "id": "6",
-      "from": "relay2",
+      "from": "relay1",
       "endpointList": [
-        "http://127.0.0.1:26657"
+        "https://rpc-falcron.pion-1.ntrn.tech:443"
       ],
       "opts": {
-        "bridgeAddress": "",
+        "bridgeAddress": "neutron1eykzzmu8s2a2hy0a66un90p0u62frtz85qmq5jr5hx3z5xewtp0q9vlfkf",
         "gasPrice": "0.00001untrn"
       }
     }

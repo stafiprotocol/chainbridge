@@ -28,7 +28,7 @@ type Connection struct {
 
 func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*Connection, error) {
 	log.Info("NewConnection", "name", cfg.Name, "KeystorePath", cfg.KeystorePath, "Endpoint", cfg.EndpointList)
-	fmt.Printf("Will open stafihub wallet from <%s>. \nPlease ", cfg.KeystorePath)
+	fmt.Printf("Will open neutron wallet from <%s>. \nPlease ", cfg.KeystorePath)
 	key, err := keyring.New(types.KeyringServiceName(), keyring.BackendFile, cfg.KeystorePath, os.Stdin, neutronClient.MakeEncodingConfig().Marshaler)
 	if err != nil {
 		return nil, err
@@ -36,9 +36,9 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 	account := cfg.From
 
 	gasPrice := cfg.Opts["gasPrice"]
-	client, err := neutronClient.NewClient(key, account, gasPrice, "neutron", cfg.EndpointList, commonLog.NewLog("client", "chain bridge"))
+	client, err := neutronClient.NewClient(key, account, gasPrice, "neutron", cfg.EndpointList, commonLog.NewLog("client", "neutron chain bridge"))
 	if err != nil {
-		return nil, fmt.Errorf("hubClient.NewClient err: %s", err)
+		return nil, fmt.Errorf("neutronClient.NewClient err: %s", err)
 	}
 	bridgeAddress := cfg.Opts["bridgeAddress"]
 
@@ -47,7 +47,7 @@ func NewConnection(cfg *core.ChainConfig, log log15.Logger, stop <-chan int) (*C
 	from := client.GetFromAddress().String()
 	done()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("bridge address parse err: %s", err)
 	}
 
 	return &Connection{
