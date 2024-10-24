@@ -105,12 +105,16 @@ func (w *writer) processMessage(m msg.Message) bool {
 		w.log.Info("ResolveMessage", "nonce", depositNonce, "source",
 			m.Source, "resource", resourceIdStr, "receiver", receiverStr, "amount", bigAmt.String())
 
-		proposalDetail, err := utils.QueryProposal(w.conn.client, w.conn.bridgeAddress, utils.Params{
-			ChainId:      uint64(m.Source),
-			DepositNonce: depositNonce,
-			Recipient:    receiverStr,
-			Amount:       bigAmt.String(),
-		})
+		proposalDetail, err := utils.QueryProposal(
+			w.conn.client,
+			w.conn.bridgeAddress,
+			utils.QueryProposalParams{
+				ChainId:      uint64(m.Source),
+				DepositNonce: depositNonce,
+				ResourceId:   resourceIdStr,
+				Recipient:    receiverStr,
+				Amount:       bigAmt.String(),
+			})
 		if err != nil {
 			if !strings.Contains(err.Error(), "not found") {
 				w.log.Error("QueryBridgeProposalDetail failed", "err", err)
@@ -130,6 +134,7 @@ func (w *writer) processMessage(m msg.Message) bool {
 		err = w.checkAndReSendWithProposal("voteproposal", &utils.VoteProposalParams{
 			ChainId:      uint64(m.Source),
 			DepositNonce: depositNonce,
+			ResourceId:   resourceIdStr,
 			Recipient:    receiverStr,
 			Amount:       bigAmt.String(),
 		})

@@ -32,7 +32,7 @@ func TestProposal(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
-	res, err := utils.QueryProposal(c, "neutron1eykzzmu8s2a2hy0a66un90p0u62frtz85qmq5jr5hx3z5xewtp0q9vlfkf", utils.Params{Amount: "0"})
+	res, err := utils.QueryProposal(c, "neutron1eykzzmu8s2a2hy0a66un90p0u62frtz85qmq5jr5hx3z5xewtp0q9vlfkf", utils.QueryProposalParams{Amount: "0"})
 	if err != nil {
 		if !strings.Contains(err.Error(), "not found") {
 			t.Log(err)

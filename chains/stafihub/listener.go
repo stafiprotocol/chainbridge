@@ -7,16 +7,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/big"
-	"strconv"
-	"time"
-
 	"github.com/ChainSafe/log15"
 	"github.com/cosmos/cosmos-sdk/types"
 	stafiHubXBridgeTypes "github.com/stafihub/stafihub/x/bridge/types"
 	"github.com/stafiprotocol/chainbridge/chains"
 	"github.com/stafiprotocol/chainbridge/utils/blockstore"
 	"github.com/stafiprotocol/chainbridge/utils/msg"
+	"math/big"
+	"strconv"
+	"time"
 )
 
 var (
@@ -171,10 +170,6 @@ func (l *listener) processEvents(blockNum uint64) error {
 
 // submitMessage inserts the chainId into the msg and sends it to the router
 func (l *listener) submitMessage(m msg.Message) (err error) {
-	if err != nil {
-		l.log.Error("Critical error processing event", "err", err)
-		return
-	}
 	m.Source = l.chainId
 	err = l.router.Send(m)
 	if err != nil {
@@ -190,10 +185,16 @@ func (l *listener) processStringEvents(event types.StringEvent, blockNumber int6
 		if len(event.Attributes) != 5 {
 			return ErrEventAttributeNumberUnMatch
 		}
-		chainId, err := strconv.Atoi(event.Attributes[0].Value)
+		destChainId, err := strconv.Atoi(event.Attributes[0].Value)
 		if err != nil {
 			return err
 		}
+		destId := msg.ChainId(destChainId)
+		// skip event if not support chainId
+		if !l.router.SupportChainId(destId) {
+			return nil
+		}
+
 		resourceBts, err := hex.DecodeString(event.Attributes[1].Value)
 		if err != nil {
 			return err
@@ -217,7 +218,7 @@ func (l *listener) processStringEvents(event types.StringEvent, blockNumber int6
 
 		m := msg.NewFungibleTransfer(
 			l.chainId,
-			msg.ChainId(chainId),
+			destId,
 			msg.Nonce(depositNonce),
 			amount.BigInt(),
 			resource,

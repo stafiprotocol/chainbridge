@@ -44,15 +44,16 @@ func VersionCompare(version1, version2 string) (ret int) {
 
 }
 
-type Params struct {
+type QueryProposalParams struct {
 	ChainId      uint64 `json:"chain_id"`
 	DepositNonce uint64 `json:"deposit_nonce"`
+	ResourceId   string `json:"resource_id"`
 	Recipient    string `json:"recipient"`
 	Amount       string `json:"amount"`
 }
 
 type QueryProposalReq struct {
-	Proposal Params `json:"proposal"`
+	Proposal QueryProposalParams `json:"proposal"`
 }
 
 type QueryProposalRes struct {
@@ -64,14 +65,14 @@ type QueryProposalRes struct {
 	Voters       []string `json:"voters"`
 }
 
-func getQueryProposalReq(params Params) []byte {
+func getQueryProposalReq(params QueryProposalParams) []byte {
 	poolReq := QueryProposalReq{
 		Proposal: params,
 	}
 	marshal, _ := json.Marshal(poolReq)
 	return marshal
 }
-func QueryProposal(neutronClient *client.Client, contract string, params Params) (*QueryProposalRes, error) {
+func QueryProposal(neutronClient *client.Client, contract string, params QueryProposalParams) (*QueryProposalRes, error) {
 	poolInfoRes, err := neutronClient.QuerySmartContractState(contract, getQueryProposalReq(params))
 	if err != nil {
 		return nil, err
@@ -87,6 +88,7 @@ func QueryProposal(neutronClient *client.Client, contract string, params Params)
 type VoteProposalParams struct {
 	ChainId      uint64 `json:"chain_id"`
 	DepositNonce uint64 `json:"deposit_nonce"`
+	ResourceId   string `json:"resource_id"`
 	Recipient    string `json:"recipient"`
 	Amount       string `json:"amount"`
 }
