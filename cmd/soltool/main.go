@@ -135,7 +135,7 @@ type PoolAccountsForSetMint struct {
 
 	NewMintAuthority string `json:"newMintAuthority"`
 	BridgeSigner     string `json:"bridgeSigner"`
-	RSolMint         string `json:"rsolMint"`
+	TokenMint        string `json:"tokenMint"`
 }
 
 func loadConfig(file string, config *PoolAccounts) (err error) {

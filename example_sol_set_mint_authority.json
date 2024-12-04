@@ -6,6 +6,6 @@
     "bridgeProgramId": "GF5hXVTvkErn2LTL5myFVbgqPXHnZYj2CkVGU6ZTEtyK",
     "endpoint": "https://api.devnet.solana.com",
     "bridgeSigner": "4hnrULUvAN58iUNaBLQxwVDJV4Qa1G5QGTr7aykjXra7",
-    "rsolMint": "6jnyhgA2dPWDpw1WqgTaCyjp8otXkP5655DQ6RSnwbv5",
+    "tokenMint": "6jnyhgA2dPWDpw1WqgTaCyjp8otXkP5655DQ6RSnwbv5",
     "newMintAuthority": "66DBm2GT5ELRvXfZ8GVbvurMrwcsxK59rNvGULnsnXvW"
 }

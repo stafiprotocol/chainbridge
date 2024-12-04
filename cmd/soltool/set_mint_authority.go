@@ -58,7 +58,7 @@ func setMintAuthority(ctx *cli.Context) error {
 		return err
 	}
 
-	rsolMint := solCommon.PublicKeyFromString(pc.RSolMint)
+	tokenMint := solCommon.PublicKeyFromString(pc.TokenMint)
 	bridgeSigner := solCommon.PublicKeyFromString(pc.BridgeSigner)
 	newMintAuthority := solCommon.PublicKeyFromString(pc.NewMintAuthority)
 
@@ -90,7 +90,7 @@ Out:
 				BridgeAccount.PublicKey,
 				AdminAccount.PublicKey,
 				bridgeSigner,
-				rsolMint,
+				tokenMint,
 				newMintAuthority,
 			),
 		},
