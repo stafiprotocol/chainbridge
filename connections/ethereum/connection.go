@@ -28,6 +28,10 @@ var (
 	standGasPrice      = big.NewInt(20e9)
 )
 
+var Gwei5 = big.NewInt(5e9)
+var Gwei10 = big.NewInt(10e9)
+var Gwei20 = big.NewInt(20e9)
+
 type Connection struct {
 	endpoint    string
 	chainId     msg.ChainId
@@ -162,6 +166,55 @@ func (c *Connection) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
 	return gasPrice, nil
 }
 
+// return suggest gastipcap gasfeecap
+func (c *Connection) SafeEstimateFee(ctx context.Context) (*big.Int, *big.Int, error) {
+	marketGasTipCap, err := c.conn.SuggestGasTipCap(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	marketGasFeeCap, err := c.conn.SuggestGasPrice(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if marketGasFeeCap.Cmp(Gwei20) < 0 {
+		marketGasFeeCap = new(big.Int).Add(marketGasFeeCap, Gwei5)
+	} else {
+		marketGasFeeCap = new(big.Int).Add(marketGasFeeCap, Gwei10)
+	}
+
+	gasFeeCap, _ := new(big.Float).Mul(new(big.Float).SetInt(marketGasFeeCap), big.NewFloat(1.2)).Int(nil)
+	gasTipCap, _ := new(big.Float).Mul(new(big.Float).SetInt(marketGasTipCap), big.NewFloat(1.2)).Int(nil)
+
+	if gasFeeCap.Cmp(c.maxGasPrice) > 0 {
+		gasFeeCap = c.maxGasPrice
+	}
+
+	return gasTipCap, gasFeeCap, nil
+}
+
+// LockAndUpdateOpts acquires a lock on the opts before updating the nonce
+// and gas price.
+func (c *Connection) LockAndUpdateOpts() error {
+	c.optsLock.Lock()
+
+	gasTipCap, gasFeeCap, err := c.SafeEstimateFee(context.Background())
+	if err != nil {
+		c.optsLock.Unlock()
+		return err
+	}
+	c.opts.GasTipCap = gasTipCap
+	c.opts.GasFeeCap = gasFeeCap
+
+	nonce, err := c.conn.NonceAt(context.Background(), c.opts.From, nil)
+	if err != nil {
+		c.optsLock.Unlock()
+		return err
+	}
+	c.opts.Nonce.SetUint64(nonce)
+	return nil
+}
+
 type GasRes struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
@@ -175,24 +228,24 @@ type GasRes struct {
 
 // LockAndUpdateOpts acquires a lock on the opts before updating the nonce
 // and gas price.
-func (c *Connection) LockAndUpdateOpts() error {
-	c.optsLock.Lock()
+// func (c *Connection) LockAndUpdateOpts() error {
+// 	c.optsLock.Lock()
 
-	gasPrice, err := c.SafeEstimateGas(context.TODO())
-	if err != nil {
-		return err
-	}
+// 	gasPrice, err := c.SafeEstimateGas(context.TODO())
+// 	if err != nil {
+// 		return err
+// 	}
 
-	c.opts.GasPrice = gasPrice
+// 	c.opts.GasPrice = gasPrice
 
-	nonce, err := c.conn.PendingNonceAt(context.Background(), c.opts.From)
-	if err != nil {
-		c.optsLock.Unlock()
-		return err
-	}
-	c.opts.Nonce.SetUint64(nonce)
-	return nil
-}
+// 	nonce, err := c.conn.PendingNonceAt(context.Background(), c.opts.From)
+// 	if err != nil {
+// 		c.optsLock.Unlock()
+// 		return err
+// 	}
+// 	c.opts.Nonce.SetUint64(nonce)
+// 	return nil
+// }
 
 func (c *Connection) UnlockOpts() {
 	c.optsLock.Unlock()
