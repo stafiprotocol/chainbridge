@@ -31,6 +31,7 @@ var (
 var Gwei5 = big.NewInt(5e9)
 var Gwei10 = big.NewInt(10e9)
 var Gwei20 = big.NewInt(20e9)
+var MinGasTipCap = big.NewInt(3e9)
 
 type Connection struct {
 	endpoint    string
@@ -187,6 +188,9 @@ func (c *Connection) SafeEstimateFee(ctx context.Context) (*big.Int, *big.Int, e
 
 	if gasFeeCap.Cmp(c.maxGasPrice) > 0 {
 		gasFeeCap = c.maxGasPrice
+	}
+	if gasTipCap.Cmp(MinGasTipCap) < 0 {
+		gasTipCap = MinGasTipCap
 	}
 
 	return gasTipCap, gasFeeCap, nil
