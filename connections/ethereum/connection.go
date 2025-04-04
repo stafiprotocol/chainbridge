@@ -201,9 +201,14 @@ func (c *Connection) SafeEstimateFee(ctx context.Context) (*big.Int, *big.Int, e
 func (c *Connection) LockAndUpdateOpts() error {
 	c.optsLock.Lock()
 
+	var err error
+	defer func() {
+		if err != nil {
+			c.optsLock.Unlock()
+		}
+	}()
 	gasTipCap, gasFeeCap, err := c.SafeEstimateFee(context.Background())
 	if err != nil {
-		c.optsLock.Unlock()
 		return err
 	}
 	c.opts.GasTipCap = gasTipCap
@@ -211,7 +216,6 @@ func (c *Connection) LockAndUpdateOpts() error {
 
 	nonce, err := c.conn.NonceAt(context.Background(), c.opts.From, nil)
 	if err != nil {
-		c.optsLock.Unlock()
 		return err
 	}
 	c.opts.Nonce.SetUint64(nonce)
