@@ -56,7 +56,7 @@ var vaultAddCmd = &cobra.Command{
 			return
 		}
 
-		var newKeys []vault.PublicKey
+		newKeys := make([]vault.PublicKey, 0, len(privateKeys))
 		for _, privateKey := range privateKeys {
 			v.AddPrivateKey(privateKey)
 			newKeys = append(newKeys, privateKey.PublicKey())

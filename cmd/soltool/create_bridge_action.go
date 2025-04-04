@@ -55,7 +55,11 @@ func createBridgeAccountAction(ctx *cli.Context) error {
 	}
 	fmt.Println("\nbridgePdaPubkey: ", PdaPubkey.ToBase58())
 
-	owners := make([]solCommon.PublicKey, 0)
+	ownersLen := 1 + len(pc.OtherFeeAccountPubkey)
+	if ownersLen < int(pc.Threshold) {
+		return fmt.Errorf("owner len < threshold")
+	}
+	owners := make([]solCommon.PublicKey, 0, ownersLen)
 	owners = append(owners, FeeAccount.PublicKey)
 	for _, account := range pc.OtherFeeAccountPubkey {
 		a := solTypes.AccountFromPrivateKeyBytes(privKeyMap[account])
