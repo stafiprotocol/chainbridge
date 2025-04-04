@@ -226,7 +226,7 @@ func Erc20GetResourceId(client *Client, handler common.Address, rId msg.Resource
 }
 
 func ConstructErc20DepositData(destRecipient []byte, amount *big.Int) []byte {
-	var data []byte
+	data := make([]byte, 64+len(destRecipient))
 	data = append(data, math.PaddedBigBytes(amount, 32)...)
 	data = append(data, math.PaddedBigBytes(big.NewInt(int64(len(destRecipient))), 32)...)
 	data = append(data, destRecipient...)
