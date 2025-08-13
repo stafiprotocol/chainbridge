@@ -141,6 +141,8 @@ func (l *listener) pollBlocks() error {
 
 // getDepositEventsForBlock looks for the deposit event in the latest block
 func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
+	l.log.Debug("getDepositEventsForBlock start: ", latestBlock)
+
 	query := buildQuery(l.cfg.BridgeContract(), utils.Deposit, latestBlock, latestBlock)
 
 	// querying for logs
@@ -151,6 +153,8 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 
 	// read through the log events and handle their deposit event if handler is recognized
 	for _, log := range logs {
+		l.log.Debug("log index: ", log.Index)
+
 		var m msg.Message
 		destId := msg.ChainId(log.Topics[1].Big().Uint64())
 		rId := msg.ResourceIdFromSlice(log.Topics[2].Bytes())
@@ -158,6 +162,7 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 
 		//skip event if not support chainId
 		if !l.router.SupportChainId(destId) {
+			l.log.Debug("not supported chainId: ", destId)
 			continue
 		}
 
@@ -181,7 +186,10 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 		if err != nil {
 			l.log.Error("subscription error: failed to route message", "err", err)
 		}
+		l.log.Debug("send to router ok")
 	}
+
+	l.log.Debug("getDepositEventsForBlock end: ", latestBlock)
 
 	return nil
 }
