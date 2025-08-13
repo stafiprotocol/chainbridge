@@ -141,7 +141,7 @@ func (l *listener) pollBlocks() error {
 
 // getDepositEventsForBlock looks for the deposit event in the latest block
 func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
-	l.log.Debug("getDepositEventsForBlock start: ", latestBlock)
+	l.log.Debug("getDepositEventsForBlock start: ", latestBlock.Uint64())
 
 	query := buildQuery(l.cfg.BridgeContract(), utils.Deposit, latestBlock, latestBlock)
 
@@ -189,7 +189,7 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 		l.log.Debug("send to router ok")
 	}
 
-	l.log.Debug("getDepositEventsForBlock end: ", latestBlock)
+	l.log.Debug("getDepositEventsForBlock end: ", latestBlock.Uint64())
 
 	return nil
 }
